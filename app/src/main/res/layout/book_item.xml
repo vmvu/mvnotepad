@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingTop="2dp"
+    android:paddingBottom="2dp"
+    android:background="@drawable/rectangle">
+
+    <View
+        android:id="@+id/lineNote"
+        android:layout_width="5dp"
+        android:layout_height="match_parent"
+        android:background="#000"
+        ></View>
+
+        <RelativeLayout
+            android:id="@+id/bgNote"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            tools:background="@color/backgroundColor_default">
+
+            <LinearLayout
+                android:id="@+id/viewTop"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:orientation="horizontal"
+                >
+
+                <TextView
+                    android:id="@+id/tvTitle"
+                    style="@style/bookItemStyle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="9"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textColor="#00218f"
+                    android:textStyle="bold"
+                    android:paddingLeft="5dp"
+                    android:paddingTop="5dp"
+                    tools:text="pro android 5" />
+
+                <ImageView
+                    android:id="@+id/ivPinStarIcon"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:layout_toRightOf="@id/tvTitle"
+                    android:src="@drawable/ic_shit" />
+
+                <ImageView
+                    android:id="@+id/ivLockIcon"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:layout_toRightOf="@id/ivPinStarIcon"
+                    android:src="@drawable/ic_https_black_24dp" />
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvContent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/viewTop"
+                android:ellipsize="end"
+                android:maxLines="2" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:gravity="right"
+                android:orientation="horizontal"
+                android:padding="5dp"
+                android:paddingTop="5dp">
+
+                <TextView
+                    android:id="@+id/tvDateCreated"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="20dp"
+                    android:textSize="10dp"
+                    tools:text="20-7-2017 10:20" />
+
+
+                <TextView
+                    android:id="@+id/tvLastUpdate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="10dp"
+                    tools:text="1-8-2017 9:00" />
+            </LinearLayout>
+        </RelativeLayout>
+</LinearLayout>

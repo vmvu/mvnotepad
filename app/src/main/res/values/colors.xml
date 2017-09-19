@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="black">#000000</color>
+
+    <color name="green">#27b907</color>
+    <color name="headerColor_default">#00b9aa</color>
+    <color name="red_header">#e42525</color>
+    <color name="yellow_header">#cfbd00</color>
+    <color name="orange_header">#ce8d00</color>
+    <color name="skyblue_header">#0076b6</color>
+    <color name="green_header">#2eb604</color>
+    <color name="brown_header">#996902</color>
+    <color name="pink_header">#a9007c</color>
+    <color name="purple_header">#8200a6</color>
+
+
+    <color name="backgroundColor_default">#d4ecea</color>
+    <color name="red_background">#ffdddf</color>
+    <color name="yellow_background">#feffc9</color>
+    <color name="orange_background">#fce19d</color>
+    <color name="skyblue_background">#c9d6ff</color>
+    <color name="green_background">#d6fdc7</color>
+    <color name="brown_background">#edd7a6</color>
+    <color name="pink_background">#ffe9f8</color>
+    <color name="purple_background">#f4ccff</color>
+
+    <array name="header_color">
+        <item>@color/headerColor_default</item>
+        <item>@color/red_header</item>
+        <item>@color/pink_header</item>
+        <item>@color/purple_header</item>
+        <item>@color/brown_header</item>
+        <item>@color/orange_header</item>
+        <item>@color/yellow_header</item>
+        <item>@color/green_header</item>
+        <item>@color/skyblue_header</item>
+    </array>
+    <array name="background_color">
+        <item>@color/backgroundColor_default</item>
+        <item>@color/red_background</item>
+        <item>@color/pink_background</item>
+        <item>@color/purple_background</item>
+        <item>@color/brown_background</item>
+        <item>@color/orange_background</item>
+        <item>@color/yellow_background</item>
+        <item>@color/green_background</item>
+        <item>@color/skyblue_background</item>
+    </array>
+
+
+
+
+
+</resources>

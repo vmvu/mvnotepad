@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/viewGroupColorTable"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="3dp"
+    android:padding="3dp"
+    android:background="@drawable/rectangle_corners"
+    >
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/gridColorTable"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#87ffffff"
+            android:foregroundGravity="center_horizontal|center_vertical"
+            >
+
+        </android.support.v7.widget.RecyclerView>
+
+
+</LinearLayout>

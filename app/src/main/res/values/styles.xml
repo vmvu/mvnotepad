@@ -1,0 +1,28 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/yellow_header</item>
+        <item name="colorPrimaryDark">@color/brown_header</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <style name="AppBarTheme" parent="ThemeOverlay.AppCompat.Dark.ActionBar"/>
+
+    <style name="bookItemStyle">
+        <item name="android:textSize">20sp</item>
+    </style>
+
+    <style name="btnYesStyle" parent="Base.Widget.AppCompat.ImageButton">
+        <item name="android:background">@drawable/rectangle_corners</item>
+        <item name="android:src">@drawable/ic_check_black_24dp</item>
+    </style>
+
+    <style name="btnNoStyle" parent="Widget.AppCompat.ImageButton">
+        <item name="android:background">@drawable/rectangle_corners</item>
+        <item name="android:src">@drawable/ic_close_black_24dp</item>
+    </style>
+
+
+</resources>

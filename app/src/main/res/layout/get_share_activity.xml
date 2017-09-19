@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#ffffff"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/tvImageCount"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:gravity="center_vertical"
+            android:textColor="#ababab"
+            android:paddingLeft="@dimen/align_primary"
+            android:text="0 Images" />
+
+        <Button
+            android:id="@+id/btnDetail"
+            android:layout_width="100dp"
+            android:layout_height="40dp"
+            android:layout_alignParentRight="true"
+            android:layout_gravity="end"
+            android:background="@android:color/transparent"
+            android:text="@string/detail_label"
+            android:textColor="#0015ff"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+    </RelativeLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <EditText
+            android:id="@+id/etContent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:gravity="center_vertical"
+            android:textColor="#000"
+            android:maxHeight="400dp"
+            android:padding="@dimen/align_primary"
+            android:textSize="18sp"
+            tools:text="Nhung dong ghi chu duoc chia se tai day, vai chu nua thoi la het mot hang, nhung khong da sang tan thu ba, ghi chu gi ma dai vay. cham het tai day, lai ton them mot hang de ghi chu" />
+
+    </ScrollView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#f4f4f4"
+        android:orientation="horizontal">
+        <Button
+            android:id="@+id/btnRemoveTitle"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="5dp"
+            android:gravity="center"
+            android:textColor="#000"
+            android:text="X"
+            android:background="@drawable/radius_white"/>
+
+        <ScrollView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="9">
+
+            <EditText
+                android:id="@+id/etTitle"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:gravity="center_vertical"
+                android:maxLines="1"
+                android:textColor="#000"
+                android:inputType="textLongMessage"
+                android:background="@android:color/transparent"
+                android:paddingLeft="10dp"
+                android:textSize="23sp"
+                android:textStyle="bold"
+                tools:text="tieu de cua ghi chu nay duoc ghi tai day, chu tieu de rat nho kho nhin that" />
+        </ScrollView>
+
+
+        <ImageButton
+            android:id="@+id/btnInsert"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:background="@drawable/bgchoose"
+            android:src="@drawable/ic_check_orange_24dp" />
+    </LinearLayout>
+
+</LinearLayout>

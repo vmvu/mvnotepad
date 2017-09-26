@@ -31,11 +31,10 @@ public class DesEncrypter {
 
     String key;
 
-    private IvParameterSpec creatIV(){
+    private IvParameterSpec createIV(){
         final byte[] iv = new byte[16];
         Arrays.fill(iv,(byte)0x00);
-        IvParameterSpec ivParameterSpec = new IvParameterSpec(iv);
-        return ivParameterSpec;
+        return new IvParameterSpec(iv);
     }
 
 
@@ -44,7 +43,7 @@ public class DesEncrypter {
             SecretKey secretKey  = KeyGenerator.getInstance(algorithmKey).generateKey();
 
             Cipher cipher = Cipher.getInstance(algorithm);
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey, creatIV());
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey, createIV());
 
             byte[] uft8 = string.getBytes(StandardCharsets.UTF_8);
             byte[] enc = cipher.doFinal(uft8);
@@ -66,7 +65,7 @@ public class DesEncrypter {
             byte[] encodedKey = Base64.decode(key, Base64.DEFAULT);
             SecretKey originalKey = new SecretKeySpec(encodedKey, 0, encodedKey.length, algorithmKey);
             Cipher cipher = Cipher.getInstance(algorithm);
-            cipher.init(Cipher.DECRYPT_MODE, originalKey, creatIV());
+            cipher.init(Cipher.DECRYPT_MODE, originalKey, createIV());
             byte[] dec = cipher.doFinal(Base64.decode(strEncrypt, Base64.DEFAULT));
             return new String(dec, StandardCharsets.UTF_8);
         }catch (Exception e){

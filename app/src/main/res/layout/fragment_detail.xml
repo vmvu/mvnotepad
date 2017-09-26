@@ -88,6 +88,7 @@
         android:layout_height="match_parent">
 
         <LinearLayout
+            android:id="@+id/place"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
@@ -102,18 +103,26 @@
             <ScrollView
                 android:id="@+id/sv_content_place"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="match_parent"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:background="#73ffffff">
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
-                    <EditText
-                        android:id="@+id/etContent"
+                    <ScrollView
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="#25e4e2e2"
-                        android:inputType="textMultiLine"
-                        android:textColor="#000" />
+                        android:layout_height="wrap_content">
+                        <EditText
+                            android:id="@+id/etContent"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@android:color/transparent"
+                            android:inputType="textMultiLine"
+                            android:textColor="#000" />
+                    </ScrollView>
+
                     <android.support.v7.widget.RecyclerView
                         android:id="@+id/recycler_place_image"
                         android:layout_width="match_parent"
@@ -122,10 +131,6 @@
                         android:scrollbars="vertical">
 
                     </android.support.v7.widget.RecyclerView>
-                    <ImageView
-                        android:id="@+id/ivTest"
-                        android:layout_width="130dp"
-                        android:layout_height="200dp" />
                 </LinearLayout>
 
 
@@ -139,6 +144,7 @@
             android:layout_gravity="bottom"
             android:layout_marginLeft="20dp"
             android:layout_marginBottom="20dp"
+            android:visibility="gone"
             />
 
     </android.support.design.widget.CoordinatorLayout>

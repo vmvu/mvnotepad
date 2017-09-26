@@ -34,15 +34,24 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.SwitchCompat;
 import android.text.Editable;
+import android.text.Html;
+import android.text.Layout;
+import android.text.Spannable;
+import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.text.style.BackgroundColorSpan;
+import android.text.style.ForegroundColorSpan;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -55,6 +64,7 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.minhvu.proandroid.sqlite.database.R;
+import com.minhvu.proandroid.sqlite.database.Utils.KMPSearch;
 import com.minhvu.proandroid.sqlite.database.main.model.DetailModel;
 import com.minhvu.proandroid.sqlite.database.main.model.IDetailModel;
 import com.minhvu.proandroid.sqlite.database.main.model.IImageModel;
@@ -70,8 +80,10 @@ import com.minhvu.proandroid.sqlite.database.models.entity.Color;
 
 import java.io.File;
 import java.io.FileDescriptor;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Date;
 
 /**
@@ -94,11 +106,13 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
     RecyclerView ImageRecyclerView;
     ImageAdapter imageAdapter;
 
+
     String currentUri;
 
     private static final int ID_LOADER = 99;
     private static final int TAKE_PHOTO_CODE = 55;
     private static final int PICK_IMAGE_CODE = 54;
+    private static final int PICK_PDF_FILE_CODE = 70;
 
 
     private boolean takePhoto_check = true;
@@ -109,16 +123,22 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
             return false;
         }
     };
-    private View.OnTouchListener mTouchOnDisplayKeyboard = new View.OnTouchListener() {
+
+    final GestureDetector gestureDetector = new GestureDetector(getActivity(), new GestureDetector.SimpleOnGestureListener() {
         @Override
-        public boolean onTouch(View v, MotionEvent event) {
-            //InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-            //imm.showSoftInput(v, InputMethodManager.SHOW_IMPLICIT);
-            etContent.requestFocus();
-            getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
-            return false;
+        public boolean onSingleTapConfirmed(MotionEvent e) {
+            InputMethodManager manager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+            manager.showSoftInput(etContent, InputMethodManager.SHOW_IMPLICIT);
+            return true;
         }
-    };
+
+        @Override
+        public boolean onSingleTapUp(MotionEvent e) {
+            etContent.requestFocus();
+            mMainPresenter.onViewHasChanged();
+            return true;
+        }
+    });
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -144,11 +164,12 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
             ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.CAMERA}, 0);
         }
         if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
+            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
         }
         StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
         StrictMode.setVmPolicy(builder.build());
     }
+
 
     @Nullable
     @Override
@@ -164,7 +185,8 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
         btnColor.setTag(0);
         viewGroup.setBackgroundColor(getResources().getColor(R.color.backgroundColor_default));
         setup(layout);
-        scrollView.setOnTouchListener(mTouchOnDisplayKeyboard);
+
+
         //restore
         if (savedInstanceState != null) {
             etTitle.setText(savedInstanceState.getString("title"));
@@ -187,6 +209,12 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
             }
         });
 
+        scrollView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return gestureDetector.onTouchEvent(event);
+            }
+        });
         etTitle.setOnTouchListener(mTouchListener);
         etContent.setOnTouchListener(mTouchListener);
 
@@ -216,8 +244,9 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
         return layout;
     }
 
+
     private void setup(View layout) {
-        StaggeredGridLayoutManager staggeredGL = new StaggeredGridLayoutManager(3, 1);
+        GridLayoutManager staggeredGL = new GridLayoutManager(getActivity(),3);
         ImageRecyclerView = (RecyclerView) layout.findViewById(R.id.recycler_place_image);
         ImageRecyclerView.setLayoutManager(staggeredGL);
 
@@ -231,8 +260,8 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
     }
 
     private void popupColorTable(View view) {
-        int popupWidth = 600;
-        int popupHeight = 620;
+        int popupWidth = 530;
+        int popupHeight = 490;
         int[] local = new int[2];
         view.getLocationInWindow(local);
 
@@ -240,7 +269,7 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View layout = layoutInflater.inflate(R.layout.popup_color_table, null);
 
-        final PopupWindow popup = popupConfiguration(layout, popupWidth, popupHeight, local[0], local[1] + 250, Gravity.NO_GRAVITY);
+        final PopupWindow popup = popupConfiguration(layout, popupWidth, popupHeight, local[0] - 210, local[1] + 200, Gravity.NO_GRAVITY);
 
         GridLayoutManager layoutManager = new GridLayoutManager(getActivity(), 3);
         //LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, false);
@@ -290,6 +319,22 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
                 chooseAlarmMode();
             }
         });
+
+        final ImageView ivSearch = (ImageView) layout.findViewById(R.id.ivSearch);
+        ivSearch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                View layout = inflater.inflate(R.layout.search_view_layout, null);
+                EditText editText = (EditText) layout.findViewById(R.id.etPatternSearch);
+                InputMethodManager manager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                manager.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT);
+                searchPopup(layout);
+                editText.requestFocus();
+                searchFunction(editText);
+            }
+        });
+
         final ImageView ivDelete = (ImageView) layout.findViewById(R.id.ivDelete);
         ivDelete.setTag("ivDelete");
         ivDelete.setOnClickListener(new View.OnClickListener() {
@@ -317,7 +362,7 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
             }
         });
 
-        Button btnImage = (Button) layout.findViewById(R.id.btnImageAdd);
+        ImageButton btnImage = (ImageButton) layout.findViewById(R.id.btnImageAdd);
         btnImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -328,14 +373,79 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
                 }
             }
         });
-        Button btnImageStorage = (Button) layout.findViewById(R.id.btnImageLocal);
-        btnImageStorage.setOnClickListener(new View.OnClickListener() {
+        ImageButton btnPickImage = (ImageButton) layout.findViewById(R.id.btnPickImage);
+        btnPickImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 pickImageFromStorage();
             }
         });
+
+        Button btnPickPdf = (Button) layout.findViewById(R.id.btnPickPdf);
+        btnPickPdf.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                pickPdfFile();
+            }
+        });
+
         mMainPresenter.showTableSetting(layout, view);
+    }
+
+
+    private void searchPopup(View layout) {
+
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+
+        int height = displayMetrics.heightPixels;
+        int width = displayMetrics.widthPixels;
+
+        PopupWindow popup = new PopupWindow(getActivity());
+        popup.setContentView(layout);
+        popup.setWidth(width);
+        popup.setHeight(150);
+        popup.setFocusable(true);
+        popup.setBackgroundDrawable(new BitmapDrawable());
+        popup.setSoftInputMode(PopupWindow.INPUT_METHOD_NEEDED);
+        popup.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+        popup.showAtLocation(layout, Gravity.CENTER_HORIZONTAL, 0, height);
+        popup.setOnDismissListener(new PopupWindow.OnDismissListener() {
+            @Override
+            public void onDismiss() {
+                String str = etContent.getText().toString();
+                etContent.setText(str);
+            }
+        });
+
+    }
+
+    private void searchFunction(final EditText editText) {
+        editText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (!TextUtils.isEmpty(s.toString())) {
+                    String content = etContent.getText().toString();
+                    int searchPos[] = KMPSearch.KMP(content, s.toString());
+                    if (searchPos != null) {
+                        Spannable myTextColor = new SpannableString(content);
+                        for (int i = 0; i < searchPos.length; i++) {
+                            myTextColor.setSpan(new BackgroundColorSpan(android.graphics.Color.YELLOW),
+                                    searchPos[i], searchPos[i] + s.toString().length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        }
+                        etContent.setText(myTextColor);
+                    }
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
     }
 
     private void takePhotoFromCamera(int requestCode) throws IOException {
@@ -356,39 +466,49 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
         }
     }
 
-    private void pickImageFromStorage(){
+    private void pickImageFromStorage() {
         Intent intent = new Intent();
         intent.setType("image/*");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             intent.setAction(Intent.ACTION_OPEN_DOCUMENT);
             intent.addCategory(Intent.CATEGORY_OPENABLE);
-        }
-        else{
+        } else {
             intent.setAction(Intent.ACTION_GET_CONTENT);
         }
         takePhoto_check = false;
         startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_CODE);
     }
 
+    private void pickPdfFile() {
+        Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        intent.setType("application/pdf");
+        startActivityForResult(Intent.createChooser(intent, "Select file"), PICK_PDF_FILE_CODE);
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(resultCode == FragmentActivity.RESULT_OK){
-            if (requestCode == TAKE_PHOTO_CODE  && !TextUtils.isEmpty(currentUri)) {
+        if (resultCode == FragmentActivity.RESULT_OK) {
+            if (requestCode == TAKE_PHOTO_CODE && !TextUtils.isEmpty(currentUri)) {
                 mImagePresenter.addImage(currentUri, mMainPresenter.getCurrentUri());
                 currentUri = "";
             }
-            if(requestCode == PICK_IMAGE_CODE && data.getData() != null){
+            if (requestCode == PICK_IMAGE_CODE && data.getData() != null) {
                 Uri uri = data.getData();
-                try{
+                try {
                     savePickImage(getBitmapFromUri(uri));
-                    if(!TextUtils.isEmpty(currentUri)){
+                    if (!TextUtils.isEmpty(currentUri)) {
                         mImagePresenter.addImage(currentUri, mMainPresenter.getCurrentUri());
                         currentUri = "";
                     }
-                }catch (IOException e){
-                    Log.d("pick_image_storage","miss");
+                } catch (IOException e) {
+                    Log.d("pick_image_storage", "miss");
                 }
 
+            }
+            if (requestCode == PICK_PDF_FILE_CODE && data.getData() != null) {
+                Uri uri = data.getData();
+                Log.d("pick_pdf", "uri: " + uri.toString());
             }
         }
 
@@ -411,7 +531,8 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
         Log.d("takePhoto", "absolutePath:" + currentUri);
         return image;
     }
-    private Bitmap getBitmapFromUri(Uri uri) throws IOException{
+
+    private Bitmap getBitmapFromUri(Uri uri) throws IOException {
         ParcelFileDescriptor parcelFileDescriptor = getActivity().getContentResolver().openFileDescriptor(uri, "r");
         FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
         Bitmap image = BitmapFactory.decodeFileDescriptor(fileDescriptor);
@@ -426,8 +547,6 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
         fos.flush();
         fos.close();
     }
-
-
 
 
     private void setupViewForPasswordFeature(LayoutInflater inflater, final View layoutParent) {
@@ -635,7 +754,6 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
         etContent.setText("");
         btnColor.setTag(null);
     }
-
 
     @Override
     public Context getAppContext() {

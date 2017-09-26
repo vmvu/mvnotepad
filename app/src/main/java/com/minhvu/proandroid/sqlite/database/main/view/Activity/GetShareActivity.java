@@ -71,6 +71,12 @@ public class GetShareActivity extends AppCompatActivity implements View.OnClickL
         btnRemoveTitle = (Button) findViewById(R.id.btnRemoveTitle);
         btnDetail = (Button) findViewById(R.id.btnDetail);
         etTitle.setEnabled(false);
+        btnDetail.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                presenter.onDetailOnClick();
+            }
+        });
 
         btnRemoveTitle.setOnClickListener(new View.OnClickListener() {
             @Override

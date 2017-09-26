@@ -13,6 +13,7 @@ import android.util.Log;
 import com.minhvu.proandroid.sqlite.database.main.presenter.IImagePresenter;
 import com.minhvu.proandroid.sqlite.database.models.data.NoteContract;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -118,7 +119,25 @@ public class ImageModel implements IImageModel {
         if (success > 0) {
             mImageList.remove(position);
             presenter.notifyView();
+            removeImage(imagePath);
         }
+    }
+    private void removeImage(final String imagePath){
+        Thread thread = new Thread(){
+            @Override
+            public void run() {
+                Uri uri = Uri.parse(imagePath);
+                File file = new File((uri.getPath()));
+                if(file.exists()){
+                    if(file.delete()){
+                        Log.d("delete-image", "success");
+                    }
+                }
+            }
+        };
+        thread.start();
+
+
     }
 
 

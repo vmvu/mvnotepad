@@ -36,6 +36,11 @@
     <string name="type_of_switch_repeater">scRepeater</string>
     <string name="type_of_switch_reset">scReset</string>
 
+    <string name="cancel_label">Cancel</string>
+    <string name="password_label">Use Password</string>
+    <string name="unlock_label">Unlock</string>
+    <string name="unlock_tutorial">Touch sensor</string>
+
 
 
 </resources>

@@ -24,5 +24,9 @@
         <item name="android:src">@drawable/ic_close_black_24dp</item>
     </style>
 
+    <style name="ButtonBaseStyle" parent="Widget.AppCompat.Button.Small">
+        <item name="android:background">@android:color/white</item>
+    </style>
+
 
 </resources>

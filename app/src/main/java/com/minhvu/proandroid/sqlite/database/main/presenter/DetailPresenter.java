@@ -111,7 +111,6 @@ public class DetailPresenter extends MvpPresenter<IDetailModel, IDetailShow> imp
             Cursor c = resolver.query(mCurrentUri, new String[]{NoteContract.NoteEntry.COL_PASSWORD}, null, null, null);
             if (c.moveToNext()) {
                 String password = c.getString(c.getColumnIndex(NoteContract.NoteEntry.COL_PASSWORD));
-                Log.d("Lock - UnLock", "pass:" + password);
                 if (TextUtils.isEmpty(password)) {
                     lock.setVisibility(View.VISIBLE);
                     unlock.setVisibility(View.GONE);
@@ -126,7 +125,7 @@ public class DetailPresenter extends MvpPresenter<IDetailModel, IDetailShow> imp
         int popupHeight = 1000;
         int[] local = new int[2];
         parent.getLocationInWindow(local);
-        popupConfiguration(layout, popupWith, popupHeight, local[0], local[1] + 230, Gravity.NO_GRAVITY);
+        popupConfiguration(layout, popupWith, popupHeight, local[0] + 10, local[1] + 167, Gravity.NO_GRAVITY);
     }
 
     @Override
@@ -141,6 +140,9 @@ public class DetailPresenter extends MvpPresenter<IDetailModel, IDetailShow> imp
                 cv.put(NoteContract.NoteEntry.COL_DELETE, "1");
                 boolean isDeleted = model.update(mCurrentUri, cv, null, null);
                 if (isDeleted) {
+                    Intent intent = new Intent(getActivityContext().getString(R.string.broadcast_receiver_pin));
+                    int noteId = Integer.parseInt(mCurrentUri.getPathSegments().get(1));
+                    cancelAlarmAndNotification(intent, noteId);
                     getView().finishIfSelf();
                 }
             }
@@ -252,17 +254,8 @@ public class DetailPresenter extends MvpPresenter<IDetailModel, IDetailShow> imp
         return c;
     }
 
-    private void printLog(EditText title, EditText content, ImageButton color, int typeOfText) {
-        Log.d(LOGTAG, "================ note =============");
-        Log.d(LOGTAG, "title:" + title.getText().toString());
-        Log.d(LOGTAG, "content: " + content.getText().toString());
-        Log.d(LOGTAG, "color: " + getColor((int) color.getTag()));
-        Log.d(LOGTAG, "typeOfText: " + typeOfText);
-        Log.d(LOGTAG, "=============== end note ==========");
-    }
 
     private void saveNoteInternal(EditText title, EditText content, ImageButton color, int typeOfText) {
-        Log.d("Pin", "colorPos4:" + color.getTag());
         Note note = new Note();
         note.setTitle(title.getText().toString() + "");
         note.setContent(content.getText().toString() + "");
@@ -362,13 +355,13 @@ public class DetailPresenter extends MvpPresenter<IDetailModel, IDetailShow> imp
                 return;
             case "sc15Min":
                 long time15Min = System.currentTimeMillis() + 15 * 60000;
-                model.setDataSharePreference(ctx.getString(R.string.PREFS_ALARM_WHEN) + getNoteID(),time15Min + "" );
-                alarm(intent,time15Min , idIntType, false);
+                model.setDataSharePreference(ctx.getString(R.string.PREFS_ALARM_WHEN) + getNoteID(), time15Min + "");
+                alarm(intent, time15Min, idIntType, false);
                 break;
             case "sc30Min":
                 long time30Min = System.currentTimeMillis() + 30 * 60000;
-                model.setDataSharePreference(ctx.getString(R.string.PREFS_ALARM_WHEN) + getNoteID(),time30Min + "" );
-                alarm(intent,time30Min, idIntType, false);
+                model.setDataSharePreference(ctx.getString(R.string.PREFS_ALARM_WHEN) + getNoteID(), time30Min + "");
+                alarm(intent, time30Min, idIntType, false);
                 break;
             case "scAtTime":
                 alarmSpecial(intent, idIntType, false);
@@ -403,15 +396,12 @@ public class DetailPresenter extends MvpPresenter<IDetailModel, IDetailShow> imp
     }
 
     private void alarm(Intent intent, long setTime, int requestCode, boolean isRepeater) {
-        Log.d("Pin", "alarm method");
-
         PendingIntent pi = PendingIntent.getBroadcast(getView().getActivityContext(), requestCode, intent, 0);
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(setTime);
 
         AlarmManager am = (AlarmManager) getView().getActivityContext().getSystemService(Context.ALARM_SERVICE);
         if (isRepeater) {
-            Log.d("Pin", "repeater");
             am.setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pi);
 
         } else {
@@ -424,14 +414,12 @@ public class DetailPresenter extends MvpPresenter<IDetailModel, IDetailShow> imp
     }
 
     private void cancelAlarmAndNotification(Intent intent, int requestCode) {
-        Log.d("Pin", "cancelAlarmAndNotification");
         Context ctx = getView().getActivityContext();
         PendingIntent pi = PendingIntent.getBroadcast(ctx, requestCode, intent, PendingIntent.FLAG_NO_CREATE);
         if (pi != null) {
             AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
             am.cancel(pi);
         }
-        Log.d("Pin", "cancelAlarmAndNotification - pinActivity");
         NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
         nm.cancel(requestCode);
 
@@ -474,7 +462,6 @@ public class DetailPresenter extends MvpPresenter<IDetailModel, IDetailShow> imp
     public void switchCompatOnClick(View view, SwitchCompat[] switchCompatArray) {
         SwitchCompat sc = (SwitchCompat) view;
         if (sc.isChecked()) {
-            Toast.makeText(getView().getActivityContext(), sc.getTag() + "/" + switchCompatArray[5].getTag(), Toast.LENGTH_SHORT).show();
             if (sc.getTag().equals(switchCompatArray[4].getTag())) {
                 sc.setChecked(false);
                 setCheckForSwitch(switchCompatArray, switchCompatArray[5].getTag().toString());

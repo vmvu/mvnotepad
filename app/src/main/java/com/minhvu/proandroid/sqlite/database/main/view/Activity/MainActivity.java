@@ -370,7 +370,7 @@ public class MainActivity extends AppCompatActivity
 
     private void setupInitialize() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle("Tieu de toolbar");
+        toolbar.setTitle("Note pad");
         setSupportActionBar(toolbar);
 
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
@@ -402,7 +402,6 @@ public class MainActivity extends AppCompatActivity
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         if (id != ID_BOOK_LOADER)
             return null;
-        Log.d("Loaf", "onCreateLoader");
         Uri uri = NoteContract.NoteEntry.CONTENT_URI;
         String selection = NoteContract.NoteEntry.COL_DELETE + "=?";
         String[] selectionArgs = new String[]{"0"};
@@ -411,7 +410,6 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        Log.d("Loaf", "onLoadFinished: " + data.getCount());
         bookNoteAdapter.swapData(data);
     }
 

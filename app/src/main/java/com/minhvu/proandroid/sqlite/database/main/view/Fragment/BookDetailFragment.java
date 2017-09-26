@@ -31,19 +31,14 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatImageButton;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.SwitchCompat;
 import android.text.Editable;
-import android.text.Html;
-import android.text.Layout;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.style.BackgroundColorSpan;
-import android.text.style.ForegroundColorSpan;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -80,10 +75,8 @@ import com.minhvu.proandroid.sqlite.database.models.entity.Color;
 
 import java.io.File;
 import java.io.FileDescriptor;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Date;
 
 /**
@@ -91,7 +84,7 @@ import java.util.Date;
  */
 
 public class BookDetailFragment extends Fragment implements IDetailShow, LoaderManager.LoaderCallbacks<Cursor> {
-    private static final String LOGTAG = BookDetailFragment.class.getSimpleName();
+
 
     private IDetailPresenter mMainPresenter;
     private IImagePresenter mImagePresenter;
@@ -134,6 +127,7 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
 
         @Override
         public boolean onSingleTapUp(MotionEvent e) {
+            etContent.setText(etContent.getText().toString());
             etContent.requestFocus();
             mMainPresenter.onViewHasChanged();
             return true;
@@ -217,6 +211,12 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
         });
         etTitle.setOnTouchListener(mTouchListener);
         etContent.setOnTouchListener(mTouchListener);
+        etContent.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                etContent.setText(etContent.getText().toString());
+            }
+        });
 
         etContent.addTextChangedListener(new TextWatcher() {
             String charBefore;
@@ -246,7 +246,7 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
 
 
     private void setup(View layout) {
-        GridLayoutManager staggeredGL = new GridLayoutManager(getActivity(),3);
+        GridLayoutManager staggeredGL = new GridLayoutManager(getActivity(), 3);
         ImageRecyclerView = (RecyclerView) layout.findViewById(R.id.recycler_place_image);
         ImageRecyclerView.setLayoutManager(staggeredGL);
 
@@ -269,7 +269,7 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View layout = layoutInflater.inflate(R.layout.popup_color_table, null);
 
-        final PopupWindow popup = popupConfiguration(layout, popupWidth, popupHeight, local[0] - 210, local[1] + 200, Gravity.NO_GRAVITY);
+        final PopupWindow popup = popupConfiguration(layout, popupWidth, popupHeight, local[0] - 210, local[1] + 170, Gravity.NO_GRAVITY);
 
         GridLayoutManager layoutManager = new GridLayoutManager(getActivity(), 3);
         //LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, false);
@@ -410,13 +410,6 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
         popup.setSoftInputMode(PopupWindow.INPUT_METHOD_NEEDED);
         popup.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         popup.showAtLocation(layout, Gravity.CENTER_HORIZONTAL, 0, height);
-        popup.setOnDismissListener(new PopupWindow.OnDismissListener() {
-            @Override
-            public void onDismiss() {
-                String str = etContent.getText().toString();
-                etContent.setText(str);
-            }
-        });
 
     }
 
@@ -449,15 +442,12 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
     }
 
     private void takePhotoFromCamera(int requestCode) throws IOException {
-        Log.d("takePhoto", "takePhotoFromCamera");
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (intent.resolveActivity(getActivityContext().getPackageManager()) != null) {
             File file = getOutputMediaFile();
             if (file == null) {
-                Log.d("takePhoto", "file is null");
                 return;
             }
-            Log.d("takePhoto", "file_path: " + currentUri);
             Uri photoUri = Uri.fromFile(file);
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
             intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
@@ -502,13 +492,11 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
                         currentUri = "";
                     }
                 } catch (IOException e) {
-                    Log.d("pick_image_storage", "miss");
                 }
 
             }
             if (requestCode == PICK_PDF_FILE_CODE && data.getData() != null) {
                 Uri uri = data.getData();
-                Log.d("pick_pdf", "uri: " + uri.toString());
             }
         }
 
@@ -528,7 +516,6 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         File image = new File(mediaStorageDir.getPath() + File.separator + "IMG_" + timeStamp + ".jpg");
         this.currentUri = "file:" + image.getAbsolutePath();
-        Log.d("takePhoto", "absolutePath:" + currentUri);
         return image;
     }
 
@@ -550,7 +537,6 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
 
 
     private void setupViewForPasswordFeature(LayoutInflater inflater, final View layoutParent) {
-        Log.d("Pin", "vao day");
         final View layout = inflater.inflate(R.layout.popup_password_set, null);
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivityContext());
         builder.setView(layout);
@@ -619,7 +605,6 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
                 mMainPresenter.switchCompatOnClick(v, sc);
             }
         };
-        Log.d("Pin", "after scOnClickListener");
         scPin.setOnClickListener(scOnClickListener);
         sc15Min.setOnClickListener(scOnClickListener);
         sc30Min.setOnClickListener(scOnClickListener);

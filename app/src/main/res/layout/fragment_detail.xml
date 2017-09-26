@@ -20,18 +20,13 @@
             android:layout_margin="0dp"
             android:orientation="vertical">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingLeft="5dp"
-                android:text="Title"
-                android:textSize="10dp" />
+
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:background="#4ce4e2e2">
+                >
 
                 <EditText
                     android:id="@+id/etxtTitle"
@@ -44,9 +39,10 @@
                     android:inputType="textLongMessage"
                     android:gravity="center_vertical"
                     android:background="@android:color/transparent"
-                    android:paddingLeft="5dp"
+                    android:paddingLeft="10dp"
                     android:textColor="#000"
-                    android:textSize="20dp"
+                    android:textStyle="bold"
+                    android:textSize="23dp"
                     tools:text="Tieu de o day" />
 
                 <LinearLayout
@@ -94,19 +90,17 @@
             android:orientation="vertical"
             android:padding="5dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Content"
-                android:textSize="10dp" />
+
 
             <ScrollView
                 android:id="@+id/sv_content_place"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp"
                 android:paddingLeft="5dp"
                 android:paddingRight="5dp"
-                android:background="#73ffffff">
+                android:background="@drawable/rectangle_white">
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

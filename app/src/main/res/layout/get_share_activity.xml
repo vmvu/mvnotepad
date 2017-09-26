@@ -26,9 +26,9 @@
             android:layout_height="40dp"
             android:layout_alignParentRight="true"
             android:layout_gravity="end"
-            android:background="@android:color/transparent"
+            android:background="?attr/selectableItemBackground"
             android:text="@string/detail_label"
-            android:textColor="#0015ff"
+            android:textColor="#ff8400"
             android:textSize="18sp"
             android:textStyle="bold" />
 
@@ -55,7 +55,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#f4f4f4"
+        android:background="#f7f7f7"
         android:orientation="horizontal">
         <Button
             android:id="@+id/btnRemoveTitle"
@@ -92,11 +92,12 @@
 
         <ImageButton
             android:id="@+id/btnInsert"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="30dp"
+            android:layout_height="50dp"
             android:layout_weight="1"
-            android:background="@drawable/bgchoose"
-            android:src="@drawable/ic_check_orange_24dp" />
+            android:background="?attr/selectableItemBackground"
+            android:src="@drawable/ic_create_black_24dp"
+             />
     </LinearLayout>
 
 </LinearLayout>

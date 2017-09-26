@@ -1,1 +1,1 @@
-include ':app', ':demojava', ':HtmlSpanner-master', 'HtmlSpanner'
+include ':app', ':demojava'

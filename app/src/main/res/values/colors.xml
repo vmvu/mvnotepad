@@ -17,14 +17,14 @@
     <color name="purple_header">#8200a6</color>
 
 
-    <color name="backgroundColor_default">#d4ecea</color>
+    <color name="backgroundColor_default">#bfd4ecea</color>
     <color name="red_background">#ffdddf</color>
-    <color name="yellow_background">#feffc9</color>
-    <color name="orange_background">#fce19d</color>
+    <color name="yellow_background">#dffeffc9</color>
+    <color name="orange_background">#dafce19d</color>
     <color name="skyblue_background">#c9d6ff</color>
     <color name="green_background">#d6fdc7</color>
     <color name="brown_background">#edd7a6</color>
-    <color name="pink_background">#ffe9f8</color>
+    <color name="pink_background">#d2ffe9f8</color>
     <color name="purple_background">#f4ccff</color>
 
     <array name="header_color">

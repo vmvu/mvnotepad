@@ -122,7 +122,10 @@ public class DetailPresenter extends MvpPresenter<IDetailModel, IDetailShow> imp
             }
         }
         int popupWith = 130;
-        int popupHeight = 1000;
+        int popupHeight = 610;
+        if(mCurrentUri != null){
+            popupHeight = 900;
+        }
         int[] local = new int[2];
         parent.getLocationInWindow(local);
         popupConfiguration(layout, popupWith, popupHeight, local[0] + 10, local[1] + 167, Gravity.NO_GRAVITY);

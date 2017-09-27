@@ -120,16 +120,18 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
     final GestureDetector gestureDetector = new GestureDetector(getActivity(), new GestureDetector.SimpleOnGestureListener() {
         @Override
         public boolean onSingleTapConfirmed(MotionEvent e) {
-            InputMethodManager manager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-            manager.showSoftInput(etContent, InputMethodManager.SHOW_IMPLICIT);
+                InputMethodManager manager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                manager.showSoftInput(etContent, InputMethodManager.SHOW_IMPLICIT);
             return true;
         }
 
         @Override
         public boolean onSingleTapUp(MotionEvent e) {
-            etContent.setText(etContent.getText().toString());
             etContent.requestFocus();
-            mMainPresenter.onViewHasChanged();
+            int selected = etContent.getSelectionStart();
+            String str = etContent.getText().toString();
+            etContent.setText(str);
+            etContent.setSelection(selected);
             return true;
         }
     });
@@ -211,12 +213,6 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
         });
         etTitle.setOnTouchListener(mTouchListener);
         etContent.setOnTouchListener(mTouchListener);
-        etContent.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                etContent.setText(etContent.getText().toString());
-            }
-        });
 
         etContent.addTextChangedListener(new TextWatcher() {
             String charBefore;
@@ -327,8 +323,6 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
                 LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                 View layout = inflater.inflate(R.layout.search_view_layout, null);
                 EditText editText = (EditText) layout.findViewById(R.id.etPatternSearch);
-                InputMethodManager manager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-                manager.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT);
                 searchPopup(layout);
                 editText.requestFocus();
                 searchFunction(editText);

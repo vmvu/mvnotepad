@@ -40,7 +40,7 @@ public class NoteContract  {
 
         public static String[] getColumnNames(){
             return new String[]{_ID, COL_TITLE, COL_CONTENT, COL_DATE_CREATED, COL_LAST_ON,
-                    COL_PASSWORD, COL_PASSWORD_SALT, COL_COLOR, COL_TYPE_OF_TEXT, COL_ACCOUNT, COL_DELETE};
+                    COL_PASSWORD, COL_PASSWORD_SALT, COL_COLOR, COL_ACCOUNT, COL_DELETE};
         }
 
         public static String[] getColumnNamesForNote(){

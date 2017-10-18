@@ -1,10 +1,8 @@
-package com.minhvu.proandroid.sqlite.database.main.model;
+package com.minhvu.proandroid.sqlite.database.main.model.view;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.net.Uri;
 
-import com.minhvu.proandroid.sqlite.database.main.presenter.IImagePresenter;
+import com.minhvu.proandroid.sqlite.database.main.presenter.view.IImagePresenter;
 
 import java.util.List;
 

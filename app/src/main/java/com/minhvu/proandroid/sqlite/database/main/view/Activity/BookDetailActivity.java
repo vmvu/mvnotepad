@@ -22,6 +22,7 @@ public class BookDetailActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
         Intent intent = getIntent();
+
         Bundle bundle = null;
         if (intent.getData() != null) {
             bundle = new Bundle();
@@ -48,4 +49,6 @@ public class BookDetailActivity extends FragmentActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
     }
+
+
 }

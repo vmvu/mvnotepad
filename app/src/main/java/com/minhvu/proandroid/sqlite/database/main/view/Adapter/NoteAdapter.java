@@ -46,7 +46,7 @@ public class NoteAdapter extends ABookApdater<NoteAdapter.viewHolder> {
         // cau hinh
         LayoutInflater inflater = LayoutInflater.from(mContext);
         boolean shouldAttachToParentImediately = false;
-        View view = inflater.inflate(R.layout.book_item, parent, shouldAttachToParentImediately);
+        View view = inflater.inflate(R.layout.note_item, parent, shouldAttachToParentImediately);
         return new NoteAdapter.viewHolder(view);
     }
 
@@ -105,7 +105,6 @@ public class NoteAdapter extends ABookApdater<NoteAdapter.viewHolder> {
             int keyPos = newData.getColumnIndex(NoteContract.NoteEntry.COL_PASSWORD_SALT);
             int dateCreatedPos = newData.getColumnIndex(NoteContract.NoteEntry.COL_DATE_CREATED);
             int lastUpdatePos = newData.getColumnIndex(NoteContract.NoteEntry.COL_LAST_ON);
-            int typePos = newData.getColumnIndex(NoteContract.NoteEntry.COL_TYPE_OF_TEXT);
             int deletedPos = newData.getColumnIndex(NoteContract.NoteEntry.COL_DELETE);
             do {
                 note = new Note();
@@ -117,7 +116,6 @@ public class NoteAdapter extends ABookApdater<NoteAdapter.viewHolder> {
                 note.setPassSalt(newData.getString(keyPos));
                 note.setDateCreated(Long.parseLong( newData.getString(dateCreatedPos)));
                 note.setLastOn(Long.parseLong(newData.getString(lastUpdatePos)));
-                note.setIdTypeOfText(newData.getInt(typePos));
                 if (newData.getInt(deletedPos) == 1) {
                     note.setDelete(true);
                 }

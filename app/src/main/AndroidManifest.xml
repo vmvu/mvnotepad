@@ -24,7 +24,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".main.view.Activity.MainActivity"
+            android:name=".main.view.Activity.MainActivity2"
             android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -36,7 +36,7 @@
         <activity
             android:name=".main.view.Activity.BookDetailActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:parentActivityName=".main.view.Activity.MainActivity"
+            android:parentActivityName=".main.view.Activity.MainActivity2"
             android:screenOrientation="portrait">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

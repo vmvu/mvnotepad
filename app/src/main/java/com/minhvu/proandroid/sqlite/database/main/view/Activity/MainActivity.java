@@ -21,6 +21,7 @@ import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyProperties;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.ContextCompat;
@@ -29,6 +30,7 @@ import android.support.v4.content.Loader;
 import android.support.v4.content.PermissionChecker;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -44,6 +46,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
@@ -79,6 +82,7 @@ public class MainActivity extends AppCompatActivity
 
     FloatingActionButton fab;
     RecyclerView recyclerView;
+    GridLayoutManager gridLayoutManager;
     private int mPosition = RecyclerView.NO_POSITION;
     private Point point = new Point();
 
@@ -87,7 +91,6 @@ public class MainActivity extends AppCompatActivity
     private KeyGenerator keyGenerator;
     private KeyguardManager keyguardManager;
     private FingerprintManager fingerprintManager;
-
     private final String FINGERPRINT_KEY = "fingerprint_k";
 
 
@@ -99,6 +102,42 @@ public class MainActivity extends AppCompatActivity
 
         getSupportLoaderManager().initLoader(ID_BOOK_LOADER, null, this);
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+        requestPermission();
+    }
+
+    void requestPermission(){
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.USE_FINGERPRINT) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.USE_FINGERPRINT}, 2);
+        }
+    }
+
+    private void setupInitialize() {
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitle("Note pad");
+        setSupportActionBar(toolbar);
+
+        recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
+        // the third parameter reverse a UI list
+        //LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+        gridLayoutManager = new GridLayoutManager(this, 1);
+        recyclerView.setLayoutManager(gridLayoutManager);
+        recyclerView.setHasFixedSize(true);
+
+        //recyclerView.setAdapter(bookAdapter);
+        bookNoteAdapter = new NoteAdapter(this, this);
+        bookNoteAdapter.onRecyclerViewAttached(recyclerView);
+        recyclerView.setAdapter(bookNoteAdapter);
+
+
+        fab = (FloatingActionButton) findViewById(R.id.fabInsert);
+
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, BookDetailActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
     @Override
@@ -365,36 +404,6 @@ public class MainActivity extends AppCompatActivity
             nm.cancel(noteID);
         }
 
-    }
-
-
-    private void setupInitialize() {
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle("Note pad");
-        setSupportActionBar(toolbar);
-
-        recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
-        // the third parameter reverse a UI list
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
-        recyclerView.setLayoutManager(layoutManager);
-        recyclerView.setHasFixedSize(true);
-
-
-        //recyclerView.setAdapter(bookAdapter);
-        bookNoteAdapter = new NoteAdapter(this, this);
-        bookNoteAdapter.onRecyclerViewAttached(recyclerView);
-
-        recyclerView.setAdapter(bookNoteAdapter);
-
-        fab = (FloatingActionButton) findViewById(R.id.fabInsert);
-
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, BookDetailActivity.class);
-                startActivity(intent);
-            }
-        });
     }
 
 

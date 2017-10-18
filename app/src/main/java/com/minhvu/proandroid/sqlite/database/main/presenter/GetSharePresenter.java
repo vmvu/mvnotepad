@@ -1,6 +1,5 @@
 package com.minhvu.proandroid.sqlite.database.main.presenter;
 
-import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -10,24 +9,21 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.minhvu.proandroid.sqlite.database.R;
 import com.minhvu.proandroid.sqlite.database.Utils.DesEncrypter;
-import com.minhvu.proandroid.sqlite.database.main.model.IGetShareModel;
+import com.minhvu.proandroid.sqlite.database.main.model.view.IGetShareModel;
+import com.minhvu.proandroid.sqlite.database.main.presenter.view.IGetSharePresenter;
 import com.minhvu.proandroid.sqlite.database.main.view.Activity.BookDetailActivity;
-import com.minhvu.proandroid.sqlite.database.main.view.Activity.GetShareActivity;
-import com.minhvu.proandroid.sqlite.database.main.view.Activity.GetShareView;
-import com.minhvu.proandroid.sqlite.database.models.data.NoteContract;
+import com.minhvu.proandroid.sqlite.database.main.view.Activity.view.IGetShareActivity;
 import com.minhvu.proandroid.sqlite.database.models.entity.Note;
 
 /**
  * Created by vomin on 9/12/2017.
  */
 
-public class GetSharePresenter extends MvpPresenter<IGetShareModel, GetShareView> implements IGetSharePresenter {
+public class GetSharePresenter extends MvpPresenter<IGetShareModel, IGetShareActivity.View> implements IGetSharePresenter {
     private Uri currentUri = null;
 
     @Override

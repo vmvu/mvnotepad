@@ -17,15 +17,16 @@ import android.widget.Toast;
 
 import com.minhvu.proandroid.sqlite.database.R;
 import com.minhvu.proandroid.sqlite.database.main.model.GetShareModel;
-import com.minhvu.proandroid.sqlite.database.main.model.IGetShareModel;
+import com.minhvu.proandroid.sqlite.database.main.model.view.IGetShareModel;
 import com.minhvu.proandroid.sqlite.database.main.presenter.GetSharePresenter;
-import com.minhvu.proandroid.sqlite.database.main.presenter.IGetSharePresenter;
+import com.minhvu.proandroid.sqlite.database.main.presenter.view.IGetSharePresenter;
+import com.minhvu.proandroid.sqlite.database.main.view.Activity.view.IGetShareActivity;
 
 /**
  * Created by vomin on 9/11/2017.
  */
 
-public class GetShareActivity extends AppCompatActivity implements View.OnClickListener, GetShareView{
+public class GetShareActivity extends AppCompatActivity implements View.OnClickListener, IGetShareActivity.View{
     TextView tvImageCount;
     EditText etTitle;
     EditText etContent;

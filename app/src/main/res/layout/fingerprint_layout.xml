@@ -1,54 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical">
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="30dp"
-        android:textColor="#000"
         android:gravity="center"
         android:text="@string/unlock_label"
-        />
+        android:textColor="#000"
+        android:textSize="30dp" />
+
     <ImageView
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="10dp"
         android:layout_marginBottom="10dp"
-        android:src="@drawable/ic_fingerprint_black_24dp"/>
+        android:layout_marginTop="10dp"
+        android:src="@drawable/ic_fingerprint_black_24dp" />
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
         android:layout_marginBottom="10dp"
-        android:text="@string/unlock_tutorial"/>
+        android:gravity="center_horizontal"
+        android:text="@string/unlock_tutorial" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
+
         <Button
             android:id="@+id/btnCancel"
             android:layout_width="0dp"
             android:layout_height="50dp"
             android:layout_weight="1"
             android:background="?attr/selectableItemBackground"
-            android:text="@string/cancel_label"/>
+            android:text="@string/cancel_label" />
+
         <View
             android:layout_width="1dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="10dp"
             android:layout_height="match_parent"
-            android:background="#000"/>
+            android:layout_marginBottom="10dp"
+            android:layout_marginTop="10dp"
+            android:background="#000" />
+
         <Button
             android:id="@+id/btnUsePassword"
             android:layout_width="0dp"
             android:layout_height="50dp"
             android:layout_weight="1"
             android:background="?attr/selectableItemBackground"
-            android:text="@string/password_label"/>
+            android:text="@string/password_label" />
 
     </LinearLayout>
 

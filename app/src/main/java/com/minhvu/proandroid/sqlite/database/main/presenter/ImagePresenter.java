@@ -10,26 +10,23 @@ import android.view.View;
 
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.minhvu.proandroid.sqlite.database.R;
-import com.minhvu.proandroid.sqlite.database.main.model.IImageModel;
-import com.minhvu.proandroid.sqlite.database.main.view.Fragment.IImageView;
+import com.minhvu.proandroid.sqlite.database.main.model.view.IImageModel;
+import com.minhvu.proandroid.sqlite.database.main.presenter.view.IImagePresenter;
+import com.minhvu.proandroid.sqlite.database.main.view.Adapter.ImageAdapter;
+import com.minhvu.proandroid.sqlite.database.main.view.Fragment.view.IDetailFragment;
 
-/**
- * Created by vomin on 9/6/2017.
- */
-
-public class ImagePresenter extends MvpPresenter<IImageModel, IImageView> implements IImagePresenter {
+public class ImagePresenter extends MvpPresenter<IImageModel, IDetailFragment.ImageView> implements IImagePresenter {
 
     @Override
     public int getImagesCount() {
         return model.getCount();
     }
 
-
     @Override
-    public void onBindViewHolder(final SimpleDraweeView imageView, final int position) {
+    public void onBindViewHolder(final ImageAdapter.ImageViewHolder holder, final int position) {
         String path = model.getImage(position);
         Uri uri  = Uri.parse(path);
-        imageView.setImageURI(uri);
+        holder.imageView.setImageURI(uri);
     }
 
 
@@ -47,8 +44,13 @@ public class ImagePresenter extends MvpPresenter<IImageModel, IImageView> implem
         builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                model.deleteImage(getView().getActivityContext(), path, position);
-                dialog.dismiss();
+                try{
+                    model.deleteImage(getView().getActivityContext(), path, position);
+                }finally {
+                    dialog.dismiss();
+                }
+
+
             }
         });
         builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -59,6 +61,16 @@ public class ImagePresenter extends MvpPresenter<IImageModel, IImageView> implem
         });
         AlertDialog dialog = builder.create();
         dialog.show();
+    }
+
+    @Override
+    public void deleteAllImage(int noteID) {
+        try{
+            model.deleteAllImages(getView().getActivityContext(), noteID);
+        }finally {
+
+        }
+
     }
 
     @Override

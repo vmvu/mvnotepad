@@ -1,4 +1,4 @@
-package com.minhvu.proandroid.sqlite.database.main.presenter;
+package com.minhvu.proandroid.sqlite.database.main.presenter.view;
 
 import android.content.Context;
 import android.net.Uri;
@@ -6,12 +6,11 @@ import android.support.v7.widget.SwitchCompat;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
-import com.minhvu.proandroid.sqlite.database.main.model.IDetailModel;
-import com.minhvu.proandroid.sqlite.database.main.view.Fragment.IDetailShow;
+import com.minhvu.proandroid.sqlite.database.main.model.view.IDetailModel;
+import com.minhvu.proandroid.sqlite.database.main.view.Fragment.view.IDetailFragment;
 
 /**
  * Created by vomin on 8/24/2017.
@@ -20,7 +19,7 @@ import com.minhvu.proandroid.sqlite.database.main.view.Fragment.IDetailShow;
 public interface IDetailPresenter {
     Context getAppContext();
     Context getActivityContext();
-    void bindView(IDetailShow view);
+    void bindView(IDetailFragment.View view);
     void setModel(IDetailModel model);
     void onDestroy(boolean isChangeConfiguration);
     void setCurrentUri(Uri currentUri);
@@ -37,10 +36,13 @@ public interface IDetailPresenter {
 
     void handleForAlarms(SwitchCompat[] switchCompatArray, View layout);
     void switchCompatOnClick(View view, SwitchCompat[] switchCompatArray);
+    void switchCompatReset(View view, SwitchCompat[] switchCompatArray);
     void alarmSpecificSetup(TextView fromDate, TextView toDate, TimePicker timePicker);
     void alarmSpecificSetup(TextView fromDate, TimePicker timePicker);
     void alarmSpecificHandle(SwitchCompat[] switchCompatArray, TextView fromDate, TextView toDate,TimePicker timePicker);
     void alarmSpecificHandle(SwitchCompat[] switchCompatArray, TextView fromDate,TimePicker timePicker, boolean isAllDate);
+
+    void activePrompt(EditText title, EditText content);
 
     void alarmButtonShowDateTimePicker(TextView textView);
 

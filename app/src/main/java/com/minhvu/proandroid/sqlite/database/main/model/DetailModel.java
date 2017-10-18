@@ -1,19 +1,12 @@
 package com.minhvu.proandroid.sqlite.database.main.model;
 
-import android.content.ContentProvider;
 import android.content.ContentResolver;
-import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.net.Uri;
 
-import com.minhvu.proandroid.sqlite.database.main.presenter.IDetailPresenter;
-import com.minhvu.proandroid.sqlite.database.models.data.NoteContract;
-import com.minhvu.proandroid.sqlite.database.models.entity.Note;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.minhvu.proandroid.sqlite.database.main.model.view.IDetailModel;
+import com.minhvu.proandroid.sqlite.database.main.presenter.view.IDetailPresenter;
 
 /**
  * Created by vomin on 8/26/2017.
@@ -49,7 +42,7 @@ public class DetailModel implements IDetailModel {
 
     @Override
     public String getDataSharePreference( String key) {
-        return mPreferences.getString(key, null);
+        return mPreferences.getString(key, "");
     }
 
     @Override

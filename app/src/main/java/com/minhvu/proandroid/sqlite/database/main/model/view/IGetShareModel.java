@@ -1,8 +1,6 @@
-package com.minhvu.proandroid.sqlite.database.main.model;
+package com.minhvu.proandroid.sqlite.database.main.model.view;
 
-import android.net.Uri;
-
-import com.minhvu.proandroid.sqlite.database.main.presenter.IGetSharePresenter;
+import com.minhvu.proandroid.sqlite.database.main.presenter.view.IGetSharePresenter;
 import com.minhvu.proandroid.sqlite.database.models.entity.Note;
 
 /**

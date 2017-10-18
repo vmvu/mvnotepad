@@ -3,6 +3,7 @@ package com.minhvu.proandroid.sqlite.database.main.view.Fragment;
 import android.Manifest;
 import android.app.DatePickerDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -17,9 +18,9 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.ParcelFileDescriptor;
 import android.os.StrictMode;
+import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
@@ -47,7 +48,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -61,29 +62,33 @@ import android.widget.Toast;
 import com.minhvu.proandroid.sqlite.database.R;
 import com.minhvu.proandroid.sqlite.database.Utils.KMPSearch;
 import com.minhvu.proandroid.sqlite.database.main.model.DetailModel;
-import com.minhvu.proandroid.sqlite.database.main.model.IDetailModel;
-import com.minhvu.proandroid.sqlite.database.main.model.IImageModel;
+import com.minhvu.proandroid.sqlite.database.main.model.view.IDetailModel;
+import com.minhvu.proandroid.sqlite.database.main.model.view.IImageModel;
 import com.minhvu.proandroid.sqlite.database.main.model.ImageModel;
 import com.minhvu.proandroid.sqlite.database.main.presenter.DetailPresenter;
-import com.minhvu.proandroid.sqlite.database.main.presenter.IDetailPresenter;
-import com.minhvu.proandroid.sqlite.database.main.presenter.IImagePresenter;
+import com.minhvu.proandroid.sqlite.database.main.presenter.view.IDetailPresenter;
+import com.minhvu.proandroid.sqlite.database.main.presenter.view.IImagePresenter;
 import com.minhvu.proandroid.sqlite.database.main.presenter.ImagePresenter;
 import com.minhvu.proandroid.sqlite.database.main.view.Adapter.ColorAdapter;
 import com.minhvu.proandroid.sqlite.database.main.view.Adapter.ImageAdapter;
+import com.minhvu.proandroid.sqlite.database.main.view.Fragment.view.IDetailFragment;
 import com.minhvu.proandroid.sqlite.database.models.data.NoteContract;
 import com.minhvu.proandroid.sqlite.database.models.entity.Color;
 
 import java.io.File;
 import java.io.FileDescriptor;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Date;
 
 /**
  * Created by vomin on 8/5/2017.
  */
 
-public class BookDetailFragment extends Fragment implements IDetailShow, LoaderManager.LoaderCallbacks<Cursor> {
+public class BookDetailFragment extends Fragment implements IDetailFragment.View, LoaderManager.LoaderCallbacks<Cursor>, ImageAdapter.IImageAdapter, IDetailFragment.ImageView {
 
 
     private IDetailPresenter mMainPresenter;
@@ -120,8 +125,8 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
     final GestureDetector gestureDetector = new GestureDetector(getActivity(), new GestureDetector.SimpleOnGestureListener() {
         @Override
         public boolean onSingleTapConfirmed(MotionEvent e) {
-                InputMethodManager manager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-                manager.showSoftInput(etContent, InputMethodManager.SHOW_IMPLICIT);
+            InputMethodManager manager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+            manager.showSoftInput(etContent, InputMethodManager.SHOW_IMPLICIT);
             return true;
         }
 
@@ -132,6 +137,7 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
             String str = etContent.getText().toString();
             etContent.setText(str);
             etContent.setSelection(selected);
+            mMainPresenter.onViewHasChanged();
             return true;
         }
     });
@@ -156,12 +162,7 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
         mModel.setPresenter(mMainPresenter);
         //
         //getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
-        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.CAMERA}, 0);
-        }
-        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-        }
+
         StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
         StrictMode.setVmPolicy(builder.build());
     }
@@ -181,6 +182,7 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
         btnColor.setTag(0);
         viewGroup.setBackgroundColor(getResources().getColor(R.color.backgroundColor_default));
         setup(layout);
+        //
 
 
         //restore
@@ -251,7 +253,7 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
         mImagePresenter.setModel(model);
         model.setPresenter(mImagePresenter);
         mImagePresenter.onLoadImages(getActivityContext(), mMainPresenter.getCurrentUri());
-        imageAdapter = new ImageAdapter(getActivityContext(), mImagePresenter);
+        imageAdapter = new ImageAdapter(this);
         ImageRecyclerView.setAdapter(imageAdapter);
     }
 
@@ -360,11 +362,7 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
         btnImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                try {
-                    takePhotoFromCamera(TAKE_PHOTO_CODE);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                takePhotoFromCamera(TAKE_PHOTO_CODE);
             }
         });
         ImageButton btnPickImage = (ImageButton) layout.findViewById(R.id.btnPickImage);
@@ -375,15 +373,20 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
             }
         });
 
-        Button btnPickPdf = (Button) layout.findViewById(R.id.btnPickPdf);
+        ImageButton btnPickPdf = (ImageButton) layout.findViewById(R.id.btnPickPdf);
         btnPickPdf.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 pickPdfFile();
             }
         });
+        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+           btnPickImage.setVisibility(View.GONE);
+        }
 
         mMainPresenter.showTableSetting(layout, view);
+
+        //file:/storage/emulated/0/DCIM/mvnote/PDF_20171006_231300.pdf
     }
 
 
@@ -404,7 +407,6 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
         popup.setSoftInputMode(PopupWindow.INPUT_METHOD_NEEDED);
         popup.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         popup.showAtLocation(layout, Gravity.CENTER_HORIZONTAL, 0, height);
-
     }
 
     private void searchFunction(final EditText editText) {
@@ -435,7 +437,7 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
         });
     }
 
-    private void takePhotoFromCamera(int requestCode) throws IOException {
+    private void takePhotoFromCamera(int requestCode) {
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (intent.resolveActivity(getActivityContext().getPackageManager()) != null) {
             File file = getOutputMediaFile();
@@ -467,6 +469,7 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
         Intent intent = new Intent();
         intent.setAction(Intent.ACTION_GET_CONTENT);
         intent.setType("application/pdf");
+        intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
         startActivityForResult(Intent.createChooser(intent, "Select file"), PICK_PDF_FILE_CODE);
     }
 
@@ -485,12 +488,17 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
                         mImagePresenter.addImage(currentUri, mMainPresenter.getCurrentUri());
                         currentUri = "";
                     }
-                } catch (IOException e) {
+                } catch (IOException ignored) {
                 }
 
             }
             if (requestCode == PICK_PDF_FILE_CODE && data.getData() != null) {
                 Uri uri = data.getData();
+                String pdfFilePath = loadPDF(uri);
+                if(!TextUtils.isEmpty(pdfFilePath)){
+
+                }
+                currentUri = "";
             }
         }
 
@@ -498,7 +506,7 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
     }
 
     // this section is for camera features
-    private File getOutputMediaFile() throws IOException {
+    private File getOutputMediaFile() {
         File mediaStorageDir = new File(getActivityContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES), "mvnote");
         boolean success = true;
         if (!mediaStorageDir.exists()) {
@@ -508,9 +516,25 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
             return null;
         }
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        File image = new File(mediaStorageDir.getPath() + File.separator + "IMG_" + timeStamp + ".jpg");
-        this.currentUri = "file:" + image.getAbsolutePath();
-        return image;
+        File imageFile = new File(mediaStorageDir.getPath() + File.separator + "IMG_" + timeStamp + ".jpg");
+        this.currentUri = "file:" + imageFile.getAbsolutePath();
+        return imageFile;
+    }
+
+    private File getOutputDocumentFile(){
+        //File documentStorageDir = new File(getActivityContext().getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), "mvnote");
+        File documentStorageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM), "mvnote");
+        boolean success = true;
+        if (!documentStorageDir.exists()) {
+            success = documentStorageDir.mkdirs();
+        }
+        if (!success) {
+            return null;
+        }
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        File documentFile = new File(documentStorageDir.getPath() + File.separator + "PDF_" + timeStamp + ".pdf");
+        this.currentUri = "file:" + documentFile.getAbsolutePath();
+        return documentFile;
     }
 
     private Bitmap getBitmapFromUri(Uri uri) throws IOException {
@@ -527,6 +551,37 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
         fos.flush();
         fos.close();
+    }
+
+    private String loadPDF(Uri uri)  {
+        boolean isDocument = DocumentsContract.isDocumentUri(getActivityContext(), uri);
+        if(!isDocument){
+            return "";
+        }
+        try{
+            ParcelFileDescriptor parcelFileDescriptor = getActivity().getContentResolver().openFileDescriptor(uri, "r");
+            FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
+            FileInputStream fis = new FileInputStream(fileDescriptor);
+            FileOutputStream fos = new FileOutputStream(getOutputDocumentFile());
+            copyFile(fis, fos);
+            fis.close();
+            fis = null;
+            fos.flush();
+            fos.close();
+            fos = null;
+            return currentUri;
+        }catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
+    private void copyFile(InputStream is, OutputStream out) throws IOException {
+        byte[] buffer=  new byte[1024];
+        int read;
+        while((read = is.read(buffer)) != -1){
+            out.write(buffer,0,read);
+        }
     }
 
 
@@ -563,8 +618,6 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
         });
 
         dialog.show();
-
-
     }
 
     private void chooseAlarmMode() {
@@ -575,12 +628,20 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
         AlertDialog dialog = builder.create();
         dialog.show();
 
+        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                mMainPresenter.activePrompt(etTitle, etContent);
+            }
+        });
+
         final SwitchCompat scPin = (SwitchCompat) layout.findViewById(R.id.scPin);
         final SwitchCompat sc15Min = (SwitchCompat) layout.findViewById(R.id.sc15Minute);
         final SwitchCompat sc30Min = (SwitchCompat) layout.findViewById(R.id.sc30Minute);
         final SwitchCompat scAtTime = (SwitchCompat) layout.findViewById(R.id.scAtTime);
         final SwitchCompat scRepeat = (SwitchCompat) layout.findViewById(R.id.scRepeat);
         final SwitchCompat scReset = (SwitchCompat) layout.findViewById(R.id.scReset);
+
 
         scPin.setTag(getResources().getString(R.string.type_of_switch_pin));
         sc15Min.setTag(getResources().getString(R.string.type_of_switch_15min));
@@ -589,22 +650,45 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
         scRepeat.setTag(getResources().getString(R.string.type_of_switch_repeater));
         scReset.setTag(getResources().getString(R.string.type_of_switch_reset));
 
+
         final SwitchCompat[] sc = new SwitchCompat[]{scPin, sc15Min, sc30Min, scAtTime, scRepeat, scReset};
 
         mMainPresenter.handleForAlarms(sc, layout);
 
-        View.OnClickListener scOnClickListener = new View.OnClickListener() {
+
+        View.OnTouchListener onTouchListener = new View.OnTouchListener() {
             @Override
-            public void onClick(View v) {
-                mMainPresenter.switchCompatOnClick(v, sc);
+            public boolean onTouch(View v, MotionEvent event) {
+                final View view = v;
+                GestureDetector gd = new GestureDetector(getActivityContext(), new GestureDetector.SimpleOnGestureListener() {
+                    @Override
+                    public void onShowPress(MotionEvent e) {
+                        mMainPresenter.switchCompatOnClick(view, sc);
+                    }
+                });
+                return gd.onTouchEvent(event);
             }
         };
-        scPin.setOnClickListener(scOnClickListener);
-        sc15Min.setOnClickListener(scOnClickListener);
-        sc30Min.setOnClickListener(scOnClickListener);
-        scAtTime.setOnClickListener(scOnClickListener);
-        scRepeat.setOnClickListener(scOnClickListener);
-        scReset.setOnClickListener(scOnClickListener);
+        CompoundButton.OnCheckedChangeListener onCheckedChangeListener = new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                mMainPresenter.switchCompatReset((View) buttonView, sc);
+            }
+        };
+
+        scPin.setOnTouchListener(onTouchListener);
+        sc15Min.setOnTouchListener(onTouchListener);
+        sc30Min.setOnTouchListener(onTouchListener);
+        scAtTime.setOnTouchListener(onTouchListener);
+        scRepeat.setOnTouchListener(onTouchListener);
+        scReset.setOnTouchListener(onTouchListener);
+
+        scPin.setOnCheckedChangeListener(onCheckedChangeListener);
+        sc15Min.setOnCheckedChangeListener(onCheckedChangeListener);
+        sc30Min.setOnCheckedChangeListener(onCheckedChangeListener);
+        scAtTime.setOnCheckedChangeListener(onCheckedChangeListener);
+        scRepeat.setOnCheckedChangeListener(onCheckedChangeListener);
+        scReset.setOnCheckedChangeListener(onCheckedChangeListener);
     }
 
 
@@ -689,6 +773,10 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
     public void onPause() {
         super.onPause();
         mMainPresenter.onPause(etTitle, etContent, btnColor, 1, takePhoto_check);
+        Intent intent = new Intent();
+        if(mMainPresenter.getCurrentUri() != null){
+            intent.putExtra("newnote", true);
+        }
     }
 
     @Override
@@ -745,6 +833,11 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
     }
 
     @Override
+    public void notifyUpdate() {
+        imageAdapter.notifyDataSetChanged();
+    }
+
+    @Override
     public void showToast(Toast toast) {
         toast.show();
     }
@@ -766,4 +859,25 @@ public class BookDetailFragment extends Fragment implements IDetailShow, LoaderM
         getActivity().finish();
     }
 
+    @Override
+    public void onClick(View view, int position) {
+        mImagePresenter.onImageClick(position);
+    }
+
+    @Override
+    public View onCreateViewHolder(ViewGroup parent) {
+        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+        View layout = inflater.inflate(R.layout.image_small_item, parent, false);
+        return layout;
+    }
+
+    @Override
+    public void onBindViewHolder(ImageAdapter.ImageViewHolder holder, int position) {
+        mImagePresenter.onBindViewHolder(holder, position);
+    }
+
+    @Override
+    public int getDataCount() {
+        return mImagePresenter.getImagesCount();
+    }
 }

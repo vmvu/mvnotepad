@@ -10,7 +10,8 @@ import android.graphics.Matrix;
 import android.net.Uri;
 import android.util.Log;
 
-import com.minhvu.proandroid.sqlite.database.main.presenter.IImagePresenter;
+import com.minhvu.proandroid.sqlite.database.main.model.view.IImageModel;
+import com.minhvu.proandroid.sqlite.database.main.presenter.view.IImagePresenter;
 import com.minhvu.proandroid.sqlite.database.models.data.NoteContract;
 
 import java.io.File;
@@ -27,6 +28,15 @@ public class ImageModel implements IImageModel {
 
     public ImageModel() {
         mImageList = new ArrayList<>();
+    }
+    public ImageModel(Context context, int noteID) {
+        mImageList = new ArrayList<>();
+        try{
+            loadImages(context, noteID);
+        }finally {
+
+        }
+
     }
 
 

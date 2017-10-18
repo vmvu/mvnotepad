@@ -114,7 +114,7 @@
                             android:layout_height="wrap_content"
                             android:background="@android:color/transparent"
                             android:inputType="textMultiLine"
-                            android:textColor="#000" />
+                            android:textColor="#000000" />
                     </ScrollView>
 
                     <android.support.v7.widget.RecyclerView
@@ -125,6 +125,8 @@
                         android:scrollbars="vertical">
 
                     </android.support.v7.widget.RecyclerView>
+
+
                 </LinearLayout>
 
 

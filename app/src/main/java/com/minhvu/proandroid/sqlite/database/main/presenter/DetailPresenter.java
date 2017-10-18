@@ -13,7 +13,6 @@ import android.database.Cursor;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Build;
-import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.SwitchCompat;
 import android.text.TextUtils;
@@ -31,8 +30,9 @@ import android.widget.Toast;
 import com.minhvu.proandroid.sqlite.database.R;
 import com.minhvu.proandroid.sqlite.database.Utils.DateTimeUtils;
 import com.minhvu.proandroid.sqlite.database.Utils.DesEncrypter;
-import com.minhvu.proandroid.sqlite.database.main.model.IDetailModel;
-import com.minhvu.proandroid.sqlite.database.main.view.Fragment.IDetailShow;
+import com.minhvu.proandroid.sqlite.database.main.model.view.IDetailModel;
+import com.minhvu.proandroid.sqlite.database.main.presenter.view.IDetailPresenter;
+import com.minhvu.proandroid.sqlite.database.main.view.Fragment.view.IDetailFragment;
 import com.minhvu.proandroid.sqlite.database.models.data.NoteContract;
 import com.minhvu.proandroid.sqlite.database.models.entity.Note;
 
@@ -42,7 +42,7 @@ import java.util.Calendar;
  * Created by vomin on 8/24/2017.
  */
 
-public class DetailPresenter extends MvpPresenter<IDetailModel, IDetailShow> implements IDetailPresenter {
+public class DetailPresenter extends MvpPresenter<IDetailModel, IDetailFragment.View> implements IDetailPresenter {
     private static final String LOGTAG = "DetailPresenter";
     private Uri mCurrentUri = null;
     private boolean mHasChange = false;
@@ -122,9 +122,9 @@ public class DetailPresenter extends MvpPresenter<IDetailModel, IDetailShow> imp
             }
         }
         int popupWith = 130;
-        int popupHeight = 610;
+        int popupHeight = 630;
         if(mCurrentUri != null){
-            popupHeight = 900;
+            popupHeight = 920;
         }
         int[] local = new int[2];
         parent.getLocationInWindow(local);
@@ -146,6 +146,7 @@ public class DetailPresenter extends MvpPresenter<IDetailModel, IDetailShow> imp
                     Intent intent = new Intent(getActivityContext().getString(R.string.broadcast_receiver_pin));
                     int noteId = Integer.parseInt(mCurrentUri.getPathSegments().get(1));
                     cancelAlarmAndNotification(intent, noteId);
+                    cancelNotification(noteId);
                     getView().finishIfSelf();
                 }
             }
@@ -310,46 +311,31 @@ public class DetailPresenter extends MvpPresenter<IDetailModel, IDetailShow> imp
     }
 
 
-    @Nullable
-    private Note queryNote(Uri uri, String[] projection, String where, String[] whereArgs) {
-        ContentResolver contentResolver = getView().getActivityContext().getContentResolver();
-        Cursor c = contentResolver.query(uri, projection, where, whereArgs, null);
-        Note note = new Note();
-        if (c.moveToFirst()) {
-            note.setTitle(c.getColumnName(c.getColumnIndex(NoteContract.NoteEntry.COL_TITLE)));
-            note.setContent(c.getColumnName(c.getColumnIndex(NoteContract.NoteEntry.COL_CONTENT)));
-            note.setIdColor(c.getInt(c.getColumnIndex(NoteContract.NoteEntry.COL_COLOR)));
-            note.setPassword(c.getString(c.getColumnIndex(NoteContract.NoteEntry.COL_PASSWORD)));
-            return note;
-        }
-        c.close();
-        return null;
-    }
+
 
     //===============================================
+    @Override
+    public  void activePrompt(EditText title, EditText content) {
+        if(mCurrentUri == null){
+            return;
+        }
 
-    private void activeNotification() {
-        int idIntType = Integer.parseInt(getNoteID());
         String typeOfSwitch = model.getDataSharePreference(
-                getView().getActivityContext().getString(R.string.PREFS_ALARM_SWITCH_KEY) + getNoteID()).trim();
+                getActivityContext().getString(R.string.PREFS_ALARM_SWITCH_KEY) + getNoteID()).trim();
         if (TextUtils.isEmpty(typeOfSwitch)) {
             return;
         }
 
         Context ctx = getView().getActivityContext();
-        String action_broadcast = ctx.getString(R.string.broadcast_receiver_pin);
-        String[] selection = new String[]{NoteContract.NoteEntry.COL_TITLE,
-                NoteContract.NoteEntry.COL_CONTENT, NoteContract.NoteEntry.COL_COLOR, NoteContract.NoteEntry.COL_PASSWORD};
-        Note note = queryNote(mCurrentUri, selection, null, null);
 
+        String action_broadcast = ctx.getString(R.string.broadcast_receiver_pin);
         Intent intent = new Intent(action_broadcast);
         intent.putExtra(ctx.getString(R.string.notify_note_uri), mCurrentUri.toString());
-        intent.putExtra(ctx.getString(R.string.notify_note_title), note.getTitle());
-        if (!TextUtils.isEmpty(note.getPassword())) {
-            intent.putExtra(ctx.getString(R.string.notify_note_content), note.getContent());
-        }
-        intent.putExtra(ctx.getString(R.string.notify_note_color), note.getIdColor());
+        intent.putExtra(ctx.getString(R.string.notify_note_title), title.getText().toString());
+
         intent.putExtra(ctx.getString(R.string.notify_note_pin), false);
+
+        int nodeID_int = Integer.parseInt(getNoteID());
 
         switch (typeOfSwitch) {
             case "scPin":
@@ -359,23 +345,28 @@ public class DetailPresenter extends MvpPresenter<IDetailModel, IDetailShow> imp
             case "sc15Min":
                 long time15Min = System.currentTimeMillis() + 15 * 60000;
                 model.setDataSharePreference(ctx.getString(R.string.PREFS_ALARM_WHEN) + getNoteID(), time15Min + "");
-                alarm(intent, time15Min, idIntType, false);
+                cancelNotification(nodeID_int);
+                alarm(intent, time15Min, nodeID_int, false);
                 break;
             case "sc30Min":
                 long time30Min = System.currentTimeMillis() + 30 * 60000;
                 model.setDataSharePreference(ctx.getString(R.string.PREFS_ALARM_WHEN) + getNoteID(), time30Min + "");
-                alarm(intent, time30Min, idIntType, false);
+                cancelNotification(nodeID_int);
+                alarm(intent, time30Min, nodeID_int, false);
                 break;
             case "scAtTime":
-                alarmSpecial(intent, idIntType, false);
+                alarmSpecial(intent, nodeID_int, false);
+                cancelNotification(nodeID_int);
                 break;
             case "scRepeater":
                 intent.putExtra(ctx.getString(R.string.PREFS_ALARM_TO_DATE),
                         model.getDataSharePreference(ctx.getString(R.string.PREFS_ALARM_TO_DATE) + getNoteID()));
-                alarmSpecial(intent, idIntType, true);
+                cancelNotification(nodeID_int);
+                alarmSpecial(intent, nodeID_int, true);
                 break;
             default:
-                cancelAlarmAndNotification(intent, idIntType);
+                cancelAlarmAndNotification(intent, nodeID_int);
+                cancelNotification(nodeID_int);
                 break;
         }
     }
@@ -415,38 +406,25 @@ public class DetailPresenter extends MvpPresenter<IDetailModel, IDetailShow> imp
             } else am.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pi);
         }
     }
+    private void cancelNotification(int requestCode){
+        NotificationManager nm = (NotificationManager) getActivityContext().getSystemService(Context.NOTIFICATION_SERVICE);
+        nm.cancel(requestCode);
+    }
 
     private void cancelAlarmAndNotification(Intent intent, int requestCode) {
-        Context ctx = getView().getActivityContext();
-        PendingIntent pi = PendingIntent.getBroadcast(ctx, requestCode, intent, PendingIntent.FLAG_NO_CREATE);
+        PendingIntent pi = PendingIntent.getBroadcast(getActivityContext(), requestCode, intent, PendingIntent.FLAG_NO_CREATE);
         if (pi != null) {
-            AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
+            AlarmManager am = (AlarmManager) getActivityContext().getSystemService(Context.ALARM_SERVICE);
             am.cancel(pi);
         }
-        NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
-        nm.cancel(requestCode);
-
         //clear
-        saveStateSwitch(ctx.getString(R.string.PREFS_ALARM_FROM_DATE), "");
-        saveStateSwitch(ctx.getString(R.string.PREFS_ALARM_TO_DATE), "");
-        saveStateSwitch(ctx.getString(R.string.PREFS_ALARM_WHEN), "");
+        saveStateSwitch(getActivityContext().getString(R.string.PREFS_ALARM_FROM_DATE), "");
+        saveStateSwitch(getActivityContext().getString(R.string.PREFS_ALARM_TO_DATE), "");
+        saveStateSwitch(getActivityContext().getString(R.string.PREFS_ALARM_WHEN), "");
     }
-
-
-    @Override
-    public void handleForAlarms(SwitchCompat[] switchCompatArray, View layout) {
-        //[0]pin - [1]sc15Min - [2]sc30Min - [3]scWhen - [4]scAllDay - [5]scReset
-        String stateSwitch = model.getDataSharePreference(
-                getView().getActivityContext().getString(R.string.PREFS_ALARM_SWITCH_KEY) + getNoteID());
-        if (TextUtils.isEmpty(stateSwitch) || stateSwitch.equals(switchCompatArray[5].getTag().toString())) {
-            switchCompatArray[5].setChecked(true);//scReset
-        } else {
-            setCheckForSwitch(switchCompatArray, stateSwitch);
-        }
-    }
-
     private void setCheckForSwitch(SwitchCompat[] sc, String switchState) {
         for (SwitchCompat s : sc) {
+            boolean checked = s.isChecked();
             if (s.getTag().toString().equals(switchState)) {
                 s.setChecked(true);
                 saveStateSwitch(getView().getActivityContext().getString(R.string.PREFS_ALARM_SWITCH_KEY), switchState);
@@ -462,27 +440,42 @@ public class DetailPresenter extends MvpPresenter<IDetailModel, IDetailShow> imp
     }
 
     @Override
+    public void handleForAlarms(SwitchCompat[] switchCompatArray, View layout) {
+        //[0]pin - [1]sc15Min - [2]sc30Min - [3]scWhen - [4]scAllDay - [5]scReset
+        String stateSwitch = model.getDataSharePreference(
+               getActivityContext().getString(R.string.PREFS_ALARM_SWITCH_KEY) + getNoteID());
+        if (TextUtils.isEmpty(stateSwitch) || stateSwitch.equals(getActivityContext().getString(R.string.type_of_switch_reset))) {
+            switchCompatArray[5].setChecked(true);//scReset
+        } else {
+            setCheckForSwitch(switchCompatArray, stateSwitch);
+        }
+    }
+    @Override
+    public void switchCompatReset(View view, SwitchCompat[] switchCompatArray){
+        String state = model.getDataSharePreference(getActivityContext().getString(R.string.PREFS_ALARM_SWITCH_KEY) + getNoteID());
+        setCheckForSwitch(switchCompatArray, state);
+    }
+
+    @Override
     public void switchCompatOnClick(View view, SwitchCompat[] switchCompatArray) {
         SwitchCompat sc = (SwitchCompat) view;
-        if (sc.isChecked()) {
-            if (sc.getTag().equals(switchCompatArray[4].getTag())) {
-                sc.setChecked(false);
-                setCheckForSwitch(switchCompatArray, switchCompatArray[5].getTag().toString());
+        if (!sc.isChecked()) {
+            if (sc.getTag().toString().equals(getActivityContext().getString(R.string.type_of_switch_repeater))) {
+                saveStateSwitch(getActivityContext().getString(R.string.PREFS_ALARM_SWITCH_KEY),
+                        getActivityContext().getString(R.string.type_of_switch_reset));
                 getView().showAlarmSpecial(true, switchCompatArray, sc.getTag().toString());
-            } else if (sc.getTag().equals(switchCompatArray[3].getTag())) {
-                sc.setChecked(false);
-                setCheckForSwitch(switchCompatArray, switchCompatArray[5].getTag().toString());
+            } else if (sc.getTag().toString().equals(getActivityContext().getString(R.string.type_of_switch_at_time))) {
+                saveStateSwitch(getActivityContext().getString(R.string.PREFS_ALARM_SWITCH_KEY),
+                        getActivityContext().getString(R.string.type_of_switch_reset));
                 getView().showAlarmSpecial(false, switchCompatArray, sc.getTag().toString());
             } else {
-                setCheckForSwitch(switchCompatArray, sc.getTag().toString());
-                activeNotification();
-
+                saveStateSwitch(getActivityContext().getString(R.string.PREFS_ALARM_SWITCH_KEY),
+                       sc.getTag().toString());
             }
         } else {
-            switchCompatArray[5].setChecked(true);
-            saveStateSwitch(getView()
-                    .getActivityContext().getString(R.string.PREFS_ALARM_SWITCH_KEY), switchCompatArray[5].toString());
-            activeNotification();
+            saveStateSwitch(getActivityContext().getString(R.string.PREFS_ALARM_SWITCH_KEY),
+                    getActivityContext().getString(R.string.type_of_switch_reset));
+
         }
     }
 
@@ -545,7 +538,7 @@ public class DetailPresenter extends MvpPresenter<IDetailModel, IDetailShow> imp
         saveStateSwitch(getView().getActivityContext().getString(R.string.PREFS_ALARM_TO_DATE), toDateLongType + "");
 
         setCheckForSwitch(switchCompatArray, switchCompatArray[4].getTag().toString());
-        activeNotification();
+        //activePrompt();
     }
 
     @Override
@@ -560,7 +553,7 @@ public class DetailPresenter extends MvpPresenter<IDetailModel, IDetailShow> imp
 
         if (!isAllDate) {
             setCheckForSwitch(switchCompatArray, switchCompatArray[3].getTag().toString());
-            activeNotification();
+            //activePrompt();
         }
 
     }

@@ -13,12 +13,9 @@ import android.graphics.BitmapFactory;
 import android.icu.text.SimpleDateFormat;
 import android.net.Uri;
 import android.text.TextUtils;
-import android.util.Log;
-import android.widget.Toast;
 
 import com.minhvu.proandroid.sqlite.database.R;
 import com.minhvu.proandroid.sqlite.database.main.view.Activity.GetShareActivity;
-import com.minhvu.proandroid.sqlite.database.main.view.Activity.GetShareView;
 
 import java.text.ParseException;
 
@@ -38,7 +35,6 @@ public class PinBroadcast extends BroadcastReceiver {
         SharedPreferences pref = context.getSharedPreferences(
                 context.getString(R.string.PREFS_ALARM_FILE), Context.MODE_PRIVATE);
         String switchType = pref.getString(context.getString(R.string.PREFS_ALARM_SWITCH_KEY) + id, "");
-        Log.d("Pin", "swithgType:" + switchType);
         if (switchType.equals("scAllDay")) {
 
             String toDate = pref.getString(context.getString(R.string.PREFS_ALARM_TO_DATE) + id, "0");
@@ -53,7 +49,6 @@ public class PinBroadcast extends BroadcastReceiver {
             }
 
             if (toDateLongType < currentTime) {
-                Log.d("Pin", "vao toDateLongType < currentTime");
                 SharedPreferences.Editor editor = pref.edit();
                 editor.putString(context.getString(R.string.PREFS_ALARM_SWITCH_KEY) + id, "scReset");
                 PendingIntent pi = PendingIntent.getBroadcast(context, Integer.parseInt(id), intent, 0);
@@ -63,11 +58,12 @@ public class PinBroadcast extends BroadcastReceiver {
             }
 
         }
+        changeToSCResetState(context, uri.getPathSegments().get(1).trim());
         sendNotification(context, intent, uri);
 
     }
 
-    private void convertToSCResetState(Context context, String id) {
+    private void changeToSCResetState(Context context, String id) {
         SharedPreferences pref = context
                 .getSharedPreferences(context.getString(R.string.PREFS_ALARM_FILE), Context.MODE_PRIVATE);
         String switchType = pref.getString(context.getString(R.string.PREFS_ALARM_SWITCH_KEY) + id, "");
@@ -85,39 +81,27 @@ public class PinBroadcast extends BroadcastReceiver {
     }
 
     private void sendNotification(Context ctx, Intent intent, Uri uri) {
-        Log.d(LOGTAG, "vao sendNotification");
         String title = intent.getStringExtra(ctx.getString(R.string.notify_note_title));
-        String content = intent.getStringExtra(ctx.getResources().getString(R.string.notify_note_content));
-        int color = intent.getIntExtra(ctx.getString(R.string.notify_note_color),
-                ctx.getResources().getColor(R.color.backgroundColor_default));
         boolean onGoing = intent.getBooleanExtra(ctx.getString(R.string.notify_note_pin), false);
         Bitmap icon = BitmapFactory.decodeResource(ctx.getResources(), R.drawable.ic_search_black_24dp);
-        Log.d("Pin", "title: " + title + "|| content:" + content);
         int id = Integer.parseInt(uri.getPathSegments().get(1).trim());
         Intent i = new Intent(ctx, GetShareActivity.class);
+        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         i.setData(uri);
         PendingIntent pendingIntent = PendingIntent.getActivity(ctx, id, i, 0);
 
         Notification.Builder builder = new Notification.Builder(ctx)
                 .setWhen(System.currentTimeMillis())
                 .setSmallIcon(R.drawable.ic_access_alarm_black_24dp)
-                .setContentText(content)
                 .setTicker(title)
                 .setLargeIcon(icon)
                 .setOngoing(onGoing)
+                .setAutoCancel(!onGoing)
                 .setContentIntent(pendingIntent)
                 .setContentTitle(title);
 
         NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
         nm.notify(id, builder.build());
-
-        // restore scReset state
-        convertToSCResetState(ctx, uri.getPathSegments().get(1).trim());
-
-        SharedPreferences preferences = ctx.getSharedPreferences(ctx.getString(R.string.PREFS_ALARM_FILE), Context.MODE_PRIVATE);
-        String switchType = preferences.getString(ctx.getString(R.string.PREFS_ALARM_SWITCH_KEY) + uri.getPathSegments().get(1), "0");
-        Toast.makeText(ctx, "switchType:" + switchType, Toast.LENGTH_LONG).show();
-
     }
 
 

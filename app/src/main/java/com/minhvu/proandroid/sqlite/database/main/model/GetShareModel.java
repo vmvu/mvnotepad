@@ -3,9 +3,9 @@ package com.minhvu.proandroid.sqlite.database.main.model;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.net.Uri;
 
-import com.minhvu.proandroid.sqlite.database.main.presenter.IGetSharePresenter;
+import com.minhvu.proandroid.sqlite.database.main.model.view.IGetShareModel;
+import com.minhvu.proandroid.sqlite.database.main.presenter.view.IGetSharePresenter;
 import com.minhvu.proandroid.sqlite.database.models.data.NoteContract.NoteEntry;
 import com.minhvu.proandroid.sqlite.database.models.data.NoteContract.ImageEntry;
 import com.minhvu.proandroid.sqlite.database.models.data.NoteDBHelper;
@@ -15,7 +15,7 @@ import com.minhvu.proandroid.sqlite.database.models.entity.Note;
  * Created by vomin on 9/12/2017.
  */
 
-public class GetShareModel implements IGetShareModel{
+public class GetShareModel implements IGetShareModel {
     private IGetSharePresenter presenter;
     private Note note = new Note();
 

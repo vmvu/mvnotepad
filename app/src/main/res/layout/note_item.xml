@@ -49,7 +49,7 @@
                     android:layout_width="25dp"
                     android:layout_height="25dp"
                     android:layout_toRightOf="@id/tvTitle"
-                    android:src="@drawable/ic_shit" />
+                    android:src="@drawable/ic_tender_ghost" />
 
                 <ImageView
                     android:id="@+id/ivLockIcon"

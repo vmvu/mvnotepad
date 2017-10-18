@@ -1,15 +1,9 @@
-package com.minhvu.proandroid.sqlite.database.main.model;
+package com.minhvu.proandroid.sqlite.database.main.model.view;
 
-import android.content.ContentProvider;
 import android.content.ContentValues;
-import android.database.Cursor;
 import android.net.Uri;
 
-import com.minhvu.proandroid.sqlite.database.main.presenter.IDetailPresenter;
-import com.minhvu.proandroid.sqlite.database.models.entity.Note;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.minhvu.proandroid.sqlite.database.main.presenter.view.IDetailPresenter;
 
 /**
  * Created by vomin on 8/26/2017.

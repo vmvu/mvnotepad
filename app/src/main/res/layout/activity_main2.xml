@@ -26,27 +26,19 @@
                 android:gravity="center_vertical"
                 app:elevation="0dp"
                 app:layout_scrollFlags="scroll|enterAlways" />
-            <android.support.v4.widget.NestedScrollView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-                <FrameLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
 
-                    <android.support.v7.widget.RecyclerView
-                        android:id="@+id/recyclerView"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
 
-                    </android.support.v7.widget.RecyclerView>
-                </FrameLayout>
-            </android.support.v4.widget.NestedScrollView>
 
         </android.support.design.widget.AppBarLayout>
 
+        <FrameLayout
+            android:id="@+id/place"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
+        </FrameLayout>
 
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/fabInsert"
@@ -58,7 +50,6 @@
             android:src="@drawable/ic_plus_one_black_24dp"
             app:fabSize="normal" />
     </android.support.design.widget.CoordinatorLayout>
-
 
 
 </android.support.v4.widget.DrawerLayout>

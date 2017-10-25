@@ -17,6 +17,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.PermissionChecker;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
@@ -156,15 +157,20 @@ public class DeletePresenter extends MvpPresenter<IDeleteModel, IDeleteView> imp
 
         TextView tvTitle = (TextView) layout.findViewById(R.id.tvTitle);
         TextView tvContent = (TextView) layout.findViewById(R.id.tvContent);
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(getView().getActivityContext(), 3);
         RecyclerView imageRecycler = (RecyclerView) layout.findViewById(R.id.image_recyclerView);
+        imageRecycler.setLayoutManager(gridLayoutManager);
+        tvTitle.setText(note.getTitle());
+        tvContent.setText(note.getContent());
 
         //setup imageview
 
         final IImagePresenter imagePresenter = new ImagePresenter();
-        IImageModel imageModel = new ImageModel(getView().getActivityContext(), (int)note.getId());
+        final IImageModel imageModel = new ImageModel(getView().getActivityContext(), (int)note.getId());
 
         imageModel.setPresenter(imagePresenter);
         imagePresenter.setModel(imageModel);
+
 
 
         final ImageAdapter imageAdapter = new ImageAdapter(new ImageAdapter.IImageAdapter() {
@@ -176,8 +182,7 @@ public class DeletePresenter extends MvpPresenter<IDeleteModel, IDeleteView> imp
             @Override
             public View onCreateViewHolder(ViewGroup parent) {
                 LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-                View layout = inflater.inflate(R.layout.image_item, parent, false);
-                return layout;
+                return inflater.inflate(R.layout.image_small_item, parent, false);
             }
 
             @Override
@@ -187,15 +192,16 @@ public class DeletePresenter extends MvpPresenter<IDeleteModel, IDeleteView> imp
 
             @Override
             public int getDataCount() {
-                return imagePresenter.getImagesCount();
+                return imageModel.getCount();
             }
         });
         imageRecycler.setAdapter(imageAdapter);
+        final Context ctx = this.getView().getBaseContext();
 
         IDetailFragment.ImageView imageView = new IDetailFragment.ImageView() {
             @Override
             public Context getActivityContext() {
-                return getView().getActivityContext();
+                return ctx;
             }
 
             @Override

@@ -54,7 +54,6 @@ public class DeleteFragment extends Fragment implements IDeleteView, NoteAdapter
         recyclerView.setHasFixedSize(true);
         noteAdapter = new NoteAdapter2(this);
         noteAdapter.onAttachedToRecyclerView(recyclerView);
-        int count = presenter.getDataCount();
         recyclerView.setAdapter(noteAdapter);
         return layout;
     }
@@ -62,6 +61,11 @@ public class DeleteFragment extends Fragment implements IDeleteView, NoteAdapter
     @Override
     public Context getActivityContext() {
         return getActivity();
+    }
+
+    @Override
+    public Context getBaseContext() {
+        return getActivity().getBaseContext();
     }
 
     @Override

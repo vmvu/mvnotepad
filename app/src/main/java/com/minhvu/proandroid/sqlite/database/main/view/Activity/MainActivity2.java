@@ -19,8 +19,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 
 import com.minhvu.proandroid.sqlite.database.R;
+import com.minhvu.proandroid.sqlite.database.main.view.Fragment.DeleteFragment;
 import com.minhvu.proandroid.sqlite.database.main.view.Fragment.MainFragment;
 
 /**
@@ -30,6 +32,7 @@ import com.minhvu.proandroid.sqlite.database.main.view.Fragment.MainFragment;
 public class MainActivity2 extends AppCompatActivity {
     private Toolbar toolbar;
     private FloatingActionButton fab;
+    private ImageButton btnDeletePage;
 
     private static final int CODE_FOR_NEW_NOTE = -1;
 
@@ -39,7 +42,17 @@ public class MainActivity2 extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main2);
         setupInit();
-        toolbar.setTitle(getString(R.string.app_name_inside));
+
+        toolbar.setTitleTextColor(getResources().getColor(R.color.black));
+        openMainPage(btnDeletePage);
+
+        requestPermission();
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+    }
+    void openMainPage(ImageButton button){
+        toolbar.setTitle(getString(R.string.main_page));
+        fab.setVisibility(View.VISIBLE);
+        button.setTag(true);
         MainFragment mainFragment;
         FragmentManager fManager = getSupportFragmentManager();
         mainFragment = (MainFragment) fManager.findFragmentByTag(MainFragment.class.getSimpleName());
@@ -47,16 +60,42 @@ public class MainActivity2 extends AppCompatActivity {
             mainFragment = new MainFragment();
         }
         FragmentTransaction transaction = fManager.beginTransaction();
-        transaction.replace(R.id.place, mainFragment, MainFragment.class.getSimpleName()).commit();
+        transaction.replace(R.id.place, mainFragment, MainFragment.class.getSimpleName());
+        transaction.addToBackStack(null);
+        transaction.commit();
+    }
 
-        requestPermission();
-        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+    void openDeletePage(ImageButton button){
+        toolbar.setTitle(getString(R.string.delete_page));
+        fab.setVisibility(View.GONE);
+        button.setTag(false);
+        DeleteFragment deleteFragment;
+        FragmentManager fManager = getSupportFragmentManager();
+        deleteFragment = (DeleteFragment) fManager.findFragmentByTag(DeleteFragment.class.getSimpleName());
+        if(deleteFragment == null){
+            deleteFragment = new DeleteFragment();
+        }
+
+        FragmentTransaction transaction = fManager.beginTransaction();
+        transaction.replace(R.id.place, deleteFragment, DeleteFragment.class.getSimpleName());
+        transaction.addToBackStack(null);
+        transaction.commit();
     }
 
     void setupInit(){
         toolbar = (Toolbar) findViewById(R.id.toolbar);
+        btnDeletePage = (ImageButton) findViewById(R.id.btnDeletePage);
+        btnDeletePage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(!((boolean) btnDeletePage.getTag())){
+                    openMainPage(btnDeletePage);
+                }else{
+                    openDeletePage(btnDeletePage);
+                }
+            }
+        });
         fab = (FloatingActionButton) findViewById(R.id.fabInsert);
-
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -64,6 +103,8 @@ public class MainActivity2 extends AppCompatActivity {
             }
         });
     }
+
+
 
     void openActivity(){
         Intent intent = new Intent(MainActivity2.this, BookDetailActivity.class);

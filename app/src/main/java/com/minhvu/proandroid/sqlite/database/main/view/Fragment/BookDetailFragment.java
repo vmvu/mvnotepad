@@ -40,6 +40,7 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.style.BackgroundColorSpan;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -71,6 +72,7 @@ import com.minhvu.proandroid.sqlite.database.main.presenter.view.IImagePresenter
 import com.minhvu.proandroid.sqlite.database.main.presenter.ImagePresenter;
 import com.minhvu.proandroid.sqlite.database.main.view.Adapter.ColorAdapter;
 import com.minhvu.proandroid.sqlite.database.main.view.Adapter.ImageAdapter;
+import com.minhvu.proandroid.sqlite.database.main.view.Fragment.view.IDeleteView;
 import com.minhvu.proandroid.sqlite.database.main.view.Fragment.view.IDetailFragment;
 import com.minhvu.proandroid.sqlite.database.models.data.NoteContract;
 import com.minhvu.proandroid.sqlite.database.models.entity.Color;
@@ -88,7 +90,8 @@ import java.util.Date;
  * Created by vomin on 8/5/2017.
  */
 
-public class BookDetailFragment extends Fragment implements IDetailFragment.View, LoaderManager.LoaderCallbacks<Cursor>, ImageAdapter.IImageAdapter, IDetailFragment.ImageView {
+public class BookDetailFragment extends Fragment implements IDetailFragment.View, LoaderManager.LoaderCallbacks<Cursor>,
+        ImageAdapter.IImageAdapter, IDetailFragment.ImageView {
 
 
     private IDetailPresenter mMainPresenter;
@@ -253,6 +256,7 @@ public class BookDetailFragment extends Fragment implements IDetailFragment.View
         mImagePresenter.setModel(model);
         model.setPresenter(mImagePresenter);
         mImagePresenter.onLoadImages(getActivityContext(), mMainPresenter.getCurrentUri());
+        mImagePresenter.bindView(this);
         imageAdapter = new ImageAdapter(this);
         ImageRecyclerView.setAdapter(imageAdapter);
     }

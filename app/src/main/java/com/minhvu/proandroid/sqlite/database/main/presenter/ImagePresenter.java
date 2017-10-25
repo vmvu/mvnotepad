@@ -25,7 +25,7 @@ public class ImagePresenter extends MvpPresenter<IImageModel, IDetailFragment.Im
     @Override
     public void onBindViewHolder(final ImageAdapter.ImageViewHolder holder, final int position) {
         String path = model.getImage(position);
-        Uri uri  = Uri.parse(path);
+        Uri uri = Uri.parse(path);
         holder.imageView.setImageURI(uri);
     }
 
@@ -36,7 +36,7 @@ public class ImagePresenter extends MvpPresenter<IImageModel, IDetailFragment.Im
         LayoutInflater inflater = LayoutInflater.from(getView().getActivityContext());
         View layout = inflater.inflate(R.layout.image_item, null);
         SimpleDraweeView imageView = (SimpleDraweeView) layout.findViewById(R.id.img);
-        Uri uri  = Uri.parse(path);
+        Uri uri = Uri.parse(path);
         imageView.setImageURI(uri);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getView().getActivityContext());
@@ -44,13 +44,11 @@ public class ImagePresenter extends MvpPresenter<IImageModel, IDetailFragment.Im
         builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                try{
+                try {
                     model.deleteImage(getView().getActivityContext(), path, position);
-                }finally {
+                } finally {
                     dialog.dismiss();
                 }
-
-
             }
         });
         builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -65,9 +63,9 @@ public class ImagePresenter extends MvpPresenter<IImageModel, IDetailFragment.Im
 
     @Override
     public void deleteAllImage(int noteID) {
-        try{
+        try {
             model.deleteAllImages(getView().getActivityContext(), noteID);
-        }finally {
+        } finally {
 
         }
 
@@ -90,6 +88,7 @@ public class ImagePresenter extends MvpPresenter<IImageModel, IDetailFragment.Im
         if (noteUri == null) {
             return;
         }
+        Object o = getView().getActivityContext();
         int noteId = Integer.parseInt(noteUri.getPathSegments().get(1));
         model.insertImage(getView().getActivityContext(), path, noteId);
     }
@@ -111,12 +110,5 @@ public class ImagePresenter extends MvpPresenter<IImageModel, IDetailFragment.Im
         if (!isChangingConfiguration) {
             model = null;
         }
-
     }
-    private Bitmap resizeImage(Bitmap source){
-       return Bitmap.createScaledBitmap(source,(int)(source.getWidth() * 0.4), (int)(source.getHeight()*0.4), true);
-    }
-
-
-
 }

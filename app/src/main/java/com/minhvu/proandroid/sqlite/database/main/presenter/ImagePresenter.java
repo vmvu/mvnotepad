@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 
@@ -62,13 +63,8 @@ public class ImagePresenter extends MvpPresenter<IImageModel, IDetailFragment.Im
     }
 
     @Override
-    public void deleteAllImage(int noteID) {
-        try {
-            model.deleteAllImages(getView().getActivityContext(), noteID);
-        } finally {
-
-        }
-
+    public void deleteAllImage(Context context, int noteID) {
+        model.deleteAllImages(context, noteID);
     }
 
     @Override
@@ -88,7 +84,6 @@ public class ImagePresenter extends MvpPresenter<IImageModel, IDetailFragment.Im
         if (noteUri == null) {
             return;
         }
-        Object o = getView().getActivityContext();
         int noteId = Integer.parseInt(noteUri.getPathSegments().get(1));
         model.insertImage(getView().getActivityContext(), path, noteId);
     }

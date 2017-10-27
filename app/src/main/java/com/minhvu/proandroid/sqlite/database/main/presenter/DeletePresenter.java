@@ -6,7 +6,6 @@ import android.content.ContentUris;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
-import android.graphics.drawable.BitmapDrawable;
 import android.hardware.fingerprint.FingerprintManager;
 import android.net.Uri;
 import android.os.Build;
@@ -20,15 +19,12 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
-import android.util.DisplayMetrics;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -146,14 +142,14 @@ public class DeletePresenter extends MvpPresenter<IDeleteModel, IDeleteView> imp
 
     @Override
     public void AdapterLongClick(View view, int position) {
-        popupChooseTable(view, position);
+
     }
 
     private void openDetail(final int position) {
         final Note note = model.getNote(position);
 
         LayoutInflater inflater = LayoutInflater.from(getView().getActivityContext());
-        View layout = inflater.inflate(R.layout.popup_detail_quick, null);
+        View layout = inflater.inflate(R.layout.popup_delete_restore, null);
 
         TextView tvTitle = (TextView) layout.findViewById(R.id.tvTitle);
         TextView tvContent = (TextView) layout.findViewById(R.id.tvContent);
@@ -198,7 +194,8 @@ public class DeletePresenter extends MvpPresenter<IDeleteModel, IDeleteView> imp
         imageRecycler.setAdapter(imageAdapter);
         final Context ctx = this.getView().getBaseContext();
 
-        IDetailFragment.ImageView imageView = new IDetailFragment.ImageView() {
+
+        imagePresenter.bindView(new IDetailFragment.ImageView() {
             @Override
             public Context getActivityContext() {
                 return ctx;
@@ -208,8 +205,7 @@ public class DeletePresenter extends MvpPresenter<IDeleteModel, IDeleteView> imp
             public void notifyUpdate() {
                 imageAdapter.notifyDataSetChanged();
             }
-        };
-        imagePresenter.bindView(imageView);
+        });
 
         //setup Dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(getView().getActivityContext());
@@ -231,13 +227,14 @@ public class DeletePresenter extends MvpPresenter<IDeleteModel, IDeleteView> imp
                 try{
                     if(model.deleteNote(getView().getActivityContext(), note.getId())){
                         updateAdapter();
-                        Thread thread = new Thread(){
+                        imagePresenter.deleteAllImage(getView().getActivityContext(),(int)note.getId());
+                        /*Thread thread = new Thread(){
                             @Override
                             public void run() {
-                                    imagePresenter.deleteAllImage((int)note.getId());
+                                imagePresenter.deleteAllImage((int)note.getId());
                             }
                         };
-                        thread.start();
+                        thread.start();*/
                     }
                 }finally {
                     dialog.dismiss();
@@ -258,75 +255,6 @@ public class DeletePresenter extends MvpPresenter<IDeleteModel, IDeleteView> imp
     }
 
 
-
-    private void popupChooseTable(View view, int position){
-
-        final Note note = model.getNote(position);
-        final Uri uri = ContentUris.withAppendedId(NoteContract.NoteEntry.CONTENT_URI, note.getId());
-
-        LayoutInflater inflater = LayoutInflater.from(getView().getActivityContext());
-        View layout = inflater.inflate(R.layout.popup_restore, null);
-
-        int []local = new int[2];
-        view.getLocationInWindow(local);
-        int popupWidth = 600;
-        int popupHeight = 400;
-
-        final PopupWindow popupWindow = new PopupWindow(getView().getActivityContext());
-        popupWindow.setContentView(layout);
-        popupWindow.setWidth(popupWidth);
-        popupWindow.setHeight(popupHeight);
-        popupWindow.setFocusable(true);
-        // clear the default translucent background
-        popupWindow.setBackgroundDrawable(new BitmapDrawable());
-        getPositionPopupDisplay(popupWidth, popupHeight, local);
-        popupWindow.showAtLocation(layout, Gravity.NO_GRAVITY, local[0], local[1]);
-        TextView tvTitle = (TextView) layout.findViewById(R.id.tvTitle);
-        tvTitle.setText(note.getTitle());
-        TextView tvRestore = (TextView) layout.findViewById(R.id.tvRestore);
-        tvRestore.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                restoreThis(note.getId());
-                popupWindow.dismiss();
-            }
-        });
-        TextView tvDelete = (TextView) layout.findViewById(R.id.tvDelete);
-        tvDelete.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                popupWindow.dismiss();
-                deleteThis(note.getId());
-            }
-        });
-    }
-    private void getPositionPopupDisplay(int widthPopup, int heightPopup, int[] local) {
-        DisplayMetrics displayMetrics = getView().getDimensionOnScreen();
-        int heightDevice = displayMetrics.heightPixels;
-        int widthDevice = displayMetrics.widthPixels;
-        if (local[1] > heightDevice - heightPopup) {
-            local[1] = heightDevice - heightPopup / 2;
-        }
-    }
-
-    private void restoreThis(long noteID) {
-        try{
-            if(model.restoreNote(getView().getActivityContext(), noteID)){
-                getView().updateAdapter();
-            }
-        }finally {
-
-        }
-    }
-    private void deleteThis(long noteID){
-        try{
-            if (model.deleteNote(getView().getActivityContext(), noteID)){
-                getView().updateAdapter();
-            }
-        }finally {
-
-        }
-    }
 
 
     @Override
@@ -504,6 +432,14 @@ public class DeletePresenter extends MvpPresenter<IDeleteModel, IDeleteView> imp
 
         getView().updateAdapter();
 
+    }
+
+    @Override
+    public void updateCountList() {
+        if(model.getCount() != model.checkCount(getView().getActivityContext())){
+            model.loadData(getView().getActivityContext());
+            getView().updateAdapter();
+        }
     }
 
     private class FingerprintHandler extends FingerprintManager.AuthenticationCallback {

@@ -23,5 +23,5 @@ public interface IImagePresenter {
     void onDestroy(boolean isChangingConfiguration);
     void notifyView();
 
-    void deleteAllImage(int position);
+    void deleteAllImage(Context context, int position);
 }

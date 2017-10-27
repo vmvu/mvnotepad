@@ -4,6 +4,7 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.minhvu.proandroid.sqlite.database.main.model.view.IDeleteModel;
@@ -42,10 +43,19 @@ public class DeleteModel implements IDeleteModel {
 
     @Override
     public void loadData(Context context) {
-        ContentResolver cr = context.getContentResolver();
+        NoteDBHelper helper = NoteDBHelper.getInstance(context);
+        SQLiteDatabase db = helper.getReadableDatabase();
         String selection = NoteContract.NoteEntry.COL_DELETE + "=?";
         String[] selectionArgs = new String[]{"1"};
-        Cursor c = cr.query(NoteContract.NoteEntry.CONTENT_URI, NoteContract.NoteEntry.getColumnNames(), selection, selectionArgs, null, null);
+
+        //Cursor c = db.query(NoteContract.NoteEntry.CONTENT_URI, NoteContract.NoteEntry.getColumnNames(), selection, selectionArgs, null, null);
+        Cursor c = db.query(
+                NoteContract.NoteEntry.DATABASE_TABLE,
+                NoteContract.NoteEntry.getColumnNames(),
+                selection,
+                selectionArgs,
+                null, null, null
+                );
         if (c != null && c.moveToFirst()) {
             listNote.clear();
             int idPos = c.getColumnIndex(NoteContract.NoteEntry._ID);
@@ -70,8 +80,18 @@ public class DeleteModel implements IDeleteModel {
             } while (c.moveToNext());
         }
         c.close();
+        db.close();
     }
 
+    @Override
+    public long checkCount(Context context) {
+        NoteDBHelper helper = NoteDBHelper.getInstance(context);
+        SQLiteDatabase db = helper.getReadableDatabase();
+        String selection = NoteContract.NoteEntry.COL_DELETE + "=1";
+        long count = DatabaseUtils.queryNumEntries(db, NoteContract.NoteEntry.DATABASE_TABLE,selection );
+        db.close();
+        return count;
+    }
 
     @Override
     public int getCount() {

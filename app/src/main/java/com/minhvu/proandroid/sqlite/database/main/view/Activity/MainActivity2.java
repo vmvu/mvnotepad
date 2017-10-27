@@ -44,15 +44,16 @@ public class MainActivity2 extends AppCompatActivity {
         setupInit();
 
         toolbar.setTitleTextColor(getResources().getColor(R.color.black));
-        openMainPage(btnDeletePage);
+        openMainPage();
 
         requestPermission();
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
     }
-    void openMainPage(ImageButton button){
+    void openMainPage(){
         toolbar.setTitle(getString(R.string.main_page));
         fab.setVisibility(View.VISIBLE);
-        button.setTag(true);
+        btnDeletePage.setTag(true);
+        btnDeletePage.setImageResource(R.drawable.ic_delete_black_40dp);
         MainFragment mainFragment;
         FragmentManager fManager = getSupportFragmentManager();
         mainFragment = (MainFragment) fManager.findFragmentByTag(MainFragment.class.getSimpleName());
@@ -65,10 +66,11 @@ public class MainActivity2 extends AppCompatActivity {
         transaction.commit();
     }
 
-    void openDeletePage(ImageButton button){
+    void openDeletePage(){
         toolbar.setTitle(getString(R.string.delete_page));
         fab.setVisibility(View.GONE);
-        button.setTag(false);
+        btnDeletePage.setImageResource(R.drawable.ic_home_black_24dp);
+        btnDeletePage.setTag(false);
         DeleteFragment deleteFragment;
         FragmentManager fManager = getSupportFragmentManager();
         deleteFragment = (DeleteFragment) fManager.findFragmentByTag(DeleteFragment.class.getSimpleName());
@@ -89,9 +91,9 @@ public class MainActivity2 extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if(!((boolean) btnDeletePage.getTag())){
-                    openMainPage(btnDeletePage);
+                    openMainPage();
                 }else{
-                    openDeletePage(btnDeletePage);
+                    openDeletePage();
                 }
             }
         });

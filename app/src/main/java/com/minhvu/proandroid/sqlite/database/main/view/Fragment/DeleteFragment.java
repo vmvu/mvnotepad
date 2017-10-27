@@ -59,6 +59,12 @@ public class DeleteFragment extends Fragment implements IDeleteView, NoteAdapter
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        presenter.updateCountList();
+    }
+
+    @Override
     public Context getActivityContext() {
         return getActivity();
     }

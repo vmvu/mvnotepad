@@ -101,7 +101,6 @@ public class ImageModel implements IImageModel {
 
     @Override
     public void insertImage(Context context, String imagePath, int noteId) {
-        Log.d("addImage", "model: vao day");
         ContentResolver contentResolver = context.getContentResolver();
         ContentValues cv = new ContentValues();
         cv.put(NoteContract.ImageEntry.COL_NAME_PATH, imagePath);
@@ -127,6 +126,7 @@ public class ImageModel implements IImageModel {
         ContentResolver contentResolver = context.getContentResolver();
         int success = contentResolver.delete(uri, selection, null);
         if (success > 0) {
+
             mImageList.remove(position);
             presenter.notifyView();
             removeImage(imagePath);
@@ -146,11 +146,7 @@ public class ImageModel implements IImageModel {
             }
         };
         thread.start();
-
-
     }
-
-
 
     @Override
     public boolean deleteAllImages(Context context, int noteId) {
@@ -158,6 +154,9 @@ public class ImageModel implements IImageModel {
         String selection = NoteContract.ImageEntry.COL_NOTE_ID + "=" + noteId;
         int success = contentResolver.delete(NoteContract.ImageEntry.CONTENT_URI, selection, null);
         if (success > 0) {
+            for(String path: mImageList){
+                removeImage(path);
+            }
             mImageList.clear();
             return true;
         }

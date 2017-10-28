@@ -88,8 +88,10 @@ public class DeleteModel implements IDeleteModel {
         NoteDBHelper helper = NoteDBHelper.getInstance(context);
         SQLiteDatabase db = helper.getReadableDatabase();
         String selection = NoteContract.NoteEntry.COL_DELETE + "=1";
-        long count = DatabaseUtils.queryNumEntries(db, NoteContract.NoteEntry.DATABASE_TABLE,selection );
-        db.close();
+        long count = -1;
+        count = DatabaseUtils.queryNumEntries(db, NoteContract.NoteEntry.DATABASE_TABLE,selection );
+        if(count != -1)
+            db.close();
         return count;
     }
 

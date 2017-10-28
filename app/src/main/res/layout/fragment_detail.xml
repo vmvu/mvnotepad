@@ -60,7 +60,7 @@
                         android:background="?attr/selectableItemBackgroundBorderless"
                         android:clickable="true"
                         android:padding="1dp"
-                        android:src="@drawable/ic_star_border_black_24dp" />
+                        android:src="@drawable/ic_brush_stroke" />
 
                     <ImageButton
                         android:id="@+id/btnSetting"
@@ -69,7 +69,7 @@
                         android:layout_weight="1"
                         android:background="?attr/selectableItemBackgroundBorderless"
                         android:clickable="true"
-                        android:src="@drawable/ic_menu_black_24dp" />
+                        android:src="@drawable/ic_settings" />
                 </LinearLayout>
 
             </LinearLayout>

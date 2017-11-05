@@ -15,7 +15,7 @@ public class LightedGreenRoom {
     PowerManager.WakeLock wl = null;
     private int clientCount = 0;
 
-    public LightedGreenRoom(Context context){
+    private LightedGreenRoom(Context context){
         this.ctx = context;
         wl = this.createWakeLock(ctx);
     }
@@ -59,7 +59,7 @@ public class LightedGreenRoom {
         this.wl.acquire();
     }
 
-    private  void turnOffLights(){
+    private void turnOffLights(){
         if(this.wl.isHeld()){
             wl.release();
         }

@@ -6,19 +6,14 @@ import android.util.Log;
 import com.minhvu.proandroid.sqlite.database.R;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-
-/**
- * Created by vomin on 8/10/2017.
- */
 
 public class Color {
     public int getHeaderColor() {
         return headerColor;
     }
 
-    public void setHeaderColor(int headerColor) {
+    private void setHeaderColor(int headerColor) {
         this.headerColor = headerColor;
     }
 
@@ -26,19 +21,19 @@ public class Color {
         return backgroundColor;
     }
 
-    public void setBackgroundColor(int backgroundColor) {
+    private void setBackgroundColor(int backgroundColor) {
         this.backgroundColor = backgroundColor;
     }
 
-    int headerColor;
-    int backgroundColor;
+    private int headerColor;
+    private int backgroundColor;
 
     public static List<Color> getColors(Context context){
-        HashMap<Integer, Integer> pinColor = new HashMap<>();
         ArrayList<Color> colors = new ArrayList<>();
         int[] headerColors = context.getResources().getIntArray(R.array.header_color);
         int[] backgroundColors = context.getResources().getIntArray(R.array.background_color);
         for(int i = 0 ; i < headerColors.length; i++){
+            Log.d("Color_list:", i + " - " + headerColors[i]);
             Color color = new Color();
             color.setHeaderColor(headerColors[i]);
             color.setBackgroundColor(backgroundColors[i]);
@@ -51,10 +46,18 @@ public class Color {
         int[] headerColors = ctx.getResources().getIntArray(R.array.header_color);
         int[] backgroundColors = ctx.getResources().getIntArray(R.array.background_color);
         Color color = new Color();
-        Log.d("color pos", pos + "");
         color.setHeaderColor(headerColors[pos]);
         color.setBackgroundColor(backgroundColors[pos]);
         return color;
+    }
+
+    public static int getColorPos(Context ctx, int idColor){
+        int[] headerColors = ctx.getResources().getIntArray(R.array.header_color);
+        for(int i = 0; i < headerColors.length; i++){
+            if(headerColors[i] == idColor)
+                return i;
+        }
+        return -1;
     }
 
 }

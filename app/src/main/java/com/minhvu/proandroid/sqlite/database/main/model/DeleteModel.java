@@ -6,6 +6,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteStatement;
+import android.util.Log;
 
 import com.minhvu.proandroid.sqlite.database.main.model.view.IDeleteModel;
 import com.minhvu.proandroid.sqlite.database.main.presenter.view.IDeletePresenter;
@@ -15,10 +17,6 @@ import com.minhvu.proandroid.sqlite.database.models.entity.Note;
 
 import java.util.ArrayList;
 import java.util.List;
-
-/**
- * Created by vomin on 10/7/2017.
- */
 
 public class DeleteModel implements IDeleteModel {
     private ArrayList<Note> listNote = null;
@@ -44,55 +42,73 @@ public class DeleteModel implements IDeleteModel {
     @Override
     public void loadData(Context context) {
         NoteDBHelper helper = NoteDBHelper.getInstance(context);
-        SQLiteDatabase db = helper.getReadableDatabase();
         String selection = NoteContract.NoteEntry.COL_DELETE + "=?";
         String[] selectionArgs = new String[]{"1"};
 
-        //Cursor c = db.query(NoteContract.NoteEntry.CONTENT_URI, NoteContract.NoteEntry.getColumnNames(), selection, selectionArgs, null, null);
-        Cursor c = db.query(
-                NoteContract.NoteEntry.DATABASE_TABLE,
-                NoteContract.NoteEntry.getColumnNames(),
-                selection,
-                selectionArgs,
-                null, null, null
+        try (SQLiteDatabase db = helper.getReadableDatabase()) {
+            Cursor c = null;
+            if(db.isOpen()){
+                c = db.query(
+                        NoteContract.NoteEntry.DATABASE_TABLE,
+                        NoteContract.NoteEntry.getColumnNames(),
+                        selection,
+                        selectionArgs,
+                        null, null, null
                 );
-        if (c != null && c.moveToFirst()) {
-            listNote.clear();
-            int idPos = c.getColumnIndex(NoteContract.NoteEntry._ID);
-            int titlePos = c.getColumnIndex(NoteContract.NoteEntry.COL_TITLE);
-            int contentPos = c.getColumnIndex(NoteContract.NoteEntry.COL_CONTENT);
-            int colorPos = c.getColumnIndex(NoteContract.NoteEntry.COL_COLOR);
-            int passwordPos = c.getColumnIndex(NoteContract.NoteEntry.COL_PASSWORD);
-            int keyPos = c.getColumnIndex(NoteContract.NoteEntry.COL_PASSWORD_SALT);
-            int dateCreatedPos = c.getColumnIndex(NoteContract.NoteEntry.COL_DATE_CREATED);
-            int lastUpdatePos = c.getColumnIndex(NoteContract.NoteEntry.COL_LAST_ON);
-            do {
-                Note note = new Note();
-                note.setId(c.getLong(idPos));
-                note.setTitle(c.getString(titlePos));
-                note.setContent(c.getString(contentPos));
-                note.setIdColor(c.getInt(colorPos));
-                note.setPassword(c.getString(passwordPos));
-                note.setPassSalt(c.getString(keyPos));
-                note.setDateCreated(Long.parseLong(c.getString(dateCreatedPos)));
-                note.setLastOn(Long.parseLong(c.getString(lastUpdatePos)));
-                listNote.add(note);
-            } while (c.moveToNext());
+            }else{
+                return;
+            }
+            if(c == null){
+                return;
+            }
+            try{
+                if (db.isOpen() && c!= null && !c.isClosed() && c.moveToFirst()) {
+                    listNote.clear();
+                    int idPos = c.getColumnIndex(NoteContract.NoteEntry._ID);
+                    int titlePos = c.getColumnIndex(NoteContract.NoteEntry.COL_TITLE);
+                    int contentPos = c.getColumnIndex(NoteContract.NoteEntry.COL_CONTENT);
+                    int colorPos = c.getColumnIndex(NoteContract.NoteEntry.COL_COLOR);
+                    int passwordPos = c.getColumnIndex(NoteContract.NoteEntry.COL_PASSWORD);
+                    int keyPos = c.getColumnIndex(NoteContract.NoteEntry.COL_PASSWORD_SALT);
+                    int dateCreatedPos = c.getColumnIndex(NoteContract.NoteEntry.COL_DATE_CREATED);
+                    int lastUpdatePos = c.getColumnIndex(NoteContract.NoteEntry.COL_LAST_ON);
+                    do {
+                        Note note = new Note();
+                        note.setId(c.getLong(idPos));
+                        note.setTitle(c.getString(titlePos));
+                        note.setContent(c.getString(contentPos));
+                        note.setIdColor(c.getInt(colorPos));
+                        note.setPassword(c.getString(passwordPos));
+                        note.setPassSalt(c.getString(keyPos));
+                        note.setDateCreated(Long.parseLong(c.getString(dateCreatedPos)));
+                        note.setLastOn(Long.parseLong(c.getString(lastUpdatePos)));
+                        listNote.add(note);
+                    } while (c.moveToNext());
+                }
+            }catch (IllegalStateException e){
+                if( c != null)
+                    c.close();
+            }
+
+
         }
-        c.close();
-        db.close();
     }
 
+
     @Override
-    public long checkCount(Context context) {
+    public long getCount(Context context) {
         NoteDBHelper helper = NoteDBHelper.getInstance(context);
-        SQLiteDatabase db = helper.getReadableDatabase();
         String selection = NoteContract.NoteEntry.COL_DELETE + "=1";
-        long count = -1;
-        count = DatabaseUtils.queryNumEntries(db, NoteContract.NoteEntry.DATABASE_TABLE,selection );
-        if(count != -1)
-            db.close();
-        return count;
+        try (SQLiteDatabase db = helper.getReadableDatabase()) {
+            if(db.isOpen()){
+                try{
+                    return DatabaseUtils.queryNumEntries(db, NoteContract.NoteEntry.DATABASE_TABLE, selection);
+                }catch (IllegalStateException e){
+                    return 0;
+                }
+            }
+            return 0;
+        }
     }
 
     @Override
@@ -113,24 +129,25 @@ public class DeleteModel implements IDeleteModel {
     @Override
     public boolean restoreNote(Context context, long noteID) {
         NoteDBHelper helper = NoteDBHelper.getInstance(context);
-        SQLiteDatabase db = helper.getWritableDatabase();
-        ContentValues cv =new ContentValues();
+        ContentValues cv = new ContentValues();
         cv.put(NoteContract.NoteEntry.COL_DELETE, 0);
-        int success = db.update(
-                NoteContract.NoteEntry.DATABASE_TABLE,
-                cv,
-                NoteContract.NoteEntry._ID + "=?",
-                new String[]{String.valueOf(noteID)}
-                );
-        db.close();
-        if(success > 0){
-            for(Note note: listNote){
-                if(note.getId() == noteID){
-                    listNote.remove(note);
-                    return true;
+        try (SQLiteDatabase db = helper.getWritableDatabase()) {
+            int success = db.update(
+                    NoteContract.NoteEntry.DATABASE_TABLE,
+                    cv,
+                    NoteContract.NoteEntry._ID + "=?",
+                    new String[]{String.valueOf(noteID)}
+            );
+            if (success > 0) {
+                for (Note note : listNote) {
+                    if (note.getId() == noteID) {
+                        listNote.remove(note);
+                        return true;
+                    }
                 }
             }
         }
+
         return false;
     }
 
@@ -138,24 +155,22 @@ public class DeleteModel implements IDeleteModel {
     @Override
     public boolean deleteNote(Context context, long noteID) {
         NoteDBHelper helper = NoteDBHelper.getInstance(context);
-        SQLiteDatabase db = helper.getWritableDatabase();
-
         ContentValues cv = new ContentValues();
         cv.put(NoteContract.NoteEntry.COL_DELETE, 1);
-
-        int success = db.delete(
-                NoteContract.NoteEntry.DATABASE_TABLE,
-                NoteContract.NoteEntry._ID + "=?",
-                new String[]{String.valueOf(noteID)});
-        db.close();
-        if (success > 0) {
-            for (Note n : listNote) {
-                if (n.getId() == noteID) {
-                    listNote.remove(n);
-                    break;
+        try (SQLiteDatabase db = helper.getWritableDatabase()) {
+            int success = db.delete(
+                    NoteContract.NoteEntry.DATABASE_TABLE,
+                    NoteContract.NoteEntry._ID + "=?",
+                    new String[]{String.valueOf(noteID)});
+            if (success > 0) {
+                for (Note n : listNote) {
+                    if (n.getId() == noteID) {
+                        listNote.remove(n);
+                        break;
+                    }
                 }
+                return true;
             }
-            return true;
         }
         return false;
     }

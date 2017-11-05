@@ -19,7 +19,7 @@ public interface  IDeleteModel {
     int getCount();
     List<Note> getNoteList();
     Note getNote(int index);
-    long checkCount(Context context);
+    long getCount(Context context);
 
     boolean restoreNote(Context context, long noteID);
 

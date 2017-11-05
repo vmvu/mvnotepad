@@ -29,20 +29,16 @@ public class ImageModel implements IImageModel {
     public ImageModel() {
         mImageList = new ArrayList<>();
     }
+
     public ImageModel(Context context, int noteID) {
         mImageList = new ArrayList<>();
-        try{
-            loadImages(context, noteID);
-        }finally {
-
-        }
-
+        loadImages(context, noteID);
     }
 
 
     @Override
     public void onDestroy(boolean isChangingConfiguration) {
-        if(!isChangingConfiguration){
+        if (!isChangingConfiguration) {
             presenter = null;
             mImageList.clear();
         }
@@ -57,20 +53,27 @@ public class ImageModel implements IImageModel {
     public void loadImages(Context context, int noteId) {
         ContentResolver contentResolver = context.getContentResolver();
         String selection = NoteContract.ImageEntry.COL_NOTE_ID + "=" + noteId;
-        Cursor c = contentResolver.query(NoteContract.ImageEntry.CONTENT_URI,
-                NoteContract.ImageEntry.getColumnNames(), selection, null, null);
-        if (c != null && c.moveToFirst()) {
-            mImageList.clear();
-            int pathPos = c.getColumnIndex(NoteContract.ImageEntry.COL_NAME_PATH);
-            do {
-                String path = c.getString(pathPos);
-                mImageList.add(path);
-                //mBitmapList.add(rotateImage(path, 90));
-            } while (c.moveToNext());
+        Cursor c = null;
+        try {
+            c = contentResolver.query(NoteContract.ImageEntry.CONTENT_URI,
+                    NoteContract.ImageEntry.getColumnNames(), selection, null, null);
+            if (c != null && c.moveToFirst()) {
+                mImageList.clear();
+                int pathPos = c.getColumnIndex(NoteContract.ImageEntry.COL_NAME_PATH);
+                do {
+                    String path = c.getString(pathPos);
+                    mImageList.add(path);
+                    //mBitmapList.add(rotateImage(path, 90));
+                } while (c.moveToNext());
+            }
+        } finally {
+            if (c != null) {
+                c.close();
+            }
         }
-        c.close();
     }
-    private Bitmap rotateImage(String path, float angle)  {
+
+    private Bitmap rotateImage(String path, float angle) {
         Uri uri = Uri.parse(path);
        /* File file = new File(uri.getPath());
         InputStream is = null;
@@ -101,21 +104,22 @@ public class ImageModel implements IImageModel {
 
     @Override
     public void insertImage(Context context, String imagePath, int noteId) {
-        ContentResolver contentResolver = context.getContentResolver();
+        ContentResolver cr = context.getContentResolver();
         ContentValues cv = new ContentValues();
         cv.put(NoteContract.ImageEntry.COL_NAME_PATH, imagePath);
         cv.put(NoteContract.ImageEntry.COL_NOTE_ID, noteId);
-        Uri success = contentResolver.insert(NoteContract.ImageEntry.CONTENT_URI, cv);
+        Uri success = cr.insert(NoteContract.ImageEntry.CONTENT_URI, cv);
         if (success != null) {
-            if(mImageList == null){
+            if (mImageList == null) {
                 mImageList = new ArrayList<>();
             }
             mImageList.add(imagePath);
             Log.d("addImage", "size_list:" + mImageList.size());
-            if(mImageList.size() > 0){
+            if (mImageList.size() > 0) {
                 presenter.notifyView();
             }
         }
+
     }
 
     @Override
@@ -132,14 +136,15 @@ public class ImageModel implements IImageModel {
             removeImage(imagePath);
         }
     }
-    private void removeImage(final String imagePath){
-        Thread thread = new Thread(){
+
+    private void removeImage(final String imagePath) {
+        Thread thread = new Thread() {
             @Override
             public void run() {
                 Uri uri = Uri.parse(imagePath);
                 File file = new File((uri.getPath()));
-                if(file.exists()){
-                    if(file.delete()){
+                if (file.exists()) {
+                    if (file.delete()) {
                         Log.d("delete-image", "success");
                     }
                 }
@@ -154,7 +159,7 @@ public class ImageModel implements IImageModel {
         String selection = NoteContract.ImageEntry.COL_NOTE_ID + "=" + noteId;
         int success = contentResolver.delete(NoteContract.ImageEntry.CONTENT_URI, selection, null);
         if (success > 0) {
-            for(String path: mImageList){
+            for (String path : mImageList) {
                 removeImage(path);
             }
             mImageList.clear();
@@ -165,7 +170,7 @@ public class ImageModel implements IImageModel {
 
     @Override
     public int getCount() {
-        if(mImageList == null){
+        if (mImageList == null) {
             return 0;
         }
         return mImageList.size();

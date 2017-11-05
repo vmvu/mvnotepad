@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.minhvu.proandroid.sqlite.database.main.view.Adapter.NoteAdapter2;
@@ -22,6 +23,8 @@ public interface IMainView {
         void updateAdapter();
 
         DisplayMetrics getDimensionOnScreen();
+
+
     }
 
 }

@@ -92,7 +92,7 @@ public class PinBroadcast extends BroadcastReceiver {
 
         Notification.Builder builder = new Notification.Builder(ctx)
                 .setWhen(System.currentTimeMillis())
-                .setSmallIcon(R.drawable.ic_access_alarm_black_24dp)
+                .setSmallIcon(R.drawable.ic_notes)
                 .setTicker(title)
                 .setLargeIcon(icon)
                 .setOngoing(onGoing)

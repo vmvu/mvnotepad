@@ -38,19 +38,20 @@ public class AlarmRebootService extends ALongRunningNonStickyBroadcastService {
 
     @Override
     public void handIntentBroadcast(Intent intentBroadcast) {
-        if(intentBroadcast.getAction().equals(Intent.ACTION_BOOT_COMPLETED)){
+        if (intentBroadcast.getAction().equals(Intent.ACTION_BOOT_COMPLETED)) {
             ArrayList<Note> noteList = getNoteList();
 
-            if(noteList.size() > 0){
+            if (noteList.size() > 0) {
                 preferences = getSharedPreferences(getString(R.string.PREFS_ALARM_FILE), MODE_PRIVATE);
                 checkedAlarmNote(noteList);
             }
         }
     }
-    private void TestNotification(){
+
+    private void TestNotification() {
         Notification.Builder builder = new Notification.Builder(this)
                 .setWhen(System.currentTimeMillis())
-                .setSmallIcon(R.drawable.ic_access_alarm_black_24dp)
+                .setSmallIcon(R.drawable.ic_notes)
                 .setContentText("ALARM-REBOOT")
                 .setOngoing(true)
                 .setContentTitle("title2");
@@ -60,47 +61,54 @@ public class AlarmRebootService extends ALongRunningNonStickyBroadcastService {
     }
 
 
-    private ArrayList<Note> getNoteList(){
+    private ArrayList<Note> getNoteList() {
         NoteDBHelper helper = NoteDBHelper.getInstance(this);
-        SQLiteDatabase db = helper.getReadableDatabase();
 
         ArrayList<Note> list = new ArrayList<>();
 
         String[] selection = new String[]{NoteContract.NoteEntry._ID, NoteContract.NoteEntry.COL_TITLE,
-                NoteContract.NoteEntry.COL_CONTENT, NoteContract.NoteEntry.COL_COLOR,NoteContract.NoteEntry.COL_PASSWORD};
-        Cursor c = db.query(NoteContract.NoteEntry.DATABASE_TABLE, selection, null, null, null, null, null);
-        if(c != null && c.moveToFirst()){
-            int idIndex = c.getColumnIndex(NoteContract.NoteEntry._ID);
-            int titleIndex= c.getColumnIndex(NoteContract.NoteEntry.COL_TITLE);
-            int contentIndex= c.getColumnIndex(NoteContract.NoteEntry.COL_CONTENT);
-            int colorIndex = c.getColumnIndex(NoteContract.NoteEntry.COL_COLOR);
-            int passwordIndex= c.getColumnIndex(NoteContract.NoteEntry.COL_PASSWORD);
-            do{
-                Note note = new Note();
-                note.setId(c.getLong(idIndex));
-                note.setTitle(c.getString(titleIndex));
-                note.setContent(c.getString(contentIndex));
-                note.setIdColor(c.getInt(colorIndex));
-                note.setPassword(c.getString(passwordIndex).trim());
-                list.add(note);
-            }while(c.moveToNext());
+                NoteContract.NoteEntry.COL_CONTENT, NoteContract.NoteEntry.COL_COLOR, NoteContract.NoteEntry.COL_PASSWORD};
+        try (SQLiteDatabase db = helper.getReadableDatabase()) {
+            Cursor c = null;
+            try {
+                c = db.query(NoteContract.NoteEntry.DATABASE_TABLE, selection, null, null, null, null, null);
+                if (c != null && c.moveToFirst()) {
+                    int idIndex = c.getColumnIndex(NoteContract.NoteEntry._ID);
+                    int titleIndex = c.getColumnIndex(NoteContract.NoteEntry.COL_TITLE);
+                    int contentIndex = c.getColumnIndex(NoteContract.NoteEntry.COL_CONTENT);
+                    int colorIndex = c.getColumnIndex(NoteContract.NoteEntry.COL_COLOR);
+                    int passwordIndex = c.getColumnIndex(NoteContract.NoteEntry.COL_PASSWORD);
+                    Note note ;
+                    do {
+                        note = new Note();
+                        note.setId(c.getLong(idIndex));
+                        note.setTitle(c.getString(titleIndex));
+                        note.setContent(c.getString(contentIndex));
+                        note.setIdColor(c.getInt(colorIndex));
+                        note.setPassword(c.getString(passwordIndex));
+                        list.add(note);
+                    } while (c.moveToNext());
+                }
+            } finally {
+                if (c != null)
+                    c.close();
+                db.close();
+            }
         }
-        c.close();
-        db.close();
         return list;
     }
 
-    private void checkedAlarmNote(ArrayList<Note> list){
-        for(Note note: list){
+    private void checkedAlarmNote(ArrayList<Note> list) {
+        for (Note note : list) {
             String noteAlarm = preferences.getString(getString(R.string.PREFS_ALARM_SWITCH_KEY) + note.getId(), "");
-            if(TextUtils.isEmpty(noteAlarm) || noteAlarm.equals(getString(R.string.type_of_switch_reset))){
+            if (TextUtils.isEmpty(noteAlarm) || noteAlarm.equals(getString(R.string.type_of_switch_reset))) {
                 continue;
             }
             restoreAlarm(note, noteAlarm);
         }
     }
 
-    private void restoreAlarm(Note note, String type){
+    private void restoreAlarm(Note note, String type) {
         Uri uri = ContentUris.withAppendedId(NoteContract.NoteEntry.CONTENT_URI, note.getId());
         Intent intent = new Intent(getString(R.string.broadcast_receiver_pin));
         intent.putExtra(getString(R.string.notify_note_uri), uri.toString());
@@ -117,24 +125,25 @@ public class AlarmRebootService extends ALongRunningNonStickyBroadcastService {
         final String sc30Min = getString(R.string.type_of_switch_30min);
         final String scAtTime = getString(R.string.type_of_switch_at_time);
         final String scRepeater = getString(R.string.type_of_switch_repeater);
-        if(type.equals(scPin)){
+        if (type.equals(scPin)) {
             intent.putExtra(getString(R.string.notify_note_pin), true);
             sendBroadcast(intent);
-        }else if(type.equals(sc15Min)){
+        } else if (type.equals(sc15Min)) {
 
             long time15Min = Long.parseLong(preferences.getString(getString(R.string.PREFS_ALARM_WHEN) + note.getId(), "0"));
-            alarm(intent,time15Min , (int)note.getId(), false);
-        }else if(type.equals(sc30Min)){
+            alarm(intent, time15Min, (int) note.getId(), false);
+        } else if (type.equals(sc30Min)) {
             long time30Min = Long.parseLong(preferences.getString(getString(R.string.PREFS_ALARM_WHEN) + note.getId(), "0"));
-            alarm(intent,time30Min, (int)note.getId(), false);
-        }else if(type.equals(scAtTime)){
-            alarmSpecial(note,intent, false);
-        }else if(type.equals(scRepeater)){
+            alarm(intent, time30Min, (int) note.getId(), false);
+        } else if (type.equals(scAtTime)) {
+            alarmSpecial(note, intent, false);
+        } else if (type.equals(scRepeater)) {
             intent.putExtra(getString(R.string.PREFS_ALARM_TO_DATE),
                     preferences.getString(getString(R.string.PREFS_ALARM_TO_DATE) + note.getId(), "0"));
             alarmSpecial(note, intent, true);
         }
     }
+
     private void alarmSpecial(Note note, Intent intent, boolean isRepeater) {
 
         String date = preferences.getString(getString(R.string.PREFS_ALARM_FROM_DATE) + note.getId(), "0");
@@ -148,7 +157,7 @@ public class AlarmRebootService extends ALongRunningNonStickyBroadcastService {
         calendar.add(Calendar.MINUTE, minute);
         calendar.add(Calendar.HOUR_OF_DAY, hour);
 
-        alarm(intent, calendar.getTime().getTime(), (int)note.getId(), isRepeater);
+        alarm(intent, calendar.getTime().getTime(), (int) note.getId(), isRepeater);
     }
 
     private void alarm(Intent intent, long setTime, int requestCode, boolean isRepeater) {

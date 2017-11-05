@@ -62,12 +62,21 @@ public class GetShareModel implements IGetShareModel {
     @Override
     public int loadImage(String noteId) {
         NoteDBHelper helper = NoteDBHelper.getInstance(presenter.getActivityContext());
-        SQLiteDatabase db = helper.getReadableDatabase();
+        try (SQLiteDatabase db = helper.getReadableDatabase()) {
+            String query = "SELECT * FROM " + ImageEntry.DATABASE_TABLE + " WHERE " + ImageEntry.COL_NOTE_ID + "=" + noteId;
+            Cursor c = null;
+            try{
+                c = db.rawQuery(query, null);
+                if (c != null) {
+                    int count = c.getCount();
+                    return count;
+                }
+            }finally {
+                if(c != null){
+                    c.close();
+                }
+            }
 
-        String query = "SELECT * FROM " + ImageEntry.DATABASE_TABLE + " WHERE " + ImageEntry.COL_NOTE_ID + "=" + noteId;
-        Cursor c = db.rawQuery(query, null);
-        if(c != null){
-            return c.getCount();
         }
         return 0;
     }

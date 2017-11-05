@@ -48,6 +48,7 @@ public class ColorAdapter extends RecyclerView.Adapter<ColorAdapter.ViewHolder> 
 
     @Override
     public int getItemCount() {
+        int size = mColorData != null ? mColorData.size():0;
         return mColorData.size();
     }
     class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {

@@ -26,7 +26,7 @@ import com.minhvu.proandroid.sqlite.database.main.view.Fragment.view.IDeleteView
  * Created by vomin on 10/16/2017.
  */
 
-public class DeleteFragment extends Fragment implements IDeleteView, NoteAdapter2.INoteAdapter {
+public class DeleteFragment extends AFragment implements IDeleteView, NoteAdapter2.INoteAdapter {
 
     RecyclerView recyclerView;
     NoteAdapter2 noteAdapter;
@@ -61,7 +61,7 @@ public class DeleteFragment extends Fragment implements IDeleteView, NoteAdapter
     @Override
     public void onResume() {
         super.onResume();
-        presenter.updateCountList();
+        presenter.isThereANewData();
     }
 
     @Override
@@ -131,5 +131,10 @@ public class DeleteFragment extends Fragment implements IDeleteView, NoteAdapter
         super.onDestroy();
         presenter.onDestroy(getActivity().isChangingConfigurations());
         presenter = null;
+    }
+
+    @Override
+    public void colorSort(int position) {
+
     }
 }

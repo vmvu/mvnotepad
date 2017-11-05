@@ -1,6 +1,7 @@
 package com.minhvu.proandroid.sqlite.database.main.presenter.view;
 
 import android.view.View;
+import android.widget.ImageButton;
 
 import com.minhvu.proandroid.sqlite.database.main.model.view.IMainModel;
 import com.minhvu.proandroid.sqlite.database.main.view.Adapter.NoteAdapter2;
@@ -24,5 +25,7 @@ public interface IMainPresenter {
 
     void updateView(int requestCode);
     void updateAdapter();
+
+    void colorSort(int colorPos);
 
 }

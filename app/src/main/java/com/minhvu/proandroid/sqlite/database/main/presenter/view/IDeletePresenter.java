@@ -24,5 +24,5 @@ public interface IDeletePresenter {
 
     void updateView(int requestCode);
     void updateAdapter();
-    void updateCountList();
+    void isThereANewData();
 }

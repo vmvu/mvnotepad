@@ -25,15 +25,14 @@ public class NoteDBHelper extends SQLiteOpenHelper {
     private static int DATABASE_VERSION = 1;
     private Context ctx ;
 
-    private static volatile NoteDBHelper mHelper = null;
+    private static NoteDBHelper mHelper = null;
 
-    public static synchronized NoteDBHelper getInstance(Context context){
+    public static NoteDBHelper getInstance(Context context){
         if(mHelper == null){
             mHelper = new NoteDBHelper(context);
         }
         return mHelper;
     }
-
 
     private NoteDBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -71,7 +70,6 @@ public class NoteDBHelper extends SQLiteOpenHelper {
     }
 
     private void loadSQLFromFile(String assetsFile, SQLiteDatabase db){
-        Log.d("Pin", "Khong vao day");
         List<String> listStatement = getDDLStatementsFrom(assetsFile);
         if(listStatement == null){
             Log.d(LOGTAG, "Problem creating database");

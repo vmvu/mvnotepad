@@ -51,6 +51,8 @@
     <string name="reminds_every_day_label">Reminds me every day</string>
     <string name="cancel_reminder_label">Cancel reminder</string>
 
+    <string name="reset_sort_dialog_pager">Reset</string>
+
 
 
 </resources>

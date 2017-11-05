@@ -22,6 +22,7 @@ import android.support.v4.content.PermissionChecker;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -35,6 +36,7 @@ import android.widget.Toast;
 import com.minhvu.proandroid.sqlite.database.R;
 import com.minhvu.proandroid.sqlite.database.Utils.DateTimeUtils;
 import com.minhvu.proandroid.sqlite.database.Utils.DesEncrypter;
+import com.minhvu.proandroid.sqlite.database.Utils.Sort;
 import com.minhvu.proandroid.sqlite.database.main.model.view.IMainModel;
 import com.minhvu.proandroid.sqlite.database.main.presenter.view.IMainPresenter;
 import com.minhvu.proandroid.sqlite.database.main.view.Activity.BookDetailActivity;
@@ -103,6 +105,7 @@ public class MainPresenter extends MvpPresenter<IMainModel, IMainView.View> impl
             viewHolder.itemView.setVisibility(View.GONE);
             return;
         }
+        viewHolder.itemView.setVisibility(View.VISIBLE);
 
         viewHolder.tvTitle.setText(note.getTitle());
         viewHolder.tvDateCreated.setText(DateTimeUtils.longToStringDate(note.getDateCreated()));
@@ -119,6 +122,8 @@ public class MainPresenter extends MvpPresenter<IMainModel, IMainView.View> impl
         Color color = Color.getColor(getView().getActivityContext(), note.getIdColor());
         viewHolder.background.setBackgroundColor(color.getBackgroundColor());
         viewHolder.lineHeader.setBackgroundColor(color.getHeaderColor());
+
+        Log.d("color-item", "position: " + position + " -- " + note.getIdColor());
 
         if (isNotePined((int) note.getId())) {
             viewHolder.ivPinIcon.setColorFilter(color.getHeaderColor());
@@ -393,6 +398,13 @@ public class MainPresenter extends MvpPresenter<IMainModel, IMainView.View> impl
         getView().updateAdapter();
     }
 
+    @Override
+    public void colorSort(int colorPos) {
+
+        Sort.colorSort(model.getNoteList(), colorPos);
+
+        getView().updateAdapter();
+    }
 
 
     @Override

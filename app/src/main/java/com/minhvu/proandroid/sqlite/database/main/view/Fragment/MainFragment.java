@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
@@ -25,18 +24,18 @@ import com.minhvu.proandroid.sqlite.database.main.view.Fragment.view.IMainView;
  * Created by vomin on 10/7/2017.
  */
 
-public class MainFragment extends Fragment implements IMainView.View, NoteAdapter2.INoteAdapter {
+public class MainFragment extends AFragment implements IMainView.View, NoteAdapter2.INoteAdapter {
 
     RecyclerView recyclerView;
     NoteAdapter2 noteAdapter;
     IMainPresenter presenter;
+
 
     @Override
     public void onDestroy() {
         super.onDestroy();
         presenter.onDestroy(getActivity().isChangingConfigurations());
         presenter = null;
-        Log.d("Life", "onDestroy");
     }
 
     @Override
@@ -130,6 +129,11 @@ public class MainFragment extends Fragment implements IMainView.View, NoteAdapte
     public void onResume() {
         super.onResume();
         presenter.updateView(-1);
+        presenter.colorSort(-1);
     }
 
+    @Override
+    public void colorSort(int position) {
+        presenter.colorSort(position);
+    }
 }

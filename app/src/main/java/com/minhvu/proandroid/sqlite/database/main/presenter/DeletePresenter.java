@@ -435,8 +435,8 @@ public class DeletePresenter extends MvpPresenter<IDeleteModel, IDeleteView> imp
     }
 
     @Override
-    public void updateCountList() {
-        if(model.getCount() != model.checkCount(getView().getActivityContext())){
+    public void isThereANewData() {
+        if(model.getCount() != model.getCount(getView().getActivityContext())){
             model.loadData(getView().getActivityContext());
             getView().updateAdapter();
         }

@@ -697,7 +697,7 @@ public class BookDetailFragment extends Fragment implements IDetailFragment.View
 
 
     @Override
-    public void showAlarmSpecial(final boolean isAllDayType, final SwitchCompat[] sc, final String switchType) {
+    public void showAlarmSpecial(final boolean isAllDateType, final SwitchCompat[] sc, final String switchType) {
 
         LayoutInflater layoutInflater = (LayoutInflater)
                 getActivity().getBaseContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -718,22 +718,24 @@ public class BookDetailFragment extends Fragment implements IDetailFragment.View
         btnFromDate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                String fromDate = tvFromDate.getText().toString();
+                Log.d("Prompt", "textView: " + tvFromDate.getText().toString());
                 mMainPresenter.alarmButtonShowDateTimePicker(tvFromDate);
             }
         });
 
 
-        if (isAllDayType) {
+        if (isAllDateType) {
             btnToDate.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     mMainPresenter.alarmButtonShowDateTimePicker(tvToDate);
                 }
             });
-            mMainPresenter.alarmSpecificSetup(tvFromDate, tvToDate, tpWhen);
+            mMainPresenter.setupAlarmSpecial(tvFromDate, tvToDate, tpWhen);
 
         } else {
-            mMainPresenter.alarmSpecificSetup(tvFromDate, tpWhen);
+            mMainPresenter.setupAlarmSpecial(tvFromDate, tpWhen);
             linearLayout.setVisibility(View.GONE);
             blackLine1dp.setVisibility(View.GONE);
         }
@@ -753,7 +755,7 @@ public class BookDetailFragment extends Fragment implements IDetailFragment.View
             @Override
             public void onClick(View v) {
                 dialog.dismiss();
-                if (!isAllDayType) {
+                if (!isAllDateType) {
                     mMainPresenter.alarmSpecificHandle(sc, tvFromDate, tpWhen, false);
                 } else {
                     mMainPresenter.alarmSpecificHandle(sc, tvFromDate, tvToDate, tpWhen);

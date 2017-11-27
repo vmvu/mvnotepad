@@ -136,4 +136,25 @@ public class MainFragment extends AFragment implements IMainView.View, NoteAdapt
     public void colorSort(int position) {
         presenter.colorSort(position);
     }
+
+    @Override
+    public void alphaSort() {
+        presenter.alphaSort();
+    }
+
+    @Override
+    public void colorOrderSort() {
+        presenter.colorOrderSort();
+    }
+
+    @Override
+    public void sortByModifiedTime() {
+        presenter.sortByModifiedTime();
+    }
+
+    @Override
+    public void sortByImportant() {
+        presenter.sortByImportant();
+    }
+
 }

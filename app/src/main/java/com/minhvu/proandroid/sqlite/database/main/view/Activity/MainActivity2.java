@@ -1,40 +1,30 @@
 package com.minhvu.proandroid.sqlite.database.main.view.Activity;
 
 import android.Manifest;
-import android.app.Dialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.view.ViewPager;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.AlertDialogLayout;
 import android.support.v7.widget.Toolbar;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
 import com.minhvu.proandroid.sqlite.database.R;
-import com.minhvu.proandroid.sqlite.database.compoments.MyViewPager;
-import com.minhvu.proandroid.sqlite.database.compoments.PagerDialog;
+import com.minhvu.proandroid.sqlite.database.main.view.Fragment.PagerDialog;
 import com.minhvu.proandroid.sqlite.database.main.view.Activity.view.SortView;
-import com.minhvu.proandroid.sqlite.database.main.view.Adapter.SortPagerAdapter;
 import com.minhvu.proandroid.sqlite.database.main.view.Fragment.AFragment;
 import com.minhvu.proandroid.sqlite.database.main.view.Fragment.DeleteFragment;
 import com.minhvu.proandroid.sqlite.database.main.view.Fragment.MainFragment;
-
-import java.util.zip.Inflater;
 
 /**
  * Created by vomin on 10/10/2017.
@@ -61,7 +51,8 @@ public class MainActivity2 extends AppCompatActivity implements SortView {
         requestPermission();
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
     }
-    void openMainPage(){
+
+    void openMainPage() {
         toolbar.setTitle(getString(R.string.main_page));
         fab.setVisibility(View.VISIBLE);
         btnDeletePage.setTag(true);
@@ -69,7 +60,7 @@ public class MainActivity2 extends AppCompatActivity implements SortView {
 
         FragmentManager fManager = getSupportFragmentManager();
         fragment = (MainFragment) fManager.findFragmentByTag(MainFragment.class.getSimpleName());
-        if(fragment == null){
+        if (fragment == null) {
             fragment = new MainFragment();
         }
 
@@ -78,7 +69,7 @@ public class MainActivity2 extends AppCompatActivity implements SortView {
         transaction.commit();
     }
 
-    void openDeletePage(){
+    void openDeletePage() {
         toolbar.setTitle(getString(R.string.delete_page));
         fab.setVisibility(View.GONE);
         btnDeletePage.setImageResource(R.drawable.ic_home_black_24dp);
@@ -86,7 +77,7 @@ public class MainActivity2 extends AppCompatActivity implements SortView {
 
         FragmentManager fManager = getSupportFragmentManager();
         fragment = (DeleteFragment) fManager.findFragmentByTag(DeleteFragment.class.getSimpleName());
-        if(fragment == null){
+        if (fragment == null) {
             fragment = new DeleteFragment();
         }
 
@@ -95,7 +86,7 @@ public class MainActivity2 extends AppCompatActivity implements SortView {
         transaction.commit();
     }
 
-    void setupInit(){
+    void setupInit() {
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         btnSort = (ImageButton) findViewById(R.id.btnSort);
         btnDeletePage = (ImageButton) findViewById(R.id.btnDeletePage);
@@ -110,9 +101,9 @@ public class MainActivity2 extends AppCompatActivity implements SortView {
         btnDeletePage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(!((boolean) btnDeletePage.getTag())){
+                if (!((boolean) btnDeletePage.getTag())) {
                     openMainPage();
-                }else{
+                } else {
                     openDeletePage();
                 }
             }
@@ -128,16 +119,15 @@ public class MainActivity2 extends AppCompatActivity implements SortView {
     }
 
 
-    void sortVew(){
+    void sortVew() {
 
-            pagerDialog = new PagerDialog(this);
-            pagerDialog.setCancelable(true);
+        pagerDialog = new PagerDialog(this);
+        pagerDialog.setCancelable(true);
 
         pagerDialog.show(getSupportFragmentManager(), "dialog");
-
     }
 
-    void openActivity(){
+    void openActivity() {
         Intent intent = new Intent(MainActivity2.this, BookDetailActivity.class);
         startActivity(intent);
     }
@@ -175,5 +165,26 @@ public class MainActivity2 extends AppCompatActivity implements SortView {
     public void colorSort(int position) {
         fragment.colorSort(position);
         pagerDialog.dismiss();
+    }
+
+    @Override
+    public void alphaSort() {
+        fragment.alphaSort();
+        pagerDialog.dismiss();
+    }
+
+    @Override
+    public void colorOrderSort() {
+        fragment.colorOrderSort();
+    }
+
+    @Override
+    public void modifiedTimeSort() {
+        fragment.sortByModifiedTime();
+    }
+
+    @Override
+    public void sortByImportant() {
+        fragment.sortByImportant();
     }
 }

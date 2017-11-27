@@ -28,4 +28,9 @@ public interface IMainPresenter {
 
     void colorSort(int colorPos);
 
+    void alphaSort();
+    void colorOrderSort();
+    void sortByModifiedTime();
+    void sortByImportant();
+
 }

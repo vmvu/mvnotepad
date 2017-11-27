@@ -1,20 +1,14 @@
 package com.minhvu.proandroid.sqlite.database.main.view.Fragment;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.view.PagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.AttributeSet;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageButton;
 
 import com.minhvu.proandroid.sqlite.database.R;
 import com.minhvu.proandroid.sqlite.database.main.view.Adapter.ColorAdapter;
@@ -38,7 +32,7 @@ public class ColorSortWindow extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View layout = inflater.inflate(R.layout.pager_dialog, container, false);
+        View layout = inflater.inflate(R.layout.color_sort_pager, container, false);
         Button btnResetSort = (Button) layout.findViewById(R.id.btnResetSort);
         btnResetSort.setOnClickListener(new View.OnClickListener() {
             @Override

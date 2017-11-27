@@ -8,4 +8,9 @@ import android.support.v4.app.Fragment;
 
 public abstract class AFragment extends Fragment {
     public abstract void colorSort(int position);
+
+    public abstract void alphaSort();
+    public abstract void colorOrderSort();
+    public abstract void sortByModifiedTime();
+    public abstract void sortByImportant();
 }

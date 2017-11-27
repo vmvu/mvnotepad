@@ -246,17 +246,7 @@ public class DetailPresenter extends MvpPresenter<IDetailModel, IDetailFragment.
 
     }
 
-    private int getColor(int color) {
 
-
-        int[] headerColors = getView().getActivityContext().getResources().getIntArray(R.array.header_color);
-        int c = 0;
-        for (int i = 0; i < headerColors.length; i++) {
-            if (headerColors[i] == color)
-                return i;
-        }
-        return c;
-    }
 
 
     private void saveNoteInternal(EditText title, EditText content, ImageButton color, int typeOfText) {
@@ -354,7 +344,7 @@ public class DetailPresenter extends MvpPresenter<IDetailModel, IDetailFragment.
                 cancelNotification(nodeID_int);
                 alarm(intent, time30Min, nodeID_int, false);
                 break;
-            case "scAtTime":
+            case "scAtTime"://on time
                 alarmSpecial(intent, nodeID_int, false);
                 cancelNotification(nodeID_int);
                 break;
@@ -377,13 +367,15 @@ public class DetailPresenter extends MvpPresenter<IDetailModel, IDetailFragment.
                 getView().getActivityContext().getString(R.string.PREFS_ALARM_FROM_DATE) + getNoteID());
         String time = model.getDataSharePreference(
                 getView().getActivityContext().getString(R.string.PREFS_ALARM_WHEN) + getNoteID());
-        long timeLongType = Long.parseLong(time);
-        int minute = (int) ((timeLongType / 60000) % 60);
-        int hour = (int) ((timeLongType / (60 * 60000)) % 24);
 
+
+        long timeLongType = Long.parseLong(time);
+        int minutes = (int) ((timeLongType / 60000) % 60);
+        int hour = (int) ((timeLongType / (60 * 60000)) % 24);
+        Log.d("Prompt", "date: " + DateTimeUtils.longToStringDate(Long.parseLong(date)) + " | time: " + hour + ":" + minutes);
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(Long.parseLong(date));
-        calendar.add(Calendar.MINUTE, minute);
+        calendar.add(Calendar.MINUTE, minutes);
         calendar.add(Calendar.HOUR_OF_DAY, hour);
 
         alarm(intent, calendar.getTime().getTime(), requestCode, isRepeater);
@@ -480,36 +472,39 @@ public class DetailPresenter extends MvpPresenter<IDetailModel, IDetailFragment.
     }
 
     @Override
-    public void alarmSpecificSetup(TextView fromDate, TextView toDate, TimePicker timePicker) {
-        alarmSpecificSetup(fromDate, timePicker);
+    public void setupAlarmSpecial(TextView fromDate, TextView toDate, TimePicker timePicker) {
+        setupAlarmSpecial(fromDate, timePicker);
         String key = getView().getActivityContext().getString(R.string.PREFS_ALARM_TO_DATE) + getNoteID();
         String dateString = model.getDataSharePreference(key);
         long date;
-        if (!TextUtils.isEmpty(dateString)) {
-            date = Long.parseLong(dateString);
-        } else {
-            final Calendar calendar = Calendar.getInstance();
-            calendar.add(Calendar.DAY_OF_YEAR, 1);
-            date = calendar.getTimeInMillis();
+        final Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_YEAR, 1);
+        date = calendar.getTimeInMillis();
+        if (dateString != null && !TextUtils.isEmpty(dateString) && dateString.compareToIgnoreCase("0") != 0 ) {
+            long t = Long.parseLong(dateString);
+            if (Long.parseLong(dateString) >= date){
+                date = Long.parseLong(dateString);
+            }
         }
         toDate.setText(DateTimeUtils.longToStringDate(date));
     }
 
     @Override
-    public void alarmSpecificSetup(TextView fromDate, TimePicker timePicker) {
+    public void setupAlarmSpecial(TextView fromDate, TimePicker timePicker) {
 
         String key = getView().getActivityContext().getString(R.string.PREFS_ALARM_FROM_DATE) + getNoteID();
-        String date = model.getDataSharePreference(key);
+        String dateString = model.getDataSharePreference(key);
 
-        if (TextUtils.isEmpty(date)) {
+        if(dateString != null && !TextUtils.isEmpty(dateString) && dateString.compareToIgnoreCase("0") != 0){
+            fromDate.setText(DateTimeUtils.longToStringDate(Long.parseLong(dateString.trim())));
+        }else{
             fromDate.setText(DateTimeUtils.longToStringDate(System.currentTimeMillis()));
-        } else {
-            fromDate.setText(DateTimeUtils.longToStringDate(Long.parseLong(date.trim())));
         }
+
         String timeKey = getView().getActivityContext().getString(R.string.PREFS_ALARM_WHEN) + getNoteID();
         String timeString = model.getDataSharePreference(timeKey);
         int minute, hour;
-        if (TextUtils.isEmpty(timeString)) {
+        if (TextUtils.isEmpty(timeString) || timeKey.compareToIgnoreCase("0") == 0) {
             Calendar calendar = Calendar.getInstance();
             minute = calendar.get(Calendar.MINUTE);
             hour = calendar.get(Calendar.HOUR_OF_DAY);
@@ -526,8 +521,7 @@ public class DetailPresenter extends MvpPresenter<IDetailModel, IDetailFragment.
 
     @Override
     public void alarmButtonShowDateTimePicker(TextView textView) {
-        long timeMillis = DateTimeUtils.stringToLongDate(textView.getText().toString());
-        DatePickerDialog dialog = settingDatePicker(timeMillis, textView);
+        DatePickerDialog dialog = settingDatePicker(textView);
         getView().showDateTimePicker(dialog);
     }
 
@@ -559,7 +553,8 @@ public class DetailPresenter extends MvpPresenter<IDetailModel, IDetailFragment.
     }
 
 
-    private DatePickerDialog settingDatePicker(long timeMillis, final TextView textView) {
+    private DatePickerDialog settingDatePicker(final TextView textView) {
+        long timeMillis = DateTimeUtils.stringToLongDate(textView.getText().toString());
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(timeMillis);
         int nYear = calendar.get(Calendar.YEAR);
@@ -569,7 +564,7 @@ public class DetailPresenter extends MvpPresenter<IDetailModel, IDetailFragment.
         DatePickerDialog dialog = new DatePickerDialog(getView().getActivityContext(), new DatePickerDialog.OnDateSetListener() {
             @Override
             public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                textView.setText(dayOfMonth + "//" + (month + 1) + "//" + year);
+                textView.setText(dayOfMonth + "/" + (month + 1) + "/" + year);
             }
         }, nYear, nMonth, nDay);
         dialog.getDatePicker().setMinDate(System.currentTimeMillis());

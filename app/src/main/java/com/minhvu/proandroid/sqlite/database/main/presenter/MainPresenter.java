@@ -119,20 +119,19 @@ public class MainPresenter extends MvpPresenter<IMainModel, IMainView.View> impl
             viewHolder.ivLockIcon.setVisibility(View.VISIBLE);
             viewHolder.tvContent.setVisibility(View.GONE);
         }
+
         Color color = Color.getColor(getView().getActivityContext(), note.getIdColor());
         viewHolder.background.setBackgroundColor(color.getBackgroundColor());
         viewHolder.lineHeader.setBackgroundColor(color.getHeaderColor());
 
-        Log.d("color-item", "position: " + position + " -- " + note.getIdColor());
-
-        if (isNotePined((int) note.getId())) {
+        if (isImportantNote((int) note.getId())) {
             viewHolder.ivPinIcon.setColorFilter(color.getHeaderColor());
             viewHolder.ivPinIcon.setVisibility(View.VISIBLE);
         }else{
             viewHolder.ivPinIcon.setVisibility(View.GONE);
         }
     }
-    private boolean isNotePined(int noteID) {
+    private boolean isImportantNote(int noteID) {
         SharedPreferences preferences = getView().getActivityContext().getSharedPreferences(
                 getView().getActivityContext().getString(R.string.PREFS_ALARM_FILE), Context.MODE_PRIVATE);
 
@@ -402,10 +401,32 @@ public class MainPresenter extends MvpPresenter<IMainModel, IMainView.View> impl
     public void colorSort(int colorPos) {
 
         Sort.colorSort(model.getNoteList(), colorPos);
-
         getView().updateAdapter();
     }
 
+    @Override
+    public void alphaSort() {
+        Sort.alphaSort(model.getNoteList());
+        getView().updateAdapter();
+    }
+
+    @Override
+    public void colorOrderSort() {
+        Sort.colorOrderSort(model.getNoteList());
+        getView().updateAdapter();
+    }
+
+    @Override
+    public void sortByModifiedTime() {
+        Sort.modifiedTimeSort(model.getNoteList());
+        getView().updateAdapter();
+    }
+
+    @Override
+    public void sortByImportant() {
+        Sort.sortByImportant(getView().getActivityContext(), model.getNoteList());
+        getView().updateAdapter();
+    }
 
     @Override
     public void updateView(final int requestCode) {

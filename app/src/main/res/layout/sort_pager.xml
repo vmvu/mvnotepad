@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="center"
+    android:gravity="center"
+
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/btn_Alpha_Sort"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:background="@drawable/press_state"
+            android:src="@drawable/ic_sort_by_alphabet" />
+
+        <ImageButton
+            android:id="@+id/btn_sort_by_color_order"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:layout_marginLeft="10dp"
+            android:background="@drawable/press_state"
+            android:src="@drawable/ic_pantone" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/btn_Modified_Time_Sort"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:background="@drawable/press_state"
+            android:src="@drawable/ic_text_file_editor" />
+        <ImageButton
+            android:id="@+id/btn_sort_by_important"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:layout_marginLeft="10dp"
+            android:background="@drawable/press_state"
+            android:src="@drawable/ic_tender_ghost" />
+    </LinearLayout>
+
+
+</LinearLayout>

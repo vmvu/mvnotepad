@@ -17,37 +17,39 @@
     <color name="purple_header">#8200a6</color>
 
 
-    <color name="backgroundColor_default">#bfd4ecea</color>
+    <color name="backgroundColor_default">#9ed4ecea</color>
     <color name="red_background">#ffdddf</color>
     <color name="yellow_background">#dffeffc9</color>
-    <color name="orange_background">#dafce19d</color>
-    <color name="skyblue_background">#c9d6ff</color>
-    <color name="green_background">#d6fdc7</color>
+    <color name="orange_background">#e3fae9bf</color>
+    <color name="skyblue_background">#c8c9d6ff</color>
+    <color name="green_background">#c9d6fdc7</color>
     <color name="brown_background">#edd7a6</color>
     <color name="pink_background">#d2ffe9f8</color>
-    <color name="purple_background">#f4ccff</color>
+    <color name="purple_background">#c6f4ccff</color>
 
     <array name="header_color">
         <item>@color/headerColor_default</item>
-        <item>@color/red_header</item>
-        <item>@color/pink_header</item>
-        <item>@color/purple_header</item>
-        <item>@color/brown_header</item>
-        <item>@color/orange_header</item>
-        <item>@color/yellow_header</item>
-        <item>@color/green_header</item>
         <item>@color/skyblue_header</item>
+        <item>@color/green_header</item>
+        <item>@color/pink_header</item>
+        <item>@color/red_header</item>
+        <item>@color/purple_header</item>
+        <item>@color/yellow_header</item>
+        <item>@color/orange_header</item>
+        <item>@color/brown_header</item>
     </array>
     <array name="background_color">
         <item>@color/backgroundColor_default</item>
-        <item>@color/red_background</item>
-        <item>@color/pink_background</item>
-        <item>@color/purple_background</item>
-        <item>@color/brown_background</item>
-        <item>@color/orange_background</item>
-        <item>@color/yellow_background</item>
-        <item>@color/green_background</item>
         <item>@color/skyblue_background</item>
+        <item>@color/green_background</item>
+        <item>@color/pink_background</item>
+        <item>@color/red_background</item>
+        <item>@color/purple_background</item>
+        <item>@color/yellow_background</item>
+        <item>@color/orange_background</item>
+        <item>@color/brown_background</item>
+
+
     </array>
 
 </resources>

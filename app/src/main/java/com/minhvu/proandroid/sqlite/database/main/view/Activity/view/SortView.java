@@ -6,4 +6,8 @@ package com.minhvu.proandroid.sqlite.database.main.view.Activity.view;
 
 public interface SortView {
     void colorSort(int position);
+    void alphaSort();
+    void colorOrderSort();
+    void modifiedTimeSort();
+    void sortByImportant();
 }

@@ -137,4 +137,24 @@ public class DeleteFragment extends AFragment implements IDeleteView, NoteAdapte
     public void colorSort(int position) {
 
     }
+
+    @Override
+    public void alphaSort() {
+
+    }
+
+    @Override
+    public void colorOrderSort() {
+
+    }
+
+    @Override
+    public void sortByModifiedTime() {
+
+    }
+
+    @Override
+    public void sortByImportant() {
+
+    }
 }

@@ -7,6 +7,7 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 
 import com.minhvu.proandroid.sqlite.database.main.view.Activity.view.SortView;
 import com.minhvu.proandroid.sqlite.database.main.view.Fragment.ColorSortWindow;
+import com.minhvu.proandroid.sqlite.database.main.view.Fragment.SortWindow;
 
 /**
  * Created by vomin on 11/1/2017.
@@ -31,12 +32,16 @@ public class SortPagerAdapter extends FragmentStatePagerAdapter {
 
     @Override
     public Fragment getItem(int position) {
-        return new ColorSortWindow(sortView);
+        switch (position){
+            case 0: return new ColorSortWindow(sortView);
+            case 1: return new SortWindow(sortView);
+            default: return null;
+        }
     }
 
     @Override
     public int getCount() {
-        return 1;
+        return 2;
     }
 
 
@@ -45,6 +50,8 @@ public class SortPagerAdapter extends FragmentStatePagerAdapter {
         switch (position){
             case 0:
                 return "Color";
+            case 1:
+                return "Sort";
         }
         return null;
     }

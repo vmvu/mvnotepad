@@ -37,8 +37,8 @@ public interface IDetailPresenter {
     void handleForAlarms(SwitchCompat[] switchCompatArray, View layout);
     void switchCompatOnClick(View view, SwitchCompat[] switchCompatArray);
     void switchCompatReset(View view, SwitchCompat[] switchCompatArray);
-    void alarmSpecificSetup(TextView fromDate, TextView toDate, TimePicker timePicker);
-    void alarmSpecificSetup(TextView fromDate, TimePicker timePicker);
+    void setupAlarmSpecial(TextView fromDate, TextView toDate, TimePicker timePicker);
+    void setupAlarmSpecial(TextView fromDate, TimePicker timePicker);
     void alarmSpecificHandle(SwitchCompat[] switchCompatArray, TextView fromDate, TextView toDate,TimePicker timePicker);
     void alarmSpecificHandle(SwitchCompat[] switchCompatArray, TextView fromDate,TimePicker timePicker, boolean isAllDate);
 

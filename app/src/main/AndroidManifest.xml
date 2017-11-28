@@ -6,13 +6,15 @@
     <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-    <uses-permission-sdk-23 android:name="android.permission.USE_FINGERPRINT"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <uses-permission-sdk-23 android:name="android.permission.USE_FINGERPRINT" />
     //Google-play don't check for the presence of a touch sensor
-    <uses-feature android:name="android.hardware.fingerprint"
-        android:required="false"/>
+    <uses-feature
+        android:name="android.hardware.fingerprint"
+        android:required="false" />
 
     <application
         android:name=".MyApplication"
@@ -61,18 +63,28 @@
         <provider
             android:name=".models.data.NoteProvider"
             android:authorities="@string/content_authority" />
-        <receiver android:name=".receiver.PinBroadcast" android:enabled="true">
+
+        <receiver
+            android:name=".receiver.PinBroadcast"
+            android:enabled="true">
             <intent-filter>
                 <action android:name="pinbroadcast" />
             </intent-filter>
         </receiver>
         <receiver android:name=".receiver.HandlerRebootReceiver">
             <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
-        <service android:name=".services.AlarmRebootService"/>
 
+        <service android:name=".services.AlarmRebootService" />
+
+        <receiver android:name=".receiver.SyncReceiver">
+            <intent-filter>
+                <action android:name="syncei" />
+            </intent-filter>
+        </receiver>
+        <service android:name=".services.SyncService" />
 
     </application>
 

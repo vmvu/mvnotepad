@@ -19,6 +19,8 @@ import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.minhvu.proandroid.sqlite.database.R;
 import com.minhvu.proandroid.sqlite.database.main.view.Fragment.PagerDialog;
 import com.minhvu.proandroid.sqlite.database.main.view.Activity.view.SortView;
@@ -35,6 +37,7 @@ public class MainActivity2 extends AppCompatActivity implements SortView {
     private FloatingActionButton fab;
     private ImageButton btnDeletePage;
     private ImageButton btnSort;
+    private ImageButton btnSyncCloud;
 
     private PagerDialog pagerDialog;
     private AFragment fragment;
@@ -109,6 +112,16 @@ public class MainActivity2 extends AppCompatActivity implements SortView {
             }
         });
 
+        btnSyncCloud = (ImageButton) findViewById(R.id.btnSync_cloud);
+        btnSyncCloud.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                broadcastSync();
+            }
+        });
+
+
+
         fab = (FloatingActionButton) findViewById(R.id.fabInsert);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -118,6 +131,14 @@ public class MainActivity2 extends AppCompatActivity implements SortView {
         });
     }
 
+
+
+
+    private void broadcastSync(){
+        String broadcastAction = getString(R.string.broadcast_sync);
+        Intent intent = new Intent(broadcastAction);
+        sendBroadcast(intent);
+    }
 
     void sortVew() {
 
@@ -176,15 +197,18 @@ public class MainActivity2 extends AppCompatActivity implements SortView {
     @Override
     public void colorOrderSort() {
         fragment.colorOrderSort();
+        pagerDialog.dismiss();
     }
 
     @Override
     public void modifiedTimeSort() {
         fragment.sortByModifiedTime();
+        pagerDialog.dismiss();
     }
 
     @Override
     public void sortByImportant() {
         fragment.sortByImportant();
+        pagerDialog.dismiss();
     }
 }

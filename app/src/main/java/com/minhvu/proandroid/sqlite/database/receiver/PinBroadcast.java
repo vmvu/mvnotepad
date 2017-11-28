@@ -24,7 +24,6 @@ import java.text.ParseException;
  */
 
 public class PinBroadcast extends BroadcastReceiver {
-    private static final String LOGTAG = PinBroadcast.class.getSimpleName();
 
     public void onReceive(Context context, Intent intent) {
         Uri uri = Uri.parse(intent.getStringExtra(context.getResources().getString(R.string.notify_note_uri)));

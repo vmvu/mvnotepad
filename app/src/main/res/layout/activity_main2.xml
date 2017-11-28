@@ -29,27 +29,36 @@
                     android:id="@+id/toolbar"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_weight="8"
                     android:layout_gravity="center_vertical"
+                    android:layout_weight="8"
                     android:gravity="center_vertical"
                     app:elevation="0dp"
 
-                   />
+                    />
+                <ImageButton
+                    android:id="@+id/btnSync_cloud"
+                    android:layout_width="40dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_synchronize"
+                    android:background="@drawable/press_state"
+                    android:layout_marginRight="5dp"
+                    />
+
                 <ImageButton
                     android:id="@+id/btnSort"
                     android:layout_width="40dp"
                     android:layout_height="wrap_content"
-                    android:src="@drawable/ic_sort_ascending"
                     android:layout_gravity="center"
                     android:background="@drawable/press_state"
-                    />
+                    android:src="@drawable/ic_sort_ascending" />
+
                 <ImageButton
                     android:id="@+id/btnDeletePage"
                     android:layout_width="40dp"
                     android:layout_height="wrap_content"
 
-                    android:background="@drawable/press_state"
-                    />
+                    android:background="@drawable/press_state" />
             </LinearLayout>
 
         </android.support.design.widget.AppBarLayout>
@@ -72,9 +81,7 @@
             android:layout_marginRight="@dimen/fab_margin_right"
 
             android:src="@drawable/ic_plus_one_black_24dp"
-            app:fabSize="normal"
-            />
-
+            app:fabSize="normal" />
 
 
     </android.support.design.widget.CoordinatorLayout>

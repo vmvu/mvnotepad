@@ -8,6 +8,9 @@
     <string name="setting_menu">Setting</string>
 
     <string name="broadcast_receiver_pin">pinbroadcast</string>
+    <string name="broadcast_sync">syncei</string>
+
+
     <string name="content_authority">com.minhvu.proandroid.sqlite.database</string>
     <string name="popup_delete">Delete</string>
     <string name="popup_restore">Restore</string>

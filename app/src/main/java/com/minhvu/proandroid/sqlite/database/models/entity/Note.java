@@ -5,25 +5,30 @@ import android.content.ContentValues;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.google.firebase.database.IgnoreExtraProperties;
 import com.minhvu.proandroid.sqlite.database.models.data.NoteContract.NoteEntry;
 
 
 /**
  * Created by vomin on 8/24/2017.
  */
-
+@IgnoreExtraProperties
 public class Note {
-    private long id = -1;
-    private String title;
-    private String content;
-    private long date_created;
-    private long last_on;
-    private String password = null;
-    private String pass_salt = null;
-    private int id_color = 0;
-    private int id_typeoftext;
+    public long id = -1;
+    public String title;
+    public String content;
+    public long date_created;
+    public long last_on;
+    public String password = null;
+    public String pass_salt = null;
+    public int id_color = 0;
+    public int id_typeoftext;
     private String account = null;
-    private boolean delete = false;
+    public boolean delete = false;
+
+    public Note(){
+
+    }
 
     public ContentValues getValues(){
         ContentValues cv = new ContentValues();

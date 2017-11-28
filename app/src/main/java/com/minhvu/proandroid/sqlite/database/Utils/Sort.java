@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.google.firebase.storage.FirebaseStorage;
 import com.minhvu.proandroid.sqlite.database.R;
 import com.minhvu.proandroid.sqlite.database.models.entity.Note;
 
@@ -18,7 +19,7 @@ import java.util.List;
 public class Sort {
 
     public static void colorSort(List<Note> notes, int colorPos) {
-        if (notes == null || notes.size() <= 1) {
+        if (notes == null || notes.size() < 1) {
             return;
         }
         if (colorPos == -1) {
@@ -49,15 +50,18 @@ public class Sort {
     }
 
     public static void alphaSort(List<Note> notes) {
-        if (notes == null || notes.size() <= 1) {
+        if (notes == null || notes.size() < 1) {
             return;
         }
-        ShakerSort(notes);
+        int existLength = sortByExist(notes);
+        if (existLength <= 1) {
+            return;
+        }
+        ShakerSort(notes, existLength);
     }
 
-    private static void ShakerSort(List<Note> notes) {
-        int mLength = notes.size();
-        int mLeft = 0, mRight = mLength - 1;
+    private static void ShakerSort(List<Note> notes, int length) {
+        int mLeft = 0, mRight = length - 1;
         int k = mRight;
         int j = mRight;
         while (mLeft < mRight) {
@@ -84,6 +88,7 @@ public class Sort {
             mRight = k;
             j = k;
         }
+        sortByExist(notes);
     }
 
     private static void swap(List<Note> notes, int a, int b) {
@@ -136,7 +141,10 @@ public class Sort {
     }
 
     public static void colorOrderSort(List<Note> notes) {
-        int length = notes.size();
+        if (notes == null || notes.size() < 1) {
+            return;
+        }
+        int length = sortByExist(notes);
         if (length <= 1) {
             return;
         }
@@ -145,7 +153,7 @@ public class Sort {
         for (int i = 0; i <= 8; i++) {
             while (j < length) {
                 Note note = notes.get(j);
-                if (note.getIdColor() == i && !note.isDelete()) {
+                if (note.getIdColor() == i) {
                     if (k != j) {
                         swap(notes, k, j);
                     }
@@ -155,28 +163,34 @@ public class Sort {
             }
             j = k;
         }
-
     }
 
-    public static void modifiedTimeSort(List<Note> notes){
-        for(int i = 0 ; i < notes.size() - 1; i++)
-            for(int j = i + 1; j < notes.size() ;j++){
-                if(notes.get(i).getLastOn() < notes.get(j).getLastOn()){
+    public static void modifiedTimeSort(List<Note> notes) {
+        if (notes == null || notes.size() < 1) {
+            return;
+        }
+        int existLength = sortByExist(notes);
+        if (existLength <= 1) {
+            return;
+        }
+        for (int i = 0; i < existLength - 1; i++)
+            for (int j = i + 1; j < existLength; j++) {
+                if (notes.get(i).getLastOn() < notes.get(j).getLastOn()) {
                     swap(notes, i, j);
                 }
             }
     }
 
-    public static void sortByImportant(Context ctx, List<Note> notes){
-        if(notes.size() <= 1){
+    public static void sortByImportant(Context ctx, List<Note> notes) {
+        if (notes == null || notes.size() < 1) {
             return;
         }
         SharedPreferences preferences = ctx.getSharedPreferences(
                 ctx.getString(R.string.PREFS_ALARM_FILE), Context.MODE_PRIVATE);
         int k = 0;
-        for(int i = 0; i < notes.size(); i++){
-            if(isImportantNote(ctx, preferences, notes.get(i).getId())){
-                if(k != i) {
+        for (int i = 0; i < notes.size(); i++) {
+            if (isImportantNote(ctx, preferences, notes.get(i).getId())) {
+                if (k != i) {
                     swap(notes, k, i);
                 }
                 k++;
@@ -184,10 +198,21 @@ public class Sort {
         }
     }
 
-    private static boolean isImportantNote(Context ctx, SharedPreferences preferences,long noteID) {
+    private static boolean isImportantNote(Context ctx, SharedPreferences preferences, long noteID) {
         String key = ctx.getString(R.string.PREFS_ALARM_SWITCH_KEY) + noteID;
         String switchType = preferences.getString(key, "");
         return switchType.trim().equals("scPin");
     }
 
+    private static int sortByExist(List<Note> notes) {
+        int k = 0;
+        for (int i = 0; i < notes.size(); i++) {
+            if (!notes.get(i).isDelete()) {
+                if (i != k)
+                    swap(notes, i, k);
+                k++;
+            }
+        }
+        return k;
+    }
 }

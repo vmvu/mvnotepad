@@ -178,7 +178,8 @@ public class BookDetailFragment extends Fragment implements IDetailFragment.View
         viewGroup = container;
         View layout = inflater.inflate(R.layout.fragment_detail, container, false);
         scrollView = (ScrollView) layout.findViewById(R.id.sv_content_place);
-        etTitle = (EditText) layout.findViewById(R.id.etxtTitle);
+        ImageButton btnRemoveTitle = (ImageButton) layout.findViewById(R.id.btnRemoveTitle);
+        etTitle = (EditText) layout.findViewById(R.id.etTitle);
         etContent = (EditText) layout.findViewById(R.id.etContent);
         btnSetting = (ImageButton) layout.findViewById(R.id.btnSetting);
         btnColor = (ImageButton) layout.findViewById(R.id.btnColor);
@@ -186,7 +187,13 @@ public class BookDetailFragment extends Fragment implements IDetailFragment.View
         viewGroup.setBackgroundColor(getResources().getColor(R.color.backgroundColor_default));
         setup(layout);
         //
-
+         btnRemoveTitle.setOnClickListener(new View.OnClickListener() {
+             @Override
+             public void onClick(View v) {
+                 etTitle.setText("");
+                 etTitle.requestFocus();
+             }
+         });
 
         //restore
         if (savedInstanceState != null) {
@@ -841,6 +848,12 @@ public class BookDetailFragment extends Fragment implements IDetailFragment.View
     @Override
     public void notifyUpdate() {
         imageAdapter.notifyDataSetChanged();
+
+    }
+
+    @Override
+    public void notifyUpdateItemChang(int position) {
+        imageAdapter.notifyItemChanged(position);
     }
 
     @Override

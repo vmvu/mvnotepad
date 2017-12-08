@@ -2,6 +2,7 @@ package com.minhvu.proandroid.sqlite.database.models.data;
 
 import android.net.Uri;
 import android.provider.BaseColumns;
+import android.text.style.BackgroundColorSpan;
 
 /**
  * Created by vomin on 8/1/2017.
@@ -24,6 +25,7 @@ public class NoteContract  {
                 BASE_CONTENT_URI.buildUpon().appendPath(path_tnote).build();
 
         public static final String DATABASE_TABLE = "v_note";
+        public static final String COL_KEY_SYNC = "keySync";
         public static final String COL_TITLE = "title";
         public static final String COL_CONTENT = "content";
         public static final String COL_DATE_CREATED = "date_created";
@@ -32,7 +34,6 @@ public class NoteContract  {
         public static final String COL_PASSWORD_SALT = "pass_key";
         public static final String COL_COLOR = "id_color";
         public static final String COL_TYPE_OF_TEXT = "id_typeoftext";
-        public static final String COL_ACCOUNT ="account";
         public static final String COL_DELETE = "isdelete";
 
         public static final String DEFAULT_SORT_ORDER = COL_DATE_CREATED + " DESC";
@@ -40,7 +41,7 @@ public class NoteContract  {
 
         public static String[] getColumnNames(){
             return new String[]{_ID, COL_TITLE, COL_CONTENT, COL_DATE_CREATED, COL_LAST_ON,
-                    COL_PASSWORD, COL_PASSWORD_SALT, COL_COLOR, COL_ACCOUNT, COL_DELETE};
+                    COL_PASSWORD, COL_PASSWORD_SALT, COL_COLOR,  COL_DELETE};
         }
 
         public static String[] getColumnNamesForNote(){
@@ -59,9 +60,10 @@ public class NoteContract  {
         public static final String DATABASE_TABLE = "v_images";
         public static final String COL_NAME_PATH = "name_path";
         public static final String COL_NOTE_ID = "note_id";
+        public static final String COL_SYNC ="sync";
 
         public static String[] getColumnNames(){
-            return new String[]{COL_NAME_PATH, COL_NOTE_ID};
+            return new String[]{COL_NAME_PATH, COL_NOTE_ID, COL_SYNC};
         }
     }
 
@@ -89,5 +91,10 @@ public class NoteContract  {
         public static String[] getColumnsName(){
             return new String[] {COL_ID};
         }
+    }
+
+    public static final class NoteReadyDeletedEntry{
+        public static final String DATABASE_TABLE = "note_ready_deleted";
+        public static final String NOTE_KEY_SYNC ="keySync";
     }
 }

@@ -33,7 +33,7 @@ public class KMPTest {
         return KMP_map;
     }
 
-    public static void main(String []Args){
+    public static void test(String []Args){
         String s=  "abcadaaadbcadaa";
         String pattern  ="cadaa?";
         int []next = bangNext_KMP(pattern);

@@ -53,7 +53,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.minhvu.proandroid.sqlite.database.R;
-import com.minhvu.proandroid.sqlite.database.Utils.DesEncrypter;
+import com.minhvu.proandroid.sqlite.database.Utils.DeEncrypter;
 import com.minhvu.proandroid.sqlite.database.main.view.Adapter.NoteAdapter;
 import com.minhvu.proandroid.sqlite.database.models.data.NoteContract;
 import com.minhvu.proandroid.sqlite.database.models.entity.Note;
@@ -180,8 +180,7 @@ public class MainActivity extends AppCompatActivity
                 if (TextUtils.isEmpty(password)) {
                     return;
                 }
-                DesEncrypter decrypt = new DesEncrypter();
-                String pas = decrypt.decrypt(note.getPassword(), note.getPassSalt());
+                String pas = DeEncrypter.decryptString(note.getPassword(), note.getPassSalt());
                 if (pas.equals(password)) {
                     dialog.dismiss();
                     Uri uri = ContentUris.withAppendedId(NoteContract.NoteEntry.CONTENT_URI, note.getId());

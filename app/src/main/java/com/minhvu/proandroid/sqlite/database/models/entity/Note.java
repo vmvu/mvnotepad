@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.google.firebase.database.Exclude;
 import com.google.firebase.database.IgnoreExtraProperties;
 import com.minhvu.proandroid.sqlite.database.models.data.NoteContract.NoteEntry;
 
@@ -14,50 +15,47 @@ import com.minhvu.proandroid.sqlite.database.models.data.NoteContract.NoteEntry;
  */
 @IgnoreExtraProperties
 public class Note {
-    public long id = -1;
-    public String title;
-    public String content;
-    public long date_created;
-    public long last_on;
-    public String password = null;
-    public String pass_salt = null;
-    public int id_color = 0;
-    public int id_typeoftext;
+
+    private String keySync;
+    private long id = -1;
+    private String title;
+    private String content;
+    private long date_created;
+    private long last_on;
+    private String password = null;
+    private String pass_salt = null;
+    private int id_color = 0;
+    private int id_typeoftext;
     private String account = null;
-    public boolean delete = false;
+    private boolean delete = false;
 
-    public Note(){
-
+    public Note() {
     }
 
-    public ContentValues getValues(){
-        ContentValues cv = new ContentValues();
-        if(id != -1) cv.put(NoteEntry._ID, id);
-        if(!TextUtils.isEmpty(getTitle())) cv.put(NoteEntry.COL_TITLE, getTitle());
-        if(!TextUtils.isEmpty(getContent())) cv.put(NoteEntry.COL_CONTENT, getContent());
-        if(date_created > 0)
-            cv.put(NoteEntry.COL_DATE_CREATED, String.valueOf(getDateCreated()));
-        cv.put(NoteEntry.COL_LAST_ON, String.valueOf(getLastOn()));
-        if(!TextUtils.isEmpty(getPassword())){
-            if( !TextUtils.isEmpty(getPassSalt())){
-                cv.put(NoteEntry.COL_PASSWORD_SALT, getPassSalt());
-                cv.put(NoteEntry.COL_PASSWORD, getPassword());
-            }
-        }
-        cv.put(NoteEntry.COL_COLOR, getIdColor());
-        cv.put(NoteEntry.COL_TYPE_OF_TEXT, getIdTypeOfText());
-        if(!TextUtils.isEmpty(getAccount())){
-            cv.put(NoteEntry.COL_ACCOUNT, getAccount());
-        }
-        cv.put(NoteEntry.COL_DELETE, isDelete() ? 1: 0);
-        return cv;
+    public Note(long id, String title, String content, long date_created, long last_on,
+                String password, String pass_salt, int id_color, int id_typeoftext, boolean delete) {
+        this.id = id;
+        this.title = title;
+        this.content = content;
+        this.date_created = date_created;
+        this.last_on = last_on;
+        this.password = password;
+        this.pass_salt = pass_salt;
+        this.id_color = id_color;
+        this.id_typeoftext = id_typeoftext;
+        this.delete = delete;
     }
-
-
+    @Exclude
+    public String getKeySync() {
+        return keySync;
+    }
+    @Exclude
+    public void setKeySync(String keySync) {
+        this.keySync = keySync;
+    }
     public long getId() {
         return id;
     }
-
     public void setId(long id) {
         this.id = id;
     }
@@ -126,13 +124,6 @@ public class Note {
         this.id_typeoftext = id_typeoftext;
     }
 
-    public String getAccount() {
-        return account;
-    }
-
-    public void setAccount(String account) {
-        this.account = account;
-    }
 
     public boolean isDelete() {
         return delete;
@@ -142,17 +133,4 @@ public class Note {
         this.delete = delete;
     }
 
-    @Override
-    public String toString() {
-
-        Log.d("Note string", "id" + id);
-        Log.d("Note string", "title:" + title);
-        Log.d("Note string", "content:" + content);
-        Log.d("Note string", "color:" + id_color);
-        Log.d("Note string", "password:" + password);
-        Log.d("Note string", "salt:" + pass_salt);
-        Log.d("Note string", "delete:" + delete);
-        Log.d("Note string", "-----------------");
-       return super.toString();
-    }
 }

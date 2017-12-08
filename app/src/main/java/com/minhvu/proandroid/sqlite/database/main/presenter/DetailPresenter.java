@@ -29,7 +29,8 @@ import android.widget.Toast;
 
 import com.minhvu.proandroid.sqlite.database.R;
 import com.minhvu.proandroid.sqlite.database.Utils.DateTimeUtils;
-import com.minhvu.proandroid.sqlite.database.Utils.DesEncrypter;
+import com.minhvu.proandroid.sqlite.database.Utils.DeEncrypter;
+import com.minhvu.proandroid.sqlite.database.Utils.NoteUtils;
 import com.minhvu.proandroid.sqlite.database.main.model.view.IDetailModel;
 import com.minhvu.proandroid.sqlite.database.main.presenter.view.IDetailPresenter;
 import com.minhvu.proandroid.sqlite.database.main.view.Fragment.view.IDetailFragment;
@@ -191,9 +192,8 @@ public class DetailPresenter extends MvpPresenter<IDetailModel, IDetailFragment.
             getView().showToast(toast);
             return;
         }
-        DesEncrypter encrypt = new DesEncrypter();
-        String pasEncrypt = encrypt.encrypt(password);
-        String key = encrypt.getKey();
+        String pasEncrypt = DeEncrypter.encryptString(password);
+        String key = DeEncrypter.getKey();
         ContentValues cv = noteBase(etTitle, etContent, btColor);
         if (!TextUtils.isEmpty(pasEncrypt) && !TextUtils.isEmpty(key)) {
             cv.put(NoteContract.NoteEntry.COL_PASSWORD, pasEncrypt);
@@ -279,7 +279,7 @@ public class DetailPresenter extends MvpPresenter<IDetailModel, IDetailFragment.
     }
 
     private void insertNote(final Note note) {
-        Uri uri = model.insertData(NoteContract.NoteEntry.CONTENT_URI, note.getValues());
+        Uri uri = model.insertData(NoteContract.NoteEntry.CONTENT_URI, NoteUtils.getContentValues(note));
         if (uri != null) {
             setCurrentUri(uri);
             getView().showToast(
@@ -292,7 +292,7 @@ public class DetailPresenter extends MvpPresenter<IDetailModel, IDetailFragment.
         if (mCurrentUri == null) {
             return;
         }
-        boolean success = model.update(mCurrentUri, note.getValues(), null, null);
+        boolean success = model.update(mCurrentUri, NoteUtils.getContentValues(note), null, null);
         if (success) {
             getView().showToast(
                     Toast.makeText(getView().getActivityContext(), "save data", Toast.LENGTH_SHORT)

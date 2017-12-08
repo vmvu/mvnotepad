@@ -35,7 +35,7 @@ import android.widget.Toast;
 
 import com.minhvu.proandroid.sqlite.database.R;
 import com.minhvu.proandroid.sqlite.database.Utils.DateTimeUtils;
-import com.minhvu.proandroid.sqlite.database.Utils.DesEncrypter;
+import com.minhvu.proandroid.sqlite.database.Utils.DeEncrypter;
 import com.minhvu.proandroid.sqlite.database.Utils.Sort;
 import com.minhvu.proandroid.sqlite.database.main.model.view.IMainModel;
 import com.minhvu.proandroid.sqlite.database.main.presenter.view.IMainPresenter;
@@ -317,8 +317,7 @@ public class MainPresenter extends MvpPresenter<IMainModel, IMainView.View> impl
                 if (TextUtils.isEmpty(password)) {
                     return;
                 }
-                DesEncrypter decrypt = new DesEncrypter();
-                String pas = decrypt.decrypt(note.getPassword(), note.getPassSalt());
+                String pas = DeEncrypter.decryptString(note.getPassword(), note.getPassSalt());
                 if (pas.equals(password)) {
                     dialog.dismiss();
                     Uri uri = ContentUris.withAppendedId(NoteContract.NoteEntry.CONTENT_URI, note.getId());

@@ -12,7 +12,7 @@ import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.minhvu.proandroid.sqlite.database.R;
-import com.minhvu.proandroid.sqlite.database.Utils.DesEncrypter;
+import com.minhvu.proandroid.sqlite.database.Utils.DeEncrypter;
 import com.minhvu.proandroid.sqlite.database.main.model.view.IGetShareModel;
 import com.minhvu.proandroid.sqlite.database.main.presenter.view.IGetSharePresenter;
 import com.minhvu.proandroid.sqlite.database.main.view.Activity.BookDetailActivity;
@@ -39,7 +39,7 @@ public class GetSharePresenter extends MvpPresenter<IGetShareModel, IGetShareAct
     @Override
     public void onDestroy(boolean isChangingConfiguration) {
         unbindView();
-        if(!isChangingConfiguration){
+        if (!isChangingConfiguration) {
             model = null;
             currentUri = null;
         }
@@ -57,17 +57,17 @@ public class GetSharePresenter extends MvpPresenter<IGetShareModel, IGetShareAct
 
     @Override
     public void loadNote() {
-        if(currentUri == null){
+        if (currentUri == null) {
             return;
         }
         Object v = getView();
         Note note = model.loadNote(currentUri.getPathSegments().get(1));
-        if(note != null){
-            if(!TextUtils.isEmpty(model.getNote().getPassword())){
+        if (note != null) {
+            if (!TextUtils.isEmpty(model.getNote().getPassword())) {
                 getView().lockContent();
                 note.setContent("LOCK CONTENT");
             }
-            int imageCount= model.loadImage(currentUri.getPathSegments().get(1));
+            int imageCount = model.loadImage(currentUri.getPathSegments().get(1));
             getView().visibleView();
             updateView(note);
             getView().updateImageCount(imageCount);
@@ -82,7 +82,7 @@ public class GetSharePresenter extends MvpPresenter<IGetShareModel, IGetShareAct
     @Override
     public void onDetailOnClick() {
         final Note note = model.getNote();
-        if(!TextUtils.isEmpty(note.getPassword())){
+        if (!TextUtils.isEmpty(note.getPassword())) {
 
             LayoutInflater inflater = (LayoutInflater) getActivityContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             View dialogLayout = inflater.inflate(R.layout.popup_password_set, null);
@@ -102,8 +102,7 @@ public class GetSharePresenter extends MvpPresenter<IGetShareModel, IGetShareAct
                     if (TextUtils.isEmpty(password)) {
                         return;
                     }
-                    DesEncrypter decrypt = new DesEncrypter();
-                    String pas = decrypt.decrypt(note.getPassword(), note.getPassSalt());
+                    String pas = DeEncrypter.decryptString(note.getPassword(), note.getPassSalt());
                     if (pas.equals(password)) {
                         dialog.dismiss();
                         startActivity();
@@ -123,30 +122,32 @@ public class GetSharePresenter extends MvpPresenter<IGetShareModel, IGetShareAct
 
             getView().showDialog(dialog);
 
-        }else{
+        } else {
             startActivity();
         }
 
     }
-    private void startActivity(){
+
+    private void startActivity() {
         Intent intent = new Intent(getActivityContext(), BookDetailActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.setData(currentUri);
         getView().getActivityContext().startActivity(intent);
     }
 
     @Override
     public void saveNote(EditText title, EditText content) {
-        if(currentUri == null){
+        if (currentUri == null) {
             boolean success = model.insertNote(title.getText().toString(), content.getText().toString());
-            if(success){
+            if (success) {
                 Toast toast = Toast.makeText(getActivityContext(), "saved Data", Toast.LENGTH_SHORT);
                 getView().showToast(toast);
             }
 
-        }else{
+        } else {
             boolean success = model.updateNote(currentUri.getPathSegments().get(1),
-                    title.getText().toString() ,content.getText().toString());
-            if(success){
+                    title.getText().toString(), content.getText().toString());
+            if (success) {
                 Toast toast = Toast.makeText(getActivityContext(), "saved Data", Toast.LENGTH_SHORT);
                 getView().showToast(toast);
             }

@@ -29,7 +29,7 @@ public class NoteProvider extends ContentProvider {
     public static final int INCOMING_SINGLE_NOTE_URI_INDICATOR = 100;
     //ttypeoftext table
     public static final int INCOMING_TYPEOFTEXT_COLLECTION_URI_INDICATOR = 3;
-    public  static final int INCOMING_SINGLE_TYPEOFTEXT_URI_INDICATOR = 98;
+    public static final int INCOMING_SINGLE_TYPEOFTEXT_URI_INDICATOR = 98;
     //taccount table
     public static final int INCOMING_ACCOUNT_COLLECTION_URI_INDICATOR = 4;
     //v_images
@@ -39,6 +39,7 @@ public class NoteProvider extends ContentProvider {
     private NoteDBHelper mOpenHelper = null;
 
     private static UriMatcher uriMatcher = null;
+
     static {
         uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
         uriMatcher.addURI(NoteContract.AUTHORITY, NoteContract.path_tnote,
@@ -59,10 +60,12 @@ public class NoteProvider extends ContentProvider {
         uriMatcher.addURI(NoteContract.AUTHORITY, NoteContract.path_images + "/*",
                 INCOMING_SINGLE_IMAGES_URI_INDICATOR);
     }
+
     private static HashMap<String, String> sNoteProjectMap;
     private static HashMap<String, String> sTypeOfTextProjectMap;
     private static HashMap<String, String> sImagesProjectMap;
-    static{
+
+    static {
         sNoteProjectMap = new HashMap<>();
         sNoteProjectMap.put(NoteContract.NoteEntry._ID, NoteContract.NoteEntry._ID);
         sNoteProjectMap.put(NoteContract.NoteEntry.COL_TITLE, NoteContract.NoteEntry.COL_TITLE);
@@ -73,18 +76,20 @@ public class NoteProvider extends ContentProvider {
         sNoteProjectMap.put(NoteContract.NoteEntry.COL_PASSWORD_SALT, NoteContract.NoteEntry.COL_PASSWORD_SALT);
         sNoteProjectMap.put(NoteContract.NoteEntry.COL_COLOR, NoteContract.NoteEntry.COL_COLOR);
         sNoteProjectMap.put(NoteContract.NoteEntry.COL_TYPE_OF_TEXT, NoteContract.NoteEntry.COL_TYPE_OF_TEXT);
-        sNoteProjectMap.put(NoteContract.NoteEntry.COL_ACCOUNT, NoteContract.NoteEntry.COL_ACCOUNT);
         sNoteProjectMap.put(NoteContract.NoteEntry.COL_DELETE, NoteContract.NoteEntry.COL_DELETE);
+        sNoteProjectMap.put(NoteContract.NoteEntry.COL_KEY_SYNC, NoteContract.NoteEntry.COL_KEY_SYNC);
 
         sTypeOfTextProjectMap = new HashMap<>();
         sTypeOfTextProjectMap.put(NoteContract.TypeOfTextEntry._ID, NoteContract.TypeOfTextEntry._ID);
         sTypeOfTextProjectMap.put(NoteContract.TypeOfTextEntry.COL_NAME, NoteContract.TypeOfTextEntry.COL_NAME);
 
         sImagesProjectMap = new HashMap<>();
-        sImagesProjectMap.put(NoteContract.ImageEntry.COL_NAME_PATH,NoteContract.ImageEntry.COL_NAME_PATH );
-        sImagesProjectMap.put(NoteContract.ImageEntry.COL_NOTE_ID,NoteContract.ImageEntry.COL_NOTE_ID);
+        sImagesProjectMap.put(NoteContract.ImageEntry.COL_NAME_PATH, NoteContract.ImageEntry.COL_NAME_PATH);
+        sImagesProjectMap.put(NoteContract.ImageEntry.COL_NOTE_ID, NoteContract.ImageEntry.COL_NOTE_ID);
+        sImagesProjectMap.put(NoteContract.ImageEntry.COL_SYNC, NoteContract.ImageEntry.COL_SYNC);
 
     }
+
     @Override
     public boolean onCreate() {
         mOpenHelper = NoteDBHelper.getInstance(getContext());
@@ -96,9 +101,9 @@ public class NoteProvider extends ContentProvider {
     @Override
     public Cursor query(@NonNull Uri uri, @Nullable String[] projection, @Nullable String selection,
                         @Nullable String[] selectionArgs, @Nullable String sortOrder) {
-        SQLiteQueryBuilder qb =new SQLiteQueryBuilder();
-        String orderBy =null;
-        switch (uriMatcher.match(uri)){
+        SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
+        String orderBy = null;
+        switch (uriMatcher.match(uri)) {
             case INCOMING_NOTE_COLLECTION_URI_INDICATOR:
                 qb.setTables(NoteContract.NoteEntry.DATABASE_TABLE);
                 qb.setProjectionMap(sNoteProjectMap);
@@ -114,7 +119,7 @@ public class NoteProvider extends ContentProvider {
                 qb.setProjectionMap(sTypeOfTextProjectMap);
                 orderBy = NoteContract.TypeOfTextEntry.DEFAULT_SORT_ORDER;
                 break;
-            case  INCOMING_SINGLE_TYPEOFTEXT_URI_INDICATOR:
+            case INCOMING_SINGLE_TYPEOFTEXT_URI_INDICATOR:
                 qb.setTables(NoteContract.TypeOfTextEntry.DATABASE_TABLE);
                 qb.setProjectionMap(sTypeOfTextProjectMap);
                 qb.appendWhere(NoteContract.TypeOfTextEntry._ID + "=" + uri.getPathSegments().get(1));
@@ -131,17 +136,17 @@ public class NoteProvider extends ContentProvider {
                 qb.appendWhere(selection);
                 orderBy = null;
                 break;
-            case  INCOMING_ACCOUNT_COLLECTION_URI_INDICATOR:
+            case INCOMING_ACCOUNT_COLLECTION_URI_INDICATOR:
                 qb.setTables(NoteContract.AccountEntry.DATABASE_TABLE);
                 orderBy = null;
                 break;
 
         }
-        if(!TextUtils.isEmpty(sortOrder)){
+        if (!TextUtils.isEmpty(sortOrder)) {
             orderBy = sortOrder;
         }
         SQLiteDatabase db = mOpenHelper.getReadableDatabase();
-        Cursor c = qb.query(db,projection, selection, selectionArgs, null, null, orderBy);
+        Cursor c = qb.query(db, projection, selection, selectionArgs, null, null, orderBy);
         c.setNotificationUri(getContext().getContentResolver(), uri);
         return c;
     }
@@ -149,19 +154,19 @@ public class NoteProvider extends ContentProvider {
     @Nullable
     @Override
     public Uri insert(@NonNull Uri uri, @Nullable ContentValues values) {
-        ContentValues cv ;
+        ContentValues cv;
         // xu ly du lieu nguon khong bi anh huong
-        if(values != null){
+        if (values != null) {
             cv = new ContentValues(values);
-        }else {
+        } else {
             cv = new ContentValues();
         }
 
-        switch (uriMatcher.match(uri)){
+        switch (uriMatcher.match(uri)) {
             case INCOMING_NOTE_COLLECTION_URI_INDICATOR:
                 SQLiteDatabase db = mOpenHelper.getWritableDatabase();
                 long rowSuccess = db.insert(NoteContract.NoteEntry.DATABASE_TABLE, null, cv);
-                if(rowSuccess <= 0){
+                if (rowSuccess <= 0) {
                     return null;
                 }
                 Uri insertUri = ContentUris.withAppendedId(NoteContract.NoteEntry.CONTENT_URI, rowSuccess);
@@ -170,8 +175,8 @@ public class NoteProvider extends ContentProvider {
             case INCOMING_IMAGES_COLLECTION_URI_INDICATOR:
                 SQLiteDatabase dbImage = mOpenHelper.getWritableDatabase();
                 long s = dbImage.insert(NoteContract.ImageEntry.DATABASE_TABLE, null, cv);
-                if(s < 0){
-                    return  null;
+                if (s < 0) {
+                    return null;
                 }
                 Uri imageUri = Uri.withAppendedPath(NoteContract.ImageEntry.CONTENT_URI,
                         cv.getAsString(NoteContract.ImageEntry.COL_NAME_PATH));
@@ -179,12 +184,12 @@ public class NoteProvider extends ContentProvider {
                 return imageUri;
 
             case INCOMING_ACCOUNT_COLLECTION_URI_INDICATOR:
-                if(!cv.containsKey(NoteContract.AccountEntry.COL_ID)){
+                if (!cv.containsKey(NoteContract.AccountEntry.COL_ID)) {
                     return null;
                 }
                 SQLiteDatabase database = mOpenHelper.getWritableDatabase();
                 long successful = database.insert(NoteContract.AccountEntry.DATABASE_TABLE, null, cv);
-                if(successful <= 0){
+                if (successful <= 0) {
                     return null;
                 }
                 Uri accountUri = Uri.withAppendedPath(NoteContract.AccountEntry.CONTENT_URI,
@@ -192,15 +197,15 @@ public class NoteProvider extends ContentProvider {
                 getContext().getContentResolver().notifyChange(accountUri, null);
                 return accountUri;
             default:
-                throw new IllegalArgumentException("Unknown URI:"+uri);
+                throw new IllegalArgumentException("Unknown URI:" + uri);
         }
     }
 
     @Override
     public int delete(@NonNull Uri uri, @Nullable String selection, @Nullable String[] selectionArgs) {
-        String where ;
+        String where;
         String DBName = "";
-        switch (uriMatcher.match(uri)){
+        switch (uriMatcher.match(uri)) {
             case INCOMING_NOTE_COLLECTION_URI_INDICATOR:
                 where = selection;
                 DBName = NoteContract.NoteEntry.DATABASE_TABLE;
@@ -224,11 +229,11 @@ public class NoteProvider extends ContentProvider {
                 DBName = NoteContract.AccountEntry.DATABASE_TABLE;
                 break;
             default:
-                throw new IllegalArgumentException("Unknown Uri:"+ uri);
+                throw new IllegalArgumentException("Unknown Uri:" + uri);
         }
         SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         int deletes = db.delete(DBName, where, selectionArgs);
-        if(deletes > 0){
+        if (deletes > 0) {
             getContext().getContentResolver().notifyChange(uri, null);
         }
         return deletes;
@@ -238,14 +243,12 @@ public class NoteProvider extends ContentProvider {
     public int update(@NonNull Uri uri, @Nullable ContentValues values, @Nullable String selection, @Nullable String[] selectionArgs) {
         String where;
         String DBName = "";
-        switch (uriMatcher.match(uri)){
+        switch (uriMatcher.match(uri)) {
             case INCOMING_NOTE_COLLECTION_URI_INDICATOR:
                 where = selection;
                 DBName = NoteContract.NoteEntry.DATABASE_TABLE;
                 break;
-            case  INCOMING_SINGLE_NOTE_URI_INDICATOR:
-                Log.d("Password", "vao day");
-                String rowID = uri.getPathSegments().get(1);
+            case INCOMING_SINGLE_NOTE_URI_INDICATOR:
                 where = NoteContract.NoteEntry._ID + "=?";
                 selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
                 DBName = NoteContract.NoteEntry.DATABASE_TABLE;
@@ -257,12 +260,9 @@ public class NoteProvider extends ContentProvider {
             default:
                 return 0;
         }
-        Log.d("Loaf", "where:" + where);
-        Log.d("Loaf", "where Uri:" + uri.toString());
         SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         int updates = db.update(DBName, values, where, selectionArgs);
-        Log.d("Loaf", "updates:" + updates);
-        if(updates > 0){
+        if (updates > 0) {
             getContext().getContentResolver().notifyChange(uri, null);
         }
         return updates;

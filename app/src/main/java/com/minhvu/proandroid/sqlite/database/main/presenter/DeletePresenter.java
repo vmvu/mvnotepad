@@ -30,10 +30,10 @@ import android.widget.Toast;
 
 import com.minhvu.proandroid.sqlite.database.R;
 import com.minhvu.proandroid.sqlite.database.Utils.DateTimeUtils;
-import com.minhvu.proandroid.sqlite.database.Utils.DesEncrypter;
+import com.minhvu.proandroid.sqlite.database.Utils.DeEncrypter;
+import com.minhvu.proandroid.sqlite.database.main.model.ImageModel;
 import com.minhvu.proandroid.sqlite.database.main.model.view.IDeleteModel;
 import com.minhvu.proandroid.sqlite.database.main.model.view.IImageModel;
-import com.minhvu.proandroid.sqlite.database.main.model.ImageModel;
 import com.minhvu.proandroid.sqlite.database.main.presenter.view.IDeletePresenter;
 import com.minhvu.proandroid.sqlite.database.main.presenter.view.IImagePresenter;
 import com.minhvu.proandroid.sqlite.database.main.view.Adapter.ImageAdapter;
@@ -158,16 +158,12 @@ public class DeletePresenter extends MvpPresenter<IDeleteModel, IDeleteView> imp
         imageRecycler.setLayoutManager(gridLayoutManager);
         tvTitle.setText(note.getTitle());
         tvContent.setText(note.getContent());
-
-        //setup imageview
-
+        //setting imageView
         final IImagePresenter imagePresenter = new ImagePresenter();
         final IImageModel imageModel = new ImageModel(getView().getActivityContext(), (int)note.getId());
 
         imageModel.setPresenter(imagePresenter);
         imagePresenter.setModel(imageModel);
-
-
 
         final ImageAdapter imageAdapter = new ImageAdapter(new ImageAdapter.IImageAdapter() {
             @Override
@@ -205,6 +201,11 @@ public class DeletePresenter extends MvpPresenter<IDeleteModel, IDeleteView> imp
             public void notifyUpdate() {
                 imageAdapter.notifyDataSetChanged();
             }
+
+            @Override
+            public void notifyUpdateItemChang(int position) {
+
+            }
         });
 
         //setup Dialog
@@ -225,7 +226,7 @@ public class DeletePresenter extends MvpPresenter<IDeleteModel, IDeleteView> imp
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 try{
-                    if(model.deleteNote(getView().getActivityContext(), note.getId())){
+                    if(model.deleteNote(getView().getActivityContext(), note.getId(), note.getKeySync())){
                         updateAdapter();
                         imagePresenter.deleteAllImage(getView().getActivityContext(),(int)note.getId());
                         /*Thread thread = new Thread(){
@@ -254,17 +255,10 @@ public class DeletePresenter extends MvpPresenter<IDeleteModel, IDeleteView> imp
         getView().showDialog(dialog);
     }
 
-
-
-
     @Override
     public int getDataCount() {
         return model.getCount();
     }
-
-
-
-
 
     private boolean unlockFingerprint(final LayoutInflater inflater, final Note note, final int itemPosition) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -344,8 +338,8 @@ public class DeletePresenter extends MvpPresenter<IDeleteModel, IDeleteView> imp
                 if (TextUtils.isEmpty(password)) {
                     return;
                 }
-                DesEncrypter decrypt = new DesEncrypter();
-                String pas = decrypt.decrypt(note.getPassword(), note.getPassSalt());
+
+                String pas = DeEncrypter.decryptString(note.getPassword(), note.getPassSalt());
                 if (pas.equals(password)) {
                     dialog.dismiss();
                     Uri uri = ContentUris.withAppendedId(NoteContract.NoteEntry.CONTENT_URI, note.getId());

@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Context;
 
 import com.facebook.drawee.backends.pipeline.Fresco;
+import com.google.firebase.database.FirebaseDatabase;
 
 /**
  * Created by vomin on 8/23/2017.
@@ -14,5 +15,6 @@ public class MyApplication extends Application {
     public void onCreate() {
         super.onCreate();
         Fresco.initialize(this);
+        FirebaseDatabase.getInstance().setPersistenceEnabled(true);
     }
 }

@@ -25,6 +25,9 @@ public interface IDetailFragment {
     interface ImageView {
         Context getActivityContext();
         void notifyUpdate();
+        void notifyUpdateItemChang(int position);
     }
+
+
 
 }

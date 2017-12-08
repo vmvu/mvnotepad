@@ -46,7 +46,6 @@ public class PinBroadcast extends BroadcastReceiver {
             } catch (ParseException e) {
                 e.printStackTrace();
             }
-
             if (toDateLongType < currentTime) {
                 SharedPreferences.Editor editor = pref.edit();
                 editor.putString(context.getString(R.string.PREFS_ALARM_SWITCH_KEY) + id, "scReset");
@@ -85,7 +84,6 @@ public class PinBroadcast extends BroadcastReceiver {
         Bitmap icon = BitmapFactory.decodeResource(ctx.getResources(), R.drawable.ic_search_black_24dp);
         int id = Integer.parseInt(uri.getPathSegments().get(1).trim());
         Intent i = new Intent(ctx, GetShareActivity.class);
-        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         i.setData(uri);
         PendingIntent pendingIntent = PendingIntent.getActivity(ctx, id, i, 0);
 

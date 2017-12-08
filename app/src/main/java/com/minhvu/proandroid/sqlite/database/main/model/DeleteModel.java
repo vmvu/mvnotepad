@@ -7,6 +7,7 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.minhvu.proandroid.sqlite.database.main.model.view.IDeleteModel;
@@ -153,7 +154,7 @@ public class DeleteModel implements IDeleteModel {
 
 
     @Override
-    public boolean deleteNote(Context context, long noteID) {
+    public boolean deleteNote(Context context, long noteID, String noteKeySync) {
         NoteDBHelper helper = NoteDBHelper.getInstance(context);
         ContentValues cv = new ContentValues();
         cv.put(NoteContract.NoteEntry.COL_DELETE, 1);
@@ -169,10 +170,22 @@ public class DeleteModel implements IDeleteModel {
                         break;
                     }
                 }
+                if(!TextUtils.isEmpty(noteKeySync)){
+                    noteReadyDeleted(context, noteKeySync);
+                }
                 return true;
             }
         }
         return false;
+    }
+
+    private void noteReadyDeleted(Context context, String keySync){
+        ContentValues cv = new ContentValues();
+        cv.put(NoteContract.NoteReadyDeletedEntry.NOTE_KEY_SYNC, keySync);
+        NoteDBHelper helper = NoteDBHelper.getInstance(context);
+        SQLiteDatabase db = helper.getWritableDatabase();
+        db.insert(NoteContract.NoteReadyDeletedEntry.DATABASE_TABLE, null, cv);
+        db.close();
     }
 
 }

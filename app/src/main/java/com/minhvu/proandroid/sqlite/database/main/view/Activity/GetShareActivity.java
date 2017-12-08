@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Process;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -53,6 +54,7 @@ public class GetShareActivity extends AppCompatActivity implements View.OnClickL
             processText(stringShares);
         }
 
+
         if(intent.getData() != null){
             Uri noteUri = intent.getData();
             loadNote(noteUri);
@@ -75,7 +77,6 @@ public class GetShareActivity extends AppCompatActivity implements View.OnClickL
         btnSave.setOnClickListener(this);
         btnRemoveTitle = (Button) findViewById(R.id.btnRemoveTitle);
         btnDetail = (Button) findViewById(R.id.btnDetail);
-        etTitle.setEnabled(false);
         btnDetail.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -88,7 +89,6 @@ public class GetShareActivity extends AppCompatActivity implements View.OnClickL
             public void onClick(View v) {
                 etTitle.requestFocus();
                 etTitle.setText("");
-                etTitle.setEnabled(true);
             }
         });
 
@@ -200,6 +200,14 @@ public class GetShareActivity extends AppCompatActivity implements View.OnClickL
         super.onDestroy();
         presenter.onDestroy(isChangingConfigurations());
         presenter = null;
+        Process.killProcess(Process.myPid());
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        presenter.onDestroy(isChangingConfigurations());
+        Process.killProcess(Process.myPid());
     }
 
     @Override

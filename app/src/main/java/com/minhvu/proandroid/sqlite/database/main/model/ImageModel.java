@@ -4,6 +4,7 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -13,9 +14,15 @@ import android.util.Log;
 import com.minhvu.proandroid.sqlite.database.main.model.view.IImageModel;
 import com.minhvu.proandroid.sqlite.database.main.presenter.view.IImagePresenter;
 import com.minhvu.proandroid.sqlite.database.models.data.NoteContract;
+import com.minhvu.proandroid.sqlite.database.models.data.NoteDBHelper;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -25,6 +32,8 @@ import java.util.List;
 public class ImageModel implements IImageModel {
     private IImagePresenter presenter;
     private ArrayList<String> mImageList;
+    private HashMap<String ,Bitmap> mBitmap;
+    private HashMap<String, Bitmap> mSmallBitmap;
 
     public ImageModel() {
         mImageList = new ArrayList<>();
@@ -59,10 +68,15 @@ public class ImageModel implements IImageModel {
                     NoteContract.ImageEntry.getColumnNames(), selection, null, null);
             if (c != null && c.moveToFirst()) {
                 mImageList.clear();
-                int pathPos = c.getColumnIndex(NoteContract.ImageEntry.COL_NAME_PATH);
+                int pathIndex = c.getColumnIndex(NoteContract.ImageEntry.COL_NAME_PATH);
+                int deletedIndex = c.getColumnIndex(NoteContract.ImageEntry.COL_SYNC);
                 do {
-                    String path = c.getString(pathPos);
-                    mImageList.add(path);
+                    String path = c.getString(pathIndex);
+                    int deleted = c.getInt(deletedIndex);
+                    if(deleted != -1){
+                        mImageList.add(path);
+                    }
+
                     //mBitmapList.add(rotateImage(path, 90));
                 } while (c.moveToNext());
             }
@@ -108,6 +122,7 @@ public class ImageModel implements IImageModel {
         ContentValues cv = new ContentValues();
         cv.put(NoteContract.ImageEntry.COL_NAME_PATH, imagePath);
         cv.put(NoteContract.ImageEntry.COL_NOTE_ID, noteId);
+        cv.put(NoteContract.ImageEntry.COL_SYNC, 0);
         Uri success = cr.insert(NoteContract.ImageEntry.CONTENT_URI, cv);
         if (success != null) {
             if (mImageList == null) {
@@ -124,18 +139,23 @@ public class ImageModel implements IImageModel {
 
     @Override
     public void deleteImage(Context context, String imagePath, int position) {
-        String[] temp = imagePath.split("/");
-        Uri uri = Uri.withAppendedPath(NoteContract.ImageEntry.CONTENT_URI, temp[temp.length - 1]);
-        String selection = NoteContract.ImageEntry.COL_NAME_PATH + "='" + imagePath + "'";
-        ContentResolver contentResolver = context.getContentResolver();
-        int success = contentResolver.delete(uri, selection, null);
-        if (success > 0) {
-
-            mImageList.remove(position);
-            presenter.notifyView();
-            removeImage(imagePath);
+        String selection = NoteContract.ImageEntry.COL_NAME_PATH + "=?";
+        ContentValues cv = new ContentValues();
+        cv.put(NoteContract.ImageEntry.COL_SYNC, -1);
+        try (SQLiteDatabase db = NoteDBHelper.getInstance(context).getWritableDatabase()) {
+            int success = db.update(
+                    NoteContract.ImageEntry.DATABASE_TABLE,
+                    cv,
+                    selection,
+                    new String[]{imagePath});
+            if (success > 0) {
+                mImageList.remove(position);
+                presenter.notifyView();
+                removeImage(imagePath);
+            }
         }
     }
+
 
     private void removeImage(final String imagePath) {
         Thread thread = new Thread() {
@@ -176,5 +196,59 @@ public class ImageModel implements IImageModel {
         return mImageList.size();
     }
 
+    @Override
+    public Bitmap getBitmapImage(String path){
+        if(mBitmap == null){
+            mBitmap = new HashMap<>();
+        }
+        Bitmap bitmap =  mBitmap.get(path);
+        if(bitmap == null){
+            try{
+                bitmap = loadFile(path);
+            }catch (FileNotFoundException e){
+                e.getStackTrace();
+            }
+            mBitmap.put(path, bitmap);
+        }
+        return bitmap;
+    }
 
+    @Override
+    public void updateBitmapImage(Bitmap bitmap, String path) {
+        mBitmap.put(path, bitmap);
+    }
+
+    private Bitmap loadFile(String path) throws FileNotFoundException {
+        Uri uri = Uri.parse(path);
+        File file = new File(uri.getPath());
+        FileInputStream fis = new FileInputStream(file);
+        return BitmapFactory.decodeStream(fis);
+    }
+
+    @Override
+    public Bitmap getSmallBitmapImage(String path) {
+        if(mSmallBitmap == null){
+            mSmallBitmap = new HashMap<>();
+        }
+        Bitmap bitmap = mSmallBitmap.get(path);
+        if(bitmap == null){
+            bitmap = getBitmapImage(path);
+            bitmap = resizeImage(bitmap);
+            mSmallBitmap.put(path, bitmap);
+        }
+        return bitmap;
+    }
+
+    private Bitmap resizeImage(Bitmap bitmap) {
+        /*ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 30, baos);
+        return BitmapFactory.decodeByteArray(baos.toByteArray(), 0, baos.size());*/
+        return bitmap.createScaledBitmap(bitmap,bitmap.getWidth()/10,(int) bitmap.getHeight()/10, true);
+    }
+
+    @Override
+    public void updateSmallBitmap(String path){
+        Bitmap bitmap = getBitmapImage(path);
+        mSmallBitmap.put(path, resizeImage(bitmap));
+    }
 }

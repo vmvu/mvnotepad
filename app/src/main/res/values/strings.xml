@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Notepad</string>
+    <string name="app_name">vNOTE</string>
     <string name="main_page">Note page</string>
     <string name="delete_page">Delete page</string>
     <string name="detail_label">Detail</string>

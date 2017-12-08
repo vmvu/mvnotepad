@@ -58,7 +58,7 @@ public class NoteDBHelper extends SQLiteOpenHelper {
         try{
             String myPath = NoteDBHelper.PATH + NoteDBHelper.DATABASE_NAME;
             check = SQLiteDatabase.openDatabase(myPath, null, SQLiteDatabase.OPEN_READONLY);
-        }catch (SQLiteException e){
+        }catch (SQLiteException ignored){
 
         }
         if(check != null){
@@ -102,9 +102,7 @@ public class NoteDBHelper extends SQLiteOpenHelper {
             return false;
         }
         //this is commend
-        if(s.startsWith("//"))
-            return false;
-        return true;
+        return !s.startsWith("//");
     }
 
     private String getStringFromAssetFile(String assetsFile){
@@ -112,8 +110,8 @@ public class NoteDBHelper extends SQLiteOpenHelper {
         try{
             InputStream inputStream = ctx.getAssets().open(assetsFile);
             s = convertStreamToString(inputStream);
-        }catch (IOException e){
-
+        }catch (IOException ignored){
+            return null;
         }
         return s;
     }

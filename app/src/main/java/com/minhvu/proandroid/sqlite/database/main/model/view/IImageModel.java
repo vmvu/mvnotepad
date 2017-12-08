@@ -1,6 +1,7 @@
 package com.minhvu.proandroid.sqlite.database.main.model.view;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 
 import com.minhvu.proandroid.sqlite.database.main.presenter.view.IImagePresenter;
 
@@ -21,5 +22,9 @@ public interface IImageModel {
     void deleteImage(Context context, String imagePath, int position);
     boolean deleteAllImages(Context context, int noteId);
 
+    Bitmap getBitmapImage(String path);
+    void updateBitmapImage(Bitmap bitmap, String path);
+    Bitmap getSmallBitmapImage(String path);
+    void updateSmallBitmap(String path);
     int getCount();
 }

@@ -32,6 +32,11 @@ public class Note {
     public Note() {
     }
 
+    public Note(String keySync, long id) {
+        this.keySync = keySync;
+        this.id = id;
+    }
+
     public Note(long id, String title, String content, long date_created, long last_on,
                 String password, String pass_salt, int id_color, int id_typeoftext, boolean delete) {
         this.id = id;
@@ -45,11 +50,9 @@ public class Note {
         this.id_typeoftext = id_typeoftext;
         this.delete = delete;
     }
-    @Exclude
     public String getKeySync() {
         return keySync;
     }
-    @Exclude
     public void setKeySync(String keySync) {
         this.keySync = keySync;
     }

@@ -4,47 +4,24 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.FirebaseApp;
-import com.google.firebase.FirebaseOptions;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.OnDisconnect;
-import com.google.firebase.database.ServerValue;
-import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 import com.minhvu.proandroid.sqlite.database.R;
-import com.minhvu.proandroid.sqlite.database.models.data.DatabaseGreenRoom;
 import com.minhvu.proandroid.sqlite.database.models.data.NoteContract;
 import com.minhvu.proandroid.sqlite.database.models.data.NoteDBHelper;
 import com.minhvu.proandroid.sqlite.database.models.entity.Image;
 import com.minhvu.proandroid.sqlite.database.models.entity.Note;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -55,7 +32,6 @@ import java.util.List;
 public class SyncService extends ALongRunningNonStickyBroadcastService {
 
     private String user;
-    private NoteDBHelper helper;
 
     public SyncService() {
         super("SyncService");
@@ -67,7 +43,6 @@ public class SyncService extends ALongRunningNonStickyBroadcastService {
         if (TextUtils.isEmpty(intentAction) || !intentAction.equals(getString(R.string.broadcast_sync))) {
             return;
         }
-        DatabaseGreenRoom.s_registerClient();
         syncFirebase();
     }
 
@@ -82,19 +57,34 @@ public class SyncService extends ALongRunningNonStickyBroadcastService {
         thread.start();
     }
 
-
     private void Sync() {
+        /*getUser();
+        if(TextUtils.isEmpty(user)){
+            return;
+        }*/
+
+        List<Note> noteList = NoteSync();
+        if(noteList == null){
+            noteList = new ArrayList<>();
+        }
+        List<Note> notes = removeNote();
+        if(notes != null){
+            noteList.addAll(notes);
+        }
+        DocumentSync(noteList);
+    }
+
+    private List<Note> NoteSync() {
         //getUser();
-        helper = DatabaseGreenRoom.s_enter(this);
         user = "shshhs";
         if (TextUtils.isEmpty(user)) {
-            return;
+            return null;
         }
         final List<Note> noteList = getListNote();
         if (noteList == null || noteList.size() == 0) {
-            return;
+            return null;
         }
-        DatabaseReference db = FirebaseDatabase.getInstance().getReference("UserList").child(user);
+        final DatabaseReference db = FirebaseDatabase.getInstance().getReference("UserList").child(user);
         for (Note note : noteList) {
             if (TextUtils.isEmpty(note.getKeySync())) {
                 DatabaseReference mRef = db.push();
@@ -112,9 +102,40 @@ public class SyncService extends ALongRunningNonStickyBroadcastService {
             }
         };
         threadUpdateKeySync.start();
-        DocumentSync(noteList);
-        DatabaseGreenRoom.s_leave();
-        DatabaseGreenRoom.s_unregisterClient();
+        return noteList;
+    }
+
+    private List<Note> removeNote() {
+
+        NoteDBHelper helper = NoteDBHelper.getInstance(this);
+        SQLiteDatabase db = helper.getReadableDatabase();
+        List<Note> list = new ArrayList<>();
+        try {
+            final String DATA_TABLE = NoteContract.NoteReadyDeletedEntry.DATABASE_TABLE;
+            Cursor c = db.query(DATA_TABLE, null, null, null, null, null, null);
+            if (c != null && c.moveToFirst()) {
+                int keySyncIndex = c.getColumnIndex(NoteContract.NoteReadyDeletedEntry.NOTE_KEY_SYNC);
+                int noteIDIndex = c.getColumnIndex(NoteContract.NoteReadyDeletedEntry.NOTE_ID);
+                do {
+                    String keySync = c.getString(keySyncIndex);
+                    long noteID = c.getLong(noteIDIndex);
+                    list.add(new Note(keySync, noteID));
+
+                } while (c.moveToNext());
+            }
+            if (c != null) {
+                c.close();
+            }
+            db.delete(NoteContract.NoteReadyDeletedEntry.DATABASE_TABLE, null, null);
+        } catch (IllegalStateException e) {
+            e.getMessage();
+        }
+        final DatabaseReference dbFirebase = FirebaseDatabase.getInstance().getReference("UserList").child(user);
+        for (Note keySync : list) {
+            if(!TextUtils.isEmpty(keySync.getKeySync()))
+                dbFirebase.child(keySync.getKeySync()).setValue(null);
+        }
+        return list;
     }
 
     private void DocumentSync(List<Note> noteList) {
@@ -122,7 +143,10 @@ public class SyncService extends ALongRunningNonStickyBroadcastService {
         if (TextUtils.isEmpty(user)) {
             return;
         }
-        HashMap<String, ArrayList<Image>> idImageList = getImageList(noteList);
+        if (noteList == null || noteList.size() == 0) {
+            return;
+        }
+        HashMap<String, ArrayList<Image>> idImageList = getImageList();
         if (idImageList == null || idImageList.size() == 0) {
             return;
         }
@@ -134,6 +158,10 @@ public class SyncService extends ALongRunningNonStickyBroadcastService {
                 continue;
             }
             if (imagePathList.size() == 0) {
+                continue;
+            }
+            if (TextUtils.isEmpty(note.getKeySync())) {
+                tempList.addAll(imagePathList);
                 continue;
             }
             StorageReference mRef = storageRef.child(user).child(note.getKeySync());
@@ -155,7 +183,6 @@ public class SyncService extends ALongRunningNonStickyBroadcastService {
         updateImageToSync(tempList);
     }
 
-
     private boolean isOnline() {
         ConnectivityManager cm = (ConnectivityManager) this.getSystemService(CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
@@ -166,10 +193,9 @@ public class SyncService extends ALongRunningNonStickyBroadcastService {
         if (!TextUtils.isEmpty(user)) {
             return;
         }
+        NoteDBHelper helper = NoteDBHelper.getInstance(this);
         try (SQLiteDatabase db = helper.getReadableDatabase()) {
-            Cursor c = null;
-
-            c = db.query(
+            Cursor c = db.query(
                     NoteContract.AccountEntry.DATABASE_TABLE,
                     new String[]{NoteContract.AccountEntry.COL_ID},
                     null, null, null, null, null
@@ -189,6 +215,7 @@ public class SyncService extends ALongRunningNonStickyBroadcastService {
 
     private List<Note> getListNote() {
         List<Note> noteList = null;
+        NoteDBHelper helper = NoteDBHelper.getInstance(this);
         try (SQLiteDatabase db = helper.getReadableDatabase()) {
             String[] selection = new String[]{
                     NoteContract.NoteEntry._ID,
@@ -252,19 +279,18 @@ public class SyncService extends ALongRunningNonStickyBroadcastService {
                 }
             }
         } catch (IllegalStateException e) {
-            Log.d("service-error", e.toString());
+            Log.d("service-error:[1]", e.toString());
         }
         return noteList;
     }
 
-
-    private HashMap<String, ArrayList<Image>> getImageList(List<Note> noteList) {
-        ArrayList<String> imageList = new ArrayList<>();
+    private HashMap<String, ArrayList<Image>> getImageList() {
         HashMap<String, ArrayList<Image>> idImageList = new HashMap<>();
+        NoteDBHelper helper = NoteDBHelper.getInstance(this);
         SQLiteDatabase db = helper.getReadableDatabase();
 
         String[] selection = NoteContract.ImageEntry.getColumnNames();
-        Cursor c = null;
+        Cursor c;
         try {
             c = db.query(
                     NoteContract.ImageEntry.DATABASE_TABLE,
@@ -286,15 +312,18 @@ public class SyncService extends ALongRunningNonStickyBroadcastService {
                     idImageList.put(id + "", temp);
                 } while (c.moveToNext());
             }
-
+            if (c != null) {
+                c.close();
+            }
 
         } catch (IllegalStateException e) {
-            Log.d("service-error", e.toString());
+            Log.d("service-error[2]", e.toString());
         }
         return idImageList;
     }
 
     private void updateNoteWithKeySync(List<Note> noteList) {
+        NoteDBHelper helper = NoteDBHelper.getInstance(this);
         try (SQLiteDatabase db = helper.getWritableDatabase()) {
             ContentValues cv = new ContentValues();
             for (Note note : noteList) {
@@ -306,41 +335,40 @@ public class SyncService extends ALongRunningNonStickyBroadcastService {
                         null);
                 cv.clear();
             }
-
         } catch (IllegalStateException e) {
-            Log.d("service-error", e.toString());
+            Log.d("service-error[3]", e.toString());
         }
+
     }
 
     private void updateImageToSync(List<Image> imageList) {
         if (imageList == null || imageList.size() == 0) {
             return;
         }
+        NoteDBHelper helper = NoteDBHelper.getInstance(this);
         try (SQLiteDatabase db = helper.getWritableDatabase()) {
             String selection = NoteContract.ImageEntry.COL_NAME_PATH + "=?";
             ContentValues cv = new ContentValues();
             for (Image image : imageList) {
                 try {
-                    if (image.getSync() == 1) {
+                    if (image.getSync() == 1 || image.getSync() == -1) {
                         cv.clear();
-                        cv.put(NoteContract.ImageEntry.COL_SYNC, 1);
+                        cv.put(NoteContract.ImageEntry.COL_SYNC, image.getSync());
                         db.update(
                                 NoteContract.ImageEntry.DATABASE_TABLE,
                                 cv,
                                 selection,
                                 new String[]{image.getPath()});
                     }
-                    if (image.getSync() == -1) {
-                        db.delete(
-                                NoteContract.ImageEntry.DATABASE_TABLE,
-                                selection,
-                                new String[]{image.getPath()});
-                    }
+
                 } catch (IllegalStateException e) {
-                    Log.d("image-fix", e.getMessage());
+                    Log.d("service-error[4]", e.getMessage());
                 }
             }
+            db.delete(
+                    NoteContract.ImageEntry.DATABASE_TABLE,
+                    NoteContract.ImageEntry.COL_SYNC + "=?",
+                    new String[]{"-1"});
         }
     }
-
 }

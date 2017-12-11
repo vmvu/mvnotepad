@@ -33,12 +33,12 @@ public class LightedGreenRoom {
         return s_self == null ? false : true;
     }
 
-    synchronized public int enter(){
+    synchronized private int enter(){
         count++;
         return count;
     }
 
-    synchronized public int leave(){
+    synchronized private int leave(){
         if(count == 0){
             return 0;
         }
@@ -88,7 +88,7 @@ public class LightedGreenRoom {
         return clientCount;
     }
 
-    synchronized public void emptyTheRoom(){
+    synchronized private void emptyTheRoom(){
         count = 0;
         this.turnOffLights();
     }

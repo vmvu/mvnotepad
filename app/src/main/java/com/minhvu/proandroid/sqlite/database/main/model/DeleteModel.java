@@ -66,6 +66,7 @@ public class DeleteModel implements IDeleteModel {
                 if (db.isOpen() && c!= null && !c.isClosed() && c.moveToFirst()) {
                     listNote.clear();
                     int idPos = c.getColumnIndex(NoteContract.NoteEntry._ID);
+                    int keySyncIndex = c.getColumnIndex(NoteContract.NoteEntry.COL_KEY_SYNC);
                     int titlePos = c.getColumnIndex(NoteContract.NoteEntry.COL_TITLE);
                     int contentPos = c.getColumnIndex(NoteContract.NoteEntry.COL_CONTENT);
                     int colorPos = c.getColumnIndex(NoteContract.NoteEntry.COL_COLOR);
@@ -83,6 +84,8 @@ public class DeleteModel implements IDeleteModel {
                         note.setPassSalt(c.getString(keyPos));
                         note.setDateCreated(Long.parseLong(c.getString(dateCreatedPos)));
                         note.setLastOn(Long.parseLong(c.getString(lastUpdatePos)));
+                        note.setKeySync(c.getString(keySyncIndex));
+                        int a = 5;
                         listNote.add(note);
                     } while (c.moveToNext());
                 }
@@ -170,18 +173,19 @@ public class DeleteModel implements IDeleteModel {
                         break;
                     }
                 }
-                if(!TextUtils.isEmpty(noteKeySync)){
-                    noteReadyDeleted(context, noteKeySync);
-                }
+               /* if(!TextUtils.isEmpty(noteKeySync)){*/
+                    noteReadyDeleted(context, noteKeySync, noteID);
+               /* }*/
                 return true;
             }
         }
         return false;
     }
 
-    private void noteReadyDeleted(Context context, String keySync){
+    private void noteReadyDeleted(Context context, String keySync, long noteID){
         ContentValues cv = new ContentValues();
         cv.put(NoteContract.NoteReadyDeletedEntry.NOTE_KEY_SYNC, keySync);
+        cv.put(NoteContract.NoteReadyDeletedEntry.NOTE_ID, noteID);
         NoteDBHelper helper = NoteDBHelper.getInstance(context);
         SQLiteDatabase db = helper.getWritableDatabase();
         db.insert(NoteContract.NoteReadyDeletedEntry.DATABASE_TABLE, null, cv);

@@ -25,7 +25,7 @@ public class NoteContract  {
                 BASE_CONTENT_URI.buildUpon().appendPath(path_tnote).build();
 
         public static final String DATABASE_TABLE = "v_note";
-        public static final String COL_KEY_SYNC = "keySync";
+        public static final String COL_KEY_SYNC = "key_sync";
         public static final String COL_TITLE = "title";
         public static final String COL_CONTENT = "content";
         public static final String COL_DATE_CREATED = "date_created";
@@ -41,7 +41,7 @@ public class NoteContract  {
 
         public static String[] getColumnNames(){
             return new String[]{_ID, COL_TITLE, COL_CONTENT, COL_DATE_CREATED, COL_LAST_ON,
-                    COL_PASSWORD, COL_PASSWORD_SALT, COL_COLOR,  COL_DELETE};
+                    COL_PASSWORD, COL_PASSWORD_SALT, COL_COLOR, COL_DELETE, COL_KEY_SYNC};
         }
 
         public static String[] getColumnNamesForNote(){
@@ -60,7 +60,7 @@ public class NoteContract  {
         public static final String DATABASE_TABLE = "v_images";
         public static final String COL_NAME_PATH = "name_path";
         public static final String COL_NOTE_ID = "note_id";
-        public static final String COL_SYNC ="sync";
+        public static final String COL_SYNC ="sync_stage";
 
         public static String[] getColumnNames(){
             return new String[]{COL_NAME_PATH, COL_NOTE_ID, COL_SYNC};
@@ -95,6 +95,7 @@ public class NoteContract  {
 
     public static final class NoteReadyDeletedEntry{
         public static final String DATABASE_TABLE = "note_ready_deleted";
-        public static final String NOTE_KEY_SYNC ="keySync";
+        public static final String NOTE_KEY_SYNC ="key_sync";
+        public static final String NOTE_ID = "note_id";
     }
 }

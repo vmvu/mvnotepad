@@ -220,14 +220,7 @@ public class NoteProvider extends ContentProvider {
                 where = selection;
                 DBName = NoteContract.ImageEntry.DATABASE_TABLE;
                 break;
-            case INCOMING_SINGLE_IMAGES_URI_INDICATOR:
-                where = selection;
-                DBName = NoteContract.ImageEntry.DATABASE_TABLE;
-                break;
-            case INCOMING_ACCOUNT_COLLECTION_URI_INDICATOR:
-                where = selection;
-                DBName = NoteContract.AccountEntry.DATABASE_TABLE;
-                break;
+
             default:
                 throw new IllegalArgumentException("Unknown Uri:" + uri);
         }
@@ -256,6 +249,14 @@ public class NoteProvider extends ContentProvider {
             case INCOMING_ACCOUNT_COLLECTION_URI_INDICATOR:
                 where = selection;
                 DBName = NoteContract.AccountEntry.DATABASE_TABLE;
+                break;
+            case INCOMING_IMAGES_COLLECTION_URI_INDICATOR:
+                where = selection;
+                DBName = NoteContract.ImageEntry.DATABASE_TABLE;
+                break;
+            case  INCOMING_SINGLE_IMAGES_URI_INDICATOR:
+                where = selection;
+                DBName = NoteContract.ImageEntry.DATABASE_TABLE;
                 break;
             default:
                 return 0;

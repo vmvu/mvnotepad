@@ -1,8 +1,10 @@
 package com.minhvu.proandroid.sqlite.database.main.model;
 
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
@@ -32,7 +34,7 @@ import java.util.List;
 public class ImageModel implements IImageModel {
     private IImagePresenter presenter;
     private ArrayList<String> mImageList;
-    private HashMap<String ,Bitmap> mBitmap;
+    private HashMap<String, Bitmap> mBitmap;
     private HashMap<String, Bitmap> mSmallBitmap;
 
     public ImageModel() {
@@ -73,7 +75,7 @@ public class ImageModel implements IImageModel {
                 do {
                     String path = c.getString(pathIndex);
                     int deleted = c.getInt(deletedIndex);
-                    if(deleted != -1){
+                    if (deleted != -1) {
                         mImageList.add(path);
                     }
 
@@ -177,7 +179,10 @@ public class ImageModel implements IImageModel {
     public boolean deleteAllImages(Context context, int noteId) {
         ContentResolver contentResolver = context.getContentResolver();
         String selection = NoteContract.ImageEntry.COL_NOTE_ID + "=" + noteId;
-        int success = contentResolver.delete(NoteContract.ImageEntry.CONTENT_URI, selection, null);
+        ContentValues cv = new ContentValues();
+        cv.put(NoteContract.ImageEntry.COL_SYNC, -1);
+        Uri uri = ContentUris.withAppendedId(NoteContract.ImageEntry.CONTENT_URI, noteId);
+        int success = contentResolver.update(uri, cv, selection, null);
         if (success > 0) {
             for (String path : mImageList) {
                 removeImage(path);
@@ -197,15 +202,15 @@ public class ImageModel implements IImageModel {
     }
 
     @Override
-    public Bitmap getBitmapImage(String path){
-        if(mBitmap == null){
+    public Bitmap getBitmapImage(String path) {
+        if (mBitmap == null) {
             mBitmap = new HashMap<>();
         }
-        Bitmap bitmap =  mBitmap.get(path);
-        if(bitmap == null){
-            try{
+        Bitmap bitmap = mBitmap.get(path);
+        if (bitmap == null) {
+            try {
                 bitmap = loadFile(path);
-            }catch (FileNotFoundException e){
+            } catch (FileNotFoundException e) {
                 e.getStackTrace();
             }
             mBitmap.put(path, bitmap);
@@ -227,11 +232,11 @@ public class ImageModel implements IImageModel {
 
     @Override
     public Bitmap getSmallBitmapImage(String path) {
-        if(mSmallBitmap == null){
+        if (mSmallBitmap == null) {
             mSmallBitmap = new HashMap<>();
         }
         Bitmap bitmap = mSmallBitmap.get(path);
-        if(bitmap == null){
+        if (bitmap == null) {
             bitmap = getBitmapImage(path);
             bitmap = resizeImage(bitmap);
             mSmallBitmap.put(path, bitmap);
@@ -243,11 +248,11 @@ public class ImageModel implements IImageModel {
         /*ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 30, baos);
         return BitmapFactory.decodeByteArray(baos.toByteArray(), 0, baos.size());*/
-        return bitmap.createScaledBitmap(bitmap,bitmap.getWidth()/10,(int) bitmap.getHeight()/10, true);
+        return bitmap.createScaledBitmap(bitmap, bitmap.getWidth() / 10, (int) bitmap.getHeight() / 10, true);
     }
 
     @Override
-    public void updateSmallBitmap(String path){
+    public void updateSmallBitmap(String path) {
         Bitmap bitmap = getBitmapImage(path);
         mSmallBitmap.put(path, resizeImage(bitmap));
     }

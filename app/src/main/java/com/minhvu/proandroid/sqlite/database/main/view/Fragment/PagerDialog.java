@@ -1,8 +1,6 @@
 package com.minhvu.proandroid.sqlite.database.main.view.Fragment;
 
-import android.app.Dialog;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.DialogFragment;
@@ -12,7 +10,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.view.WindowManager;
 
 import com.minhvu.proandroid.sqlite.database.R;
 import com.minhvu.proandroid.sqlite.database.main.view.Activity.view.SortView;
@@ -23,9 +20,9 @@ import com.minhvu.proandroid.sqlite.database.main.view.Adapter.SortPagerAdapter;
  */
 
 public class PagerDialog extends DialogFragment {
-    SortView sortView;
+    SortView mSortView;
     public PagerDialog(SortView sortView){
-        this.sortView = sortView;
+        this.mSortView = sortView;
     }
 
     @Override
@@ -41,7 +38,7 @@ public class PagerDialog extends DialogFragment {
         TabLayout tabLayout = (TabLayout) layout.findViewById(R.id.tabLayout);
         ViewPager viewPager = (ViewPager) layout.findViewById(R.id.viewPager);
         tabLayout.setupWithViewPager(viewPager);
-        SortPagerAdapter adapter = new SortPagerAdapter(getChildFragmentManager(), sortView);
+        SortPagerAdapter adapter = new SortPagerAdapter(getChildFragmentManager(), mSortView);
         viewPager.setAdapter(adapter);
         return layout;
     }

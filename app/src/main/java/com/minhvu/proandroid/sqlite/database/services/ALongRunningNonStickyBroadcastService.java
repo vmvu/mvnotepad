@@ -22,6 +22,7 @@ public abstract class ALongRunningNonStickyBroadcastService extends IntentServic
     }
     public abstract void handIntentBroadcast(Intent intentBroadcast);
 
+
     @Override
     public void onCreate() {
         super.onCreate();

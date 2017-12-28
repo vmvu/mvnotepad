@@ -22,7 +22,6 @@ import android.support.v4.content.PermissionChecker;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -67,11 +66,11 @@ import javax.crypto.SecretKey;
 
 public class MainPresenter extends MvpPresenter<IMainModel, IMainView.View> implements IMainPresenter {
 
-    private Cipher cipher;
-    private KeyStore keyStore;
-    private KeyGenerator keyGenerator;
-    private KeyguardManager keyguardManager;
-    private FingerprintManager fingerprintManager;
+    private Cipher mCipher;
+    private KeyStore mKeyStore;
+    private KeyGenerator mKeyGenerator;
+    private KeyguardManager mKeyguardManager;
+    private FingerprintManager mFingerprintManager;
     private final String FINGERPRINT_KEY = "fingerprint_k";
 
     @Override
@@ -262,10 +261,10 @@ public class MainPresenter extends MvpPresenter<IMainModel, IMainView.View> impl
                 }
             });
 
-            keyguardManager = (KeyguardManager) getView().getActivityContext().getSystemService(Context.KEYGUARD_SERVICE);
-            fingerprintManager = (FingerprintManager) getView().getActivityContext().getSystemService(Context.FINGERPRINT_SERVICE);
+            mKeyguardManager = (KeyguardManager) getView().getActivityContext().getSystemService(Context.KEYGUARD_SERVICE);
+            mFingerprintManager = (FingerprintManager) getView().getActivityContext().getSystemService(Context.FINGERPRINT_SERVICE);
             //check whether the device has a fingerprint sensor
-            if (!fingerprintManager.isHardwareDetected()) {
+            if (!mFingerprintManager.isHardwareDetected()) {
                 // device don't support fingerprint
                 return false;
             }
@@ -274,11 +273,11 @@ public class MainPresenter extends MvpPresenter<IMainModel, IMainView.View> impl
                return false;
             }
             //check that the user has registered at least one fingerprint
-            if (!fingerprintManager.hasEnrolledFingerprints()) {
+            if (!mFingerprintManager.hasEnrolledFingerprints()) {
                 return false;
             }
             //check that the lock-screen is secured
-            if (!keyguardManager.isKeyguardSecure()) {
+            if (!mKeyguardManager.isKeyguardSecure()) {
                 return false;
             } else {
                 try {
@@ -287,10 +286,10 @@ public class MainPresenter extends MvpPresenter<IMainModel, IMainView.View> impl
                     e.printStackTrace();
                 }
                 if (initCipher()) {
-                    FingerprintManager.CryptoObject cryptoObject = new FingerprintManager.CryptoObject(cipher);
+                    FingerprintManager.CryptoObject cryptoObject = new FingerprintManager.CryptoObject(mCipher);
                     Uri uri = ContentUris.withAppendedId(NoteContract.NoteEntry.CONTENT_URI, note.getId());
                     FingerprintHandler handler = new FingerprintHandler(uri, itemPosition, dialog);
-                    handler.startAuth(fingerprintManager, cryptoObject);
+                    handler.startAuth(mFingerprintManager, cryptoObject);
                 }
             }
             dialog.show();
@@ -338,10 +337,10 @@ public class MainPresenter extends MvpPresenter<IMainModel, IMainView.View> impl
     }
     private void generateKey() throws FingerprintException {
         try {
-            keyStore = KeyStore.getInstance("AndroidKeyStore");
+            mKeyStore = KeyStore.getInstance("AndroidKeyStore");
 
-            keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore");
-            keyStore.load(null);
+            mKeyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore");
+            mKeyStore.load(null);
             KeyGenParameterSpec keyGenParameterSpec =
                     new KeyGenParameterSpec.Builder(FINGERPRINT_KEY, KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
                             .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
@@ -349,8 +348,8 @@ public class MainPresenter extends MvpPresenter<IMainModel, IMainView.View> impl
                             //with a fingerprint each time they want to use it
                             .setUserAuthenticationRequired(true)
                             .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_PKCS7).build();
-            keyGenerator.init(keyGenParameterSpec);
-            keyGenerator.generateKey();
+            mKeyGenerator.init(keyGenParameterSpec);
+            mKeyGenerator.generateKey();
 
         } catch (KeyStoreException |
                 NoSuchAlgorithmException |
@@ -367,15 +366,15 @@ public class MainPresenter extends MvpPresenter<IMainModel, IMainView.View> impl
                 KeyProperties.BLOCK_MODE_CBC + "/" +
                 KeyProperties.ENCRYPTION_PADDING_PKCS7;
         try {
-            cipher = Cipher.getInstance(algorithm);
+            mCipher = Cipher.getInstance(algorithm);
         } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
             e.printStackTrace();
             throw new RuntimeException("Failed to get Cipher", e);
         }
         try {
-            keyStore.load(null);
-            SecretKey key = (SecretKey) keyStore.getKey(FINGERPRINT_KEY, null);
-            cipher.init(Cipher.ENCRYPT_MODE, key);
+            mKeyStore.load(null);
+            SecretKey key = (SecretKey) mKeyStore.getKey(FINGERPRINT_KEY, null);
+            mCipher.init(Cipher.ENCRYPT_MODE, key);
         } catch (InvalidKeyException e) {
             e.printStackTrace();
             return false;
@@ -424,6 +423,12 @@ public class MainPresenter extends MvpPresenter<IMainModel, IMainView.View> impl
     @Override
     public void sortByImportant() {
         Sort.sortByImportant(getView().getActivityContext(), model.getNoteList());
+        getView().updateAdapter();
+    }
+
+    @Override
+    public void userSignOutUpdate() {
+        model.getNoteList().clear();
         getView().updateAdapter();
     }
 

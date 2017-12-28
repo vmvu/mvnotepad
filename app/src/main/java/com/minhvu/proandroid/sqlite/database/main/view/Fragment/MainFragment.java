@@ -1,9 +1,12 @@
 package com.minhvu.proandroid.sqlite.database.main.view.Fragment;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
@@ -26,30 +29,44 @@ import com.minhvu.proandroid.sqlite.database.main.view.Fragment.view.IMainView;
 
 public class MainFragment extends AFragment implements IMainView.View, NoteAdapter2.INoteAdapter {
 
-    RecyclerView recyclerView;
-    NoteAdapter2 noteAdapter;
-    IMainPresenter presenter;
+    RecyclerView mRecyclerView;
+    NoteAdapter2 mNoteAdapter;
+    IMainPresenter mPresenter;
+
+    BroadcastReceiver mSignOutReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            mPresenter.userSignOutUpdate();
+        }
+    };
 
 
     @Override
     public void onDestroy() {
+        LocalBroadcastManager.getInstance(getActivityContext()).unregisterReceiver(mSignOutReceiver);
+        mPresenter.onDestroy(getActivity().isChangingConfigurations());
+        mPresenter = null;
         super.onDestroy();
-        presenter.onDestroy(getActivity().isChangingConfigurations());
-        presenter = null;
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
-
-        presenter = new MainPresenter();
-        presenter.bindView(this);
+        mPresenter = new MainPresenter();
+        mPresenter.bindView(this);
         MainModel model = new MainModel(getActivityContext());
-        presenter.setModel(model);
-        model.setPresenter(presenter);
+        mPresenter.setModel(model);
+        model.setPresenter(mPresenter);
         Log.d("Life", "onCreate");
+        registerReceiverForSignOutFromUser();
     }
+
+    private void registerReceiverForSignOutFromUser(){
+        LocalBroadcastManager.getInstance(getActivityContext()).
+                registerReceiver(mSignOutReceiver, new IntentFilter(getString(R.string.broadcast_sign_out)));
+    }
+
 
     @Nullable
     @Override
@@ -57,20 +74,20 @@ public class MainFragment extends AFragment implements IMainView.View, NoteAdapt
         Log.d("Life", "onCreateView");
         View layout = inflater.inflate(R.layout.fragment_main, container, false);
 
-        recyclerView = (RecyclerView) layout.findViewById(R.id.recyclerView);
+        mRecyclerView = (RecyclerView) layout.findViewById(R.id.recyclerView);
         GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), 1);
-        recyclerView.setLayoutManager(gridLayoutManager);
-        recyclerView.setHasFixedSize(true);
-        noteAdapter = new NoteAdapter2(this);
-        noteAdapter.onAttachedToRecyclerView(recyclerView);
-        int count = presenter.getDataCount();
-        recyclerView.setAdapter(noteAdapter);
+        mRecyclerView.setLayoutManager(gridLayoutManager);
+        mRecyclerView.setHasFixedSize(true);
+        mNoteAdapter = new NoteAdapter2(this);
+        mNoteAdapter.onAttachedToRecyclerView(mRecyclerView);
+        int count = mPresenter.getDataCount();
+        mRecyclerView.setAdapter(mNoteAdapter);
         return layout;
     }
 
     @Override
     public void updateAdapter() {
-        noteAdapter.notifyDataSetChanged();
+        mNoteAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -85,17 +102,17 @@ public class MainFragment extends AFragment implements IMainView.View, NoteAdapt
 
     @Override
     public void onClick(View view, int position) {
-        presenter.AdapterOnClick(position);
+        mPresenter.AdapterOnClick(position);
     }
 
     @Override
     public void onLongClick(View view, int position) {
-        presenter.AdapterLongClick(view, position);
+        mPresenter.AdapterLongClick(view, position);
     }
 
     @Override
     public void onBindViewHolder(NoteAdapter2.NoteViewHolder holder, int position) {
-        presenter.onBindViewHolder(holder, position);
+        mPresenter.onBindViewHolder(holder, position);
     }
 
     @Override
@@ -105,7 +122,7 @@ public class MainFragment extends AFragment implements IMainView.View, NoteAdapt
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        presenter.updateView(requestCode);
+        mPresenter.updateView(requestCode);
     }
 
     @Override
@@ -122,39 +139,39 @@ public class MainFragment extends AFragment implements IMainView.View, NoteAdapt
 
     @Override
     public int getDataCount() {
-        return presenter.getDataCount();
+        return mPresenter.getDataCount();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        presenter.updateView(-1);
-        presenter.colorSort(-1);
+        mPresenter.updateView(-1);
+        mPresenter.colorSort(-1);
     }
 
     @Override
     public void colorSort(int position) {
-        presenter.colorSort(position);
+        mPresenter.colorSort(position);
     }
 
     @Override
     public void alphaSort() {
-        presenter.alphaSort();
+        mPresenter.alphaSort();
     }
 
     @Override
     public void colorOrderSort() {
-        presenter.colorOrderSort();
+        mPresenter.colorOrderSort();
     }
 
     @Override
     public void sortByModifiedTime() {
-        presenter.sortByModifiedTime();
+        mPresenter.sortByModifiedTime();
     }
 
     @Override
     public void sortByImportant() {
-        presenter.sortByImportant();
+        mPresenter.sortByImportant();
     }
 
 }

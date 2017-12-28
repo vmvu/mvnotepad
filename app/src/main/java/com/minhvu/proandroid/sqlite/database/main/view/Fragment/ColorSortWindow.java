@@ -19,14 +19,14 @@ import com.minhvu.proandroid.sqlite.database.main.view.Activity.view.SortView;
  */
 
 public class ColorSortWindow extends Fragment {
-    RecyclerView recyclerView;
-    ColorAdapter colorAdapter;
-    SortView sortView = null;
+    RecyclerView mRecyclerView;
+    ColorAdapter mColorAdapter;
+    SortView mSortView = null;
 
     private final int RESET_SORT = -1;
 
     public ColorSortWindow(SortView sortView){
-        this.sortView = sortView;
+        this.mSortView = sortView;
     }
 
     @Nullable
@@ -37,20 +37,20 @@ public class ColorSortWindow extends Fragment {
         btnResetSort.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sortView.colorSort(RESET_SORT);
+                mSortView.colorSort(RESET_SORT);
             }
         });
         GridLayoutManager layoutManager = new GridLayoutManager(getActivity(), 3);
-        recyclerView = (RecyclerView) layout.findViewById(R.id.recyclerView);
-        recyclerView.setLayoutManager(layoutManager);
+        mRecyclerView = (RecyclerView) layout.findViewById(R.id.recyclerView);
+        mRecyclerView.setLayoutManager(layoutManager);
 
-        colorAdapter = new ColorAdapter(getActivity(), new ColorAdapter.IColorAdapter() {
+        mColorAdapter = new ColorAdapter(getActivity(), new ColorAdapter.IColorAdapter() {
             @Override
             public void onClick(int colorPos) {
-                sortView.colorSort(colorPos);
+                mSortView.colorSort(colorPos);
             }
         });
-        recyclerView.setAdapter(colorAdapter);
+        mRecyclerView.setAdapter(mColorAdapter);
         return layout;
     }
 

@@ -16,9 +16,9 @@ import com.minhvu.proandroid.sqlite.database.main.view.Activity.view.SortView;
  */
 
 public class SortWindow extends Fragment {
-    private SortView sortView;
+    private SortView mSortView;
     public SortWindow(SortView sortView){
-        this.sortView = sortView;
+        this.mSortView = sortView;
     }
 
 
@@ -30,7 +30,7 @@ public class SortWindow extends Fragment {
         btnAlphaSort.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sortView.alphaSort();
+                mSortView.alphaSort();
             }
         });
 
@@ -38,7 +38,7 @@ public class SortWindow extends Fragment {
         btnModifiedTimeSort.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sortView.modifiedTimeSort();
+                mSortView.modifiedTimeSort();
             }
         });
 
@@ -46,7 +46,7 @@ public class SortWindow extends Fragment {
         btnSortByColorOrder.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sortView.colorOrderSort();
+                mSortView.colorOrderSort();
             }
         });
 
@@ -54,7 +54,7 @@ public class SortWindow extends Fragment {
         btnSortByImportant.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sortView.sortByImportant();
+                mSortView.sortByImportant();
             }
         });
 

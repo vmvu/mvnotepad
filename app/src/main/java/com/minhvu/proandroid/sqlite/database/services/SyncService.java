@@ -7,6 +7,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.Binder;
+import android.os.IBinder;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -31,7 +34,22 @@ import java.util.List;
 
 public class SyncService extends ALongRunningNonStickyBroadcastService {
 
+    private final IBinder mBinder = new LocalBinder();
+
+
     private String user;
+
+    public class LocalBinder extends Binder{
+        public SyncService getService(){
+            return SyncService.this;
+        }
+    }
+
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return mBinder;
+    }
 
     public SyncService() {
         super("SyncService");
@@ -43,7 +61,27 @@ public class SyncService extends ALongRunningNonStickyBroadcastService {
         if (TextUtils.isEmpty(intentAction) || !intentAction.equals(getString(R.string.broadcast_sync))) {
             return;
         }
-        syncFirebase();
+        user = intentBroadcast.getStringExtra(this.getString(R.string.user_token));
+        if(TextUtils.isEmpty(user)){
+            return;
+        }
+        int mode = intentBroadcast.getIntExtra(this.getString(R.string.user_sign_out_delete_data), 0);
+        if(mode == 1){
+            deleteAllDataInDatabase();
+        }else{
+            syncFirebase();
+        }
+
+    }
+
+    private void deleteAllDataInDatabase(){
+        NoteDBHelper helper = NoteDBHelper.getInstance(this);
+        SQLiteDatabase db = helper.getWritableDatabase();
+        if(db == null)
+            return;
+        db.execSQL("delete from " + NoteContract.NoteEntry.DATABASE_TABLE);
+        db.execSQL("delete from " + NoteContract.ImageEntry.DATABASE_TABLE);
+        db.execSQL("delete from " + NoteContract.NoteReadyDeletedEntry.DATABASE_TABLE);
     }
 
     private void syncFirebase() {
@@ -58,11 +96,6 @@ public class SyncService extends ALongRunningNonStickyBroadcastService {
     }
 
     private void Sync() {
-        /*getUser();
-        if(TextUtils.isEmpty(user)){
-            return;
-        }*/
-
         List<Note> noteList = NoteSync();
         if(noteList == null){
             noteList = new ArrayList<>();
@@ -75,8 +108,6 @@ public class SyncService extends ALongRunningNonStickyBroadcastService {
     }
 
     private List<Note> NoteSync() {
-        //getUser();
-        user = "shshhs";
         if (TextUtils.isEmpty(user)) {
             return null;
         }
@@ -189,29 +220,6 @@ public class SyncService extends ALongRunningNonStickyBroadcastService {
         return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 
-    private void getUser() {
-        if (!TextUtils.isEmpty(user)) {
-            return;
-        }
-        NoteDBHelper helper = NoteDBHelper.getInstance(this);
-        try (SQLiteDatabase db = helper.getReadableDatabase()) {
-            Cursor c = db.query(
-                    NoteContract.AccountEntry.DATABASE_TABLE,
-                    new String[]{NoteContract.AccountEntry.COL_ID},
-                    null, null, null, null, null
-            );
-
-            if (c != null && c.moveToNext()) {
-                user = c.getString(c.getColumnIndex(NoteContract.AccountEntry.COL_ID));
-            }
-
-            if (c != null) {
-                c.close();
-            }
-        } catch (IllegalStateException e) {
-            Log.d("service-error", e.toString());
-        }
-    }
 
     private List<Note> getListNote() {
         List<Note> noteList = null;

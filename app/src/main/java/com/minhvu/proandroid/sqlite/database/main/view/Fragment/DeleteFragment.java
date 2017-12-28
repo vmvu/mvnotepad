@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -28,19 +27,19 @@ import com.minhvu.proandroid.sqlite.database.main.view.Fragment.view.IDeleteView
 
 public class DeleteFragment extends AFragment implements IDeleteView, NoteAdapter2.INoteAdapter {
 
-    RecyclerView recyclerView;
-    NoteAdapter2 noteAdapter;
-    IDeletePresenter presenter;
+    RecyclerView mRecyclerView;
+    NoteAdapter2 mNoteAdapter;
+    IDeletePresenter mPresenter;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        presenter = new DeletePresenter();
-        presenter.bindView(this);
+        mPresenter = new DeletePresenter();
+        mPresenter.bindView(this);
         IDeleteModel model = new DeleteModel();
-        presenter.setModel(model);
-        model.setPresenter(presenter);
-        presenter.loadData();
+        mPresenter.setModel(model);
+        model.setPresenter(mPresenter);
+        mPresenter.loadData();
     }
 
     @Nullable
@@ -48,20 +47,20 @@ public class DeleteFragment extends AFragment implements IDeleteView, NoteAdapte
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View layout = inflater.inflate(R.layout.fragment_main, container, false);
 
-        recyclerView = (RecyclerView) layout.findViewById(R.id.recyclerView);
+        mRecyclerView = (RecyclerView) layout.findViewById(R.id.recyclerView);
         GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), 1);
-        recyclerView.setLayoutManager(gridLayoutManager);
-        recyclerView.setHasFixedSize(true);
-        noteAdapter = new NoteAdapter2(this);
-        noteAdapter.onAttachedToRecyclerView(recyclerView);
-        recyclerView.setAdapter(noteAdapter);
+        mRecyclerView.setLayoutManager(gridLayoutManager);
+        mRecyclerView.setHasFixedSize(true);
+        mNoteAdapter = new NoteAdapter2(this);
+        mNoteAdapter.onAttachedToRecyclerView(mRecyclerView);
+        mRecyclerView.setAdapter(mNoteAdapter);
         return layout;
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        presenter.isThereANewData();
+        mPresenter.isThereANewData();
     }
 
     @Override
@@ -96,7 +95,7 @@ public class DeleteFragment extends AFragment implements IDeleteView, NoteAdapte
 
     @Override
     public void updateAdapter() {
-        noteAdapter.notifyDataSetChanged();
+        mNoteAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -106,31 +105,31 @@ public class DeleteFragment extends AFragment implements IDeleteView, NoteAdapte
 
     @Override
     public void onClick(View view, int position) {
-        presenter.AdapterOnClick(position);
+        mPresenter.AdapterOnClick(position);
     }
 
     @Override
     public void onLongClick(View view, int position) {
-        presenter.AdapterLongClick(view, position);
+        mPresenter.AdapterLongClick(view, position);
     }
 
     @Override
     public void onBindViewHolder(NoteAdapter2.NoteViewHolder holder, int position) {
-        presenter.onBindViewHolder(holder, position);
+        mPresenter.onBindViewHolder(holder, position);
     }
 
     @Override
     public int getDataCount() {
-        return presenter.getDataCount();
+        return mPresenter.getDataCount();
     }
 
 
 
     @Override
     public void onDestroy() {
+        mPresenter.onDestroy(getActivity().isChangingConfigurations());
+        mPresenter = null;
         super.onDestroy();
-        presenter.onDestroy(getActivity().isChangingConfigurations());
-        presenter = null;
     }
 
     @Override

@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="16dp"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:id="@+id/sign_in_place"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/btnLoginFB"
+            android:layout_marginLeft="14dp"
+            android:layout_marginStart="14dp"
+            android:visibility="gone"/>
+
+        <TextView
+            android:id="@+id/txt_sign_in_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:text="@string/sign_in_with_label"
+            android:textStyle="bold" />
+
+        <ImageButton
+            android:id="@+id/customBtnFB"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_alignTop="@+id/customBtnGG"
+            android:layout_toLeftOf="@+id/txt_sign_in_label"
+            android:layout_toStartOf="@+id/txt_sign_in_label"
+            android:background="@drawable/press_state"
+            app:srcCompat="@drawable/ic_facebook" />
+
+        <com.facebook.login.widget.LoginButton
+            android:id="@+id/btnLoginFB"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="invisible" />
+
+        <ImageButton
+            android:id="@+id/customBtnGG"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_below="@+id/btnLoginFB"
+            android:layout_marginTop="11dp"
+            android:layout_toEndOf="@+id/txt_sign_in_label"
+            android:layout_toRightOf="@+id/txt_sign_in_label"
+            android:background="@drawable/press_state"
+            app:srcCompat="@drawable/ic_google" />
+
+
+    </RelativeLayout>
+
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/sync_info_place"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/logo"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            app:srcCompat="@drawable/ic_facebook" />
+
+        <TextView
+            android:id="@+id/txt_user_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="35dp"
+            app:layout_constraintLeft_toRightOf="@id/logo" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Last sync"
+            app:layout_constraintTop_toBottomOf="@+id/logo" />
+
+        <TextView
+            android:id="@+id/txt_last_sync"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintLeft_toRightOf="@id/txt_user_name"
+            app:layout_constraintTop_toBottomOf="@+id/txt_user_name" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Notes:"
+            app:layout_constraintTop_toBottomOf="@+id/txt_last_sync" />
+
+        <TextView
+            android:id="@+id/txt_number_of_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintLeft_toRightOf="@id/txt_user_name"
+            app:layout_constraintTop_toBottomOf="@+id/txt_last_sync" />
+
+        <ImageButton
+            android:id="@+id/btn_sync"
+            android:layout_width="106dp"
+            android:layout_height="40dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="48dp"
+            android:background="@drawable/press_state"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/txt_number_of_text"
+            app:srcCompat="@drawable/ic_cloud_computing" />
+
+        <ImageButton
+            android:id="@+id/btn_disconnect"
+            android:layout_width="50dp"
+            android:layout_height="40dp"
+            android:layout_marginLeft="46dp"
+            app:layout_constraintLeft_toRightOf="@+id/btn_sync"
+            app:layout_constraintBottom_toBottomOf="@+id/btn_sync"
+            android:background="@drawable/press_state"
+            app:srcCompat="@drawable/ic_disconnected" />
+
+        <ImageButton
+            android:id="@+id/btn_sign_out"
+            android:layout_width="50dp"
+            android:layout_height="40dp"
+            android:layout_marginLeft="36dp"
+            android:background="@drawable/press_state"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintLeft_toRightOf="@+id/btn_disconnect"
+            app:layout_constraintBottom_toBottomOf="@+id/btn_sync"
+            app:srcCompat="@drawable/ic_exit"
+            />
+
+        <TextView
+            android:layout_width="106dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/sync_label"
+            app:layout_constraintLeft_toLeftOf="@+id/btn_sync"
+            app:layout_constraintRight_toRightOf="@+id/btn_sync"
+            app:layout_constraintTop_toBottomOf="@+id/btn_sync" />
+
+        <TextView
+            android:layout_width="107dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/disconnect_label"
+            app:layout_constraintLeft_toLeftOf="@+id/btn_disconnect"
+            app:layout_constraintRight_toRightOf="@+id/btn_disconnect"
+            app:layout_constraintTop_toBottomOf="@+id/btn_disconnect" />
+
+        <TextView
+            android:layout_width="107dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/sign_out_label"
+            app:layout_constraintLeft_toLeftOf="@+id/btn_sign_out"
+            app:layout_constraintRight_toRightOf="@+id/btn_sign_out"
+            app:layout_constraintTop_toBottomOf="@+id/btn_sign_out" />
+
+    </android.support.constraint.ConstraintLayout>
+
+</LinearLayout>

@@ -15,11 +15,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "914140448343-fpk12v1cc63p0s13m8n31vt7pju5eamp.apps.googleusercontent.com",
+          "client_id": "914140448343-cv2np5mkh5doigfup2mpj6s6lie6ke8b.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.minhvu.proandroid.sqlite.database",
-            "certificate_hash": "15ac14cd22e8bad781515e434f7998d294fb79a0"
+            "certificate_hash": "c667eb3b974818e4ce49237e97f383d830f75c89"
           }
         },
         {

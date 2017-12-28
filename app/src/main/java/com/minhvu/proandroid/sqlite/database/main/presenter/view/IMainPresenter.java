@@ -33,4 +33,6 @@ public interface IMainPresenter {
     void sortByModifiedTime();
     void sortByImportant();
 
+    void userSignOutUpdate();
+
 }

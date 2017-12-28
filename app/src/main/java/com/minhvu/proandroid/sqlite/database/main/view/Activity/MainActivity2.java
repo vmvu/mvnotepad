@@ -1,8 +1,13 @@
 package com.minhvu.proandroid.sqlite.database.main.view.Activity;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.Signature;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -10,8 +15,11 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Base64;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -27,6 +35,9 @@ import com.minhvu.proandroid.sqlite.database.main.view.Activity.view.SortView;
 import com.minhvu.proandroid.sqlite.database.main.view.Fragment.AFragment;
 import com.minhvu.proandroid.sqlite.database.main.view.Fragment.DeleteFragment;
 import com.minhvu.proandroid.sqlite.database.main.view.Fragment.MainFragment;
+
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * Created by vomin on 10/10/2017.
@@ -47,13 +58,13 @@ public class MainActivity2 extends AppCompatActivity implements SortView {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main2);
         setupInit();
-
         toolbar.setTitleTextColor(getResources().getColor(R.color.black));
         openMainPage();
 
         requestPermission();
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
     }
+
 
     void openMainPage() {
         toolbar.setTitle(getString(R.string.main_page));
@@ -116,7 +127,7 @@ public class MainActivity2 extends AppCompatActivity implements SortView {
         btnSyncCloud.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                broadcastSync();
+                openSyncWindow();
             }
         });
 
@@ -131,13 +142,9 @@ public class MainActivity2 extends AppCompatActivity implements SortView {
         });
     }
 
-
-
-
-    private void broadcastSync(){
-        String broadcastAction = getString(R.string.broadcast_sync);
-        Intent intent = new Intent(broadcastAction);
-        sendBroadcast(intent);
+    private void openSyncWindow(){
+        Intent intent = new Intent(this, LogInActivity.class);
+        startActivity(intent);
     }
 
     void sortVew() {

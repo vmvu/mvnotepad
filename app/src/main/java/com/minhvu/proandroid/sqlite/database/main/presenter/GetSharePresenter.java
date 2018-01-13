@@ -63,14 +63,14 @@ public class GetSharePresenter extends MvpPresenter<IGetShareModel, IGetShareAct
         Object v = getView();
         Note note = model.loadNote(currentUri.getPathSegments().get(1));
         if (note != null) {
-            if (!TextUtils.isEmpty(model.getNote().getPassword())) {
+            if (!TextUtils.isEmpty(model.getmNote().getPassword())) {
                 getView().lockContent();
                 note.setContent("LOCK CONTENT");
             }
-            int imageCount = model.loadImage(currentUri.getPathSegments().get(1));
+            long imageCount = model.getCountImages(Long.parseLong(currentUri.getPathSegments().get(1)));
             getView().visibleView();
             updateView(note);
-            getView().updateImageCount(imageCount);
+            getView().updateImageCount((int)imageCount);
         }
     }
 
@@ -81,7 +81,7 @@ public class GetSharePresenter extends MvpPresenter<IGetShareModel, IGetShareAct
 
     @Override
     public void onDetailOnClick() {
-        final Note note = model.getNote();
+        final Note note = model.getmNote();
         if (!TextUtils.isEmpty(note.getPassword())) {
 
             LayoutInflater inflater = (LayoutInflater) getActivityContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);

@@ -4,8 +4,6 @@ import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.UriMatcher;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -15,11 +13,10 @@ import android.util.Log;
 
 import com.minhvu.proandroid.sqlite.database.main.model.view.IImageModel;
 import com.minhvu.proandroid.sqlite.database.main.presenter.view.IImagePresenter;
-import com.minhvu.proandroid.sqlite.database.models.data.NoteContract;
-import com.minhvu.proandroid.sqlite.database.models.data.NoteDBHelper;
+import com.minhvu.proandroid.sqlite.database.models.DAO.ImageDAO;
+import com.minhvu.proandroid.sqlite.database.models.data.ImageContract;
+import com.minhvu.proandroid.sqlite.database.models.entity.Image;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -33,17 +30,21 @@ import java.util.List;
 
 public class ImageModel implements IImageModel {
     private IImagePresenter presenter;
-    private ArrayList<String> mImageList;
+    private List<String> mImageList;
     private HashMap<String, Bitmap> mBitmap;
     private HashMap<String, Bitmap> mSmallBitmap;
 
-    public ImageModel() {
+    private ImageDAO mImageDAO;
+
+    public ImageModel(Context context) {
         mImageList = new ArrayList<>();
+        mImageDAO = new ImageDAO(context);
     }
 
     public ImageModel(Context context, int noteID) {
         mImageList = new ArrayList<>();
-        loadImages(context, noteID);
+        mImageDAO = new ImageDAO(context);
+        loadImages(noteID);
     }
 
 
@@ -61,32 +62,8 @@ public class ImageModel implements IImageModel {
     }
 
     @Override
-    public void loadImages(Context context, int noteId) {
-        ContentResolver contentResolver = context.getContentResolver();
-        String selection = NoteContract.ImageEntry.COL_NOTE_ID + "=" + noteId;
-        Cursor c = null;
-        try {
-            c = contentResolver.query(NoteContract.ImageEntry.CONTENT_URI,
-                    NoteContract.ImageEntry.getColumnNames(), selection, null, null);
-            if (c != null && c.moveToFirst()) {
-                mImageList.clear();
-                int pathIndex = c.getColumnIndex(NoteContract.ImageEntry.COL_NAME_PATH);
-                int deletedIndex = c.getColumnIndex(NoteContract.ImageEntry.COL_SYNC);
-                do {
-                    String path = c.getString(pathIndex);
-                    int deleted = c.getInt(deletedIndex);
-                    if (deleted != -1) {
-                        mImageList.add(path);
-                    }
-
-                    //mBitmapList.add(rotateImage(path, 90));
-                } while (c.moveToNext());
-            }
-        } finally {
-            if (c != null) {
-                c.close();
-            }
-        }
+    public void loadImages(long noteId) {
+        mImageList = mImageDAO.loadImagePathListOfNote(noteId);
     }
 
     private Bitmap rotateImage(String path, float angle) {
@@ -119,47 +96,26 @@ public class ImageModel implements IImageModel {
 
 
     @Override
-    public void insertImage(Context context, String imagePath, int noteId) {
-        ContentResolver cr = context.getContentResolver();
-        ContentValues cv = new ContentValues();
-        cv.put(NoteContract.ImageEntry.COL_NAME_PATH, imagePath);
-        cv.put(NoteContract.ImageEntry.COL_NOTE_ID, noteId);
-        cv.put(NoteContract.ImageEntry.COL_SYNC, 0);
-        Uri success = cr.insert(NoteContract.ImageEntry.CONTENT_URI, cv);
-        if (success != null) {
-            if (mImageList == null) {
-                mImageList = new ArrayList<>();
-            }
+    public void insertImage(String imagePath, long noteId) {
+        Image image = new Image(imagePath, 0, noteId);
+        if (mImageDAO.insertItem(image)) {
             mImageList.add(imagePath);
-            Log.d("addImage", "size_list:" + mImageList.size());
-            if (mImageList.size() > 0) {
-                presenter.notifyView();
-            }
+            presenter.notifyView();
         }
-
     }
 
     @Override
-    public void deleteImage(Context context, String imagePath, int position) {
-        String selection = NoteContract.ImageEntry.COL_NAME_PATH + "=?";
-        ContentValues cv = new ContentValues();
-        cv.put(NoteContract.ImageEntry.COL_SYNC, -1);
-        try (SQLiteDatabase db = NoteDBHelper.getInstance(context).getWritableDatabase()) {
-            int success = db.update(
-                    NoteContract.ImageEntry.DATABASE_TABLE,
-                    cv,
-                    selection,
-                    new String[]{imagePath});
-            if (success > 0) {
-                mImageList.remove(position);
-                presenter.notifyView();
-                removeImage(imagePath);
-            }
+    public void deleteImage(String imagePath, int position) {
+        Image image = new Image(imagePath, -1);
+        if (mImageDAO.updateByPath(image)) {
+            mImageList.remove(position);
+            presenter.notifyView();
+            removeImageLocal(imagePath);
         }
     }
 
 
-    private void removeImage(final String imagePath) {
+    private void removeImageLocal(final String imagePath) {
         Thread thread = new Thread() {
             @Override
             public void run() {
@@ -176,16 +132,11 @@ public class ImageModel implements IImageModel {
     }
 
     @Override
-    public boolean deleteAllImages(Context context, int noteId) {
-        ContentResolver contentResolver = context.getContentResolver();
-        String selection = NoteContract.ImageEntry.COL_NOTE_ID + "=" + noteId;
-        ContentValues cv = new ContentValues();
-        cv.put(NoteContract.ImageEntry.COL_SYNC, -1);
-        Uri uri = ContentUris.withAppendedId(NoteContract.ImageEntry.CONTENT_URI, noteId);
-        int success = contentResolver.update(uri, cv, selection, null);
-        if (success > 0) {
+    public boolean deleteAllImages(long noteId) {
+        Image image = new Image(null, -1);
+        if (mImageDAO.updateByNoteID(image)) {
             for (String path : mImageList) {
-                removeImage(path);
+                removeImageLocal(path);
             }
             mImageList.clear();
             return true;

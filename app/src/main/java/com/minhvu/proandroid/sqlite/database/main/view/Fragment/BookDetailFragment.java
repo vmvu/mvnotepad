@@ -187,13 +187,13 @@ public class BookDetailFragment extends Fragment implements IDetailFragment.View
         viewGroup.setBackgroundColor(getResources().getColor(R.color.backgroundColor_default));
         setup(layout);
         //
-         btnRemoveTitle.setOnClickListener(new View.OnClickListener() {
-             @Override
-             public void onClick(View v) {
-                 etTitle.setText("");
-                 etTitle.requestFocus();
-             }
-         });
+        btnRemoveTitle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                etTitle.setText("");
+                etTitle.requestFocus();
+            }
+        });
 
         //restore
         if (savedInstanceState != null) {
@@ -373,7 +373,7 @@ public class BookDetailFragment extends Fragment implements IDetailFragment.View
         btnImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                takePhotoFromCamera(TAKE_PHOTO_CODE);
+                takePhotoFromCamera();
             }
         });
         ImageButton btnPickImage = (ImageButton) layout.findViewById(R.id.btnPickImage);
@@ -392,7 +392,7 @@ public class BookDetailFragment extends Fragment implements IDetailFragment.View
             }
         });
         if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-           btnPickImage.setVisibility(View.GONE);
+            btnPickImage.setVisibility(View.GONE);
         }
 
         mMainPresenter.showTableSetting(layout, view);
@@ -415,7 +415,6 @@ public class BookDetailFragment extends Fragment implements IDetailFragment.View
         popup.setHeight(150);
         popup.setFocusable(true);
         popup.setBackgroundDrawable(new BitmapDrawable());
-        popup.setSoftInputMode(PopupWindow.INPUT_METHOD_NEEDED);
         popup.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         popup.showAtLocation(layout, Gravity.CENTER_HORIZONTAL, 0, height);
     }
@@ -448,7 +447,7 @@ public class BookDetailFragment extends Fragment implements IDetailFragment.View
         });
     }
 
-    private void takePhotoFromCamera(int requestCode) {
+    private void takePhotoFromCamera() {
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (intent.resolveActivity(getActivityContext().getPackageManager()) != null) {
             File file = getOutputMediaFile();
@@ -459,7 +458,7 @@ public class BookDetailFragment extends Fragment implements IDetailFragment.View
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
             intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
             takePhoto_check = false;
-            startActivityForResult(intent, requestCode);
+            startActivityForResult(intent, TAKE_PHOTO_CODE);
         }
     }
 
@@ -491,22 +490,29 @@ public class BookDetailFragment extends Fragment implements IDetailFragment.View
                 mImagePresenter.addImage(currentUri, mMainPresenter.getCurrentUri());
                 currentUri = "";
             }
+
             if (requestCode == PICK_IMAGE_CODE && data.getData() != null) {
                 Uri uri = data.getData();
-                try {
-                    savePickImage(getBitmapFromUri(uri));
-                    if (!TextUtils.isEmpty(currentUri)) {
-                        mImagePresenter.addImage(currentUri, mMainPresenter.getCurrentUri());
-                        currentUri = "";
+                new Thread() {
+                    @Override
+                    public void run() {
+                        super.run();
+                        try {
+                            savePickImage(getBitmapFromUri(uri));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        if (!TextUtils.isEmpty(currentUri)) {
+                            mImagePresenter.addImage(currentUri, mMainPresenter.getCurrentUri());
+                            currentUri = "";
+                        }
                     }
-                } catch (IOException ignored) {
-                }
-
+                }.start();
             }
             if (requestCode == PICK_PDF_FILE_CODE && data.getData() != null) {
                 Uri uri = data.getData();
                 String pdfFilePath = loadPDF(uri);
-                if(!TextUtils.isEmpty(pdfFilePath)){
+                if (!TextUtils.isEmpty(pdfFilePath)) {
 
                 }
                 currentUri = "";
@@ -518,7 +524,8 @@ public class BookDetailFragment extends Fragment implements IDetailFragment.View
 
     // this section is for camera features
     private File getOutputMediaFile() {
-        File mediaStorageDir = new File(getActivityContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES), "mvnote");
+        File mediaStorageDir = new File(
+                getActivityContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES), getString(R.string.my_storage));
         boolean success = true;
         if (!mediaStorageDir.exists()) {
             success = mediaStorageDir.mkdirs();
@@ -532,7 +539,7 @@ public class BookDetailFragment extends Fragment implements IDetailFragment.View
         return imageFile;
     }
 
-    private File getOutputDocumentFile(){
+    private File getOutputDocumentFile() {
         //File documentStorageDir = new File(getActivityContext().getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), "mvnote");
         File documentStorageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM), "mvnote");
         boolean success = true;
@@ -559,17 +566,17 @@ public class BookDetailFragment extends Fragment implements IDetailFragment.View
     private void savePickImage(final Bitmap bitmap) throws IOException {
         File file = getOutputMediaFile();
         FileOutputStream fos = new FileOutputStream(file);
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
+        bitmap.compress(Bitmap.CompressFormat.PNG, 50, fos);
         fos.flush();
         fos.close();
     }
 
-    private String loadPDF(Uri uri)  {
+    private String loadPDF(Uri uri) {
         boolean isDocument = DocumentsContract.isDocumentUri(getActivityContext(), uri);
-        if(!isDocument){
+        if (!isDocument) {
             return "";
         }
-        try{
+        try {
             ParcelFileDescriptor parcelFileDescriptor = getActivity().getContentResolver().openFileDescriptor(uri, "r");
             FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
             FileInputStream fis = new FileInputStream(fileDescriptor);
@@ -581,17 +588,17 @@ public class BookDetailFragment extends Fragment implements IDetailFragment.View
             fos.close();
             fos = null;
             return currentUri;
-        }catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
         return "";
     }
 
     private void copyFile(InputStream is, OutputStream out) throws IOException {
-        byte[] buffer=  new byte[1024];
+        byte[] buffer = new byte[1024];
         int read;
-        while((read = is.read(buffer)) != -1){
-            out.write(buffer,0,read);
+        while ((read = is.read(buffer)) != -1) {
+            out.write(buffer, 0, read);
         }
     }
 
@@ -787,7 +794,7 @@ public class BookDetailFragment extends Fragment implements IDetailFragment.View
         super.onPause();
         mMainPresenter.onPause(etTitle, etContent, btnColor, 1, takePhoto_check);
         Intent intent = new Intent();
-        if(mMainPresenter.getCurrentUri() != null){
+        if (mMainPresenter.getCurrentUri() != null) {
             intent.putExtra("newnote", true);
         }
     }

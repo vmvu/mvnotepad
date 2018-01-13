@@ -1,14 +1,15 @@
 package com.minhvu.proandroid.sqlite.database.main.view.Activity;
 
-import android.content.ComponentName;
+import android.app.Service;
+import android.content.ContentProvider;
 import android.content.Intent;
-import android.content.ServiceConnection;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -38,9 +39,21 @@ import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.minhvu.proandroid.sqlite.database.R;
 import com.minhvu.proandroid.sqlite.database.Utils.DateTimeUtils;
-import com.minhvu.proandroid.sqlite.database.services.SyncService;
+import com.minhvu.proandroid.sqlite.database.models.data.ImageContract;
+import com.minhvu.proandroid.sqlite.database.models.data.NoteContract;
+import com.minhvu.proandroid.sqlite.database.models.data.NoteDBHelper;
+import com.minhvu.proandroid.sqlite.database.models.entity.Note;
+
+import java.util.List;
+
+import rx.Observable;
 
 /**
  * Created by Minh Vu on 14/12/2017.
@@ -73,6 +86,7 @@ public class LogInActivity extends AppCompatActivity implements View.OnClickList
     private ProgressBar mProgressBar;
 
     private int mSignInState = -1;
+    private Observable<List<String>> query;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -85,6 +99,7 @@ public class LogInActivity extends AppCompatActivity implements View.OnClickList
 
         setupFacebookSignIn();
         setupGoogleSignIn();
+
     }
 
     private void setupFacebookSignIn() {
@@ -171,8 +186,8 @@ public class LogInActivity extends AppCompatActivity implements View.OnClickList
         }
     }
 
-    private void UpdateLogo(){
-        switch (mSignInState){
+    private void UpdateLogo() {
+        switch (mSignInState) {
             case 1:
                 mImgLogo.setImageDrawable(getDrawable(R.drawable.ic_facebook));
                 break;
@@ -214,6 +229,7 @@ public class LogInActivity extends AppCompatActivity implements View.OnClickList
                 progressBarOnOff(false);
                 changeSignInView(true);
                 updateUserInfo();
+                afterSignInSuccessful();
             }
         }).addOnFailureListener(this, new OnFailureListener() {
             @Override
@@ -237,6 +253,7 @@ public class LogInActivity extends AppCompatActivity implements View.OnClickList
                     mUser = mAuth.getCurrentUser();
                     changeSignInView(true);
                     updateUserInfo();
+                    afterSignInSuccessful();
                 } else {
                     mUser = null;
                     changeSignInView(false);
@@ -273,6 +290,7 @@ public class LogInActivity extends AppCompatActivity implements View.OnClickList
                 break;
             case R.id.btn_disconnect:
                 signOut();
+                //restartImageTableDB();
                 break;
             case R.id.btn_sign_out:
                 activeSyncCloud(1);
@@ -280,6 +298,13 @@ public class LogInActivity extends AppCompatActivity implements View.OnClickList
                 break;
             default:
         }
+    }
+
+    private void restartImageTableDB(){
+        NoteDBHelper helper = NoteDBHelper.getInstance(this);
+        SQLiteDatabase db = helper.getWritableDatabase();
+        String sql = "update " + ImageContract.ImageEntry.DATABASE_TABLE + " set " + ImageContract.ImageEntry.COL_SYNC + " = 0";
+        db.execSQL(sql);
     }
 
     private void googleSignInClick() {
@@ -313,12 +338,23 @@ public class LogInActivity extends AppCompatActivity implements View.OnClickList
     }
 
     private void activeSyncCloud(int mode) {
+        if (mUser == null)
+            return;
         String userID = mUser.getUid();
         String broadcastAction = getString(R.string.broadcast_sync);
         Intent intent = new Intent(broadcastAction);
         intent.putExtra(getString(R.string.user_token), mUser.getUid());
         intent.putExtra(getString(R.string.user_sign_out_delete_data), mode);
         sendBroadcast(intent);
+    }
+
+    private void afterSignInSuccessful(){
+       /* if(mUser == null)
+            return;
+        Intent intent = new Intent(getString(R.string.broadcast_sign_in));
+        intent.putExtra(getString(R.string.user_token), mUser.getUid());
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);*/
+
     }
 
     private void signOut() {
@@ -341,26 +377,11 @@ public class LogInActivity extends AppCompatActivity implements View.OnClickList
         mUser = null;
     }
 
-
-    private void sendReportUpdateDataForSignOutFromUser(){
+    private void sendReportUpdateDataForSignOutFromUser() {
         Intent intent = new Intent(getString(R.string.broadcast_sign_out));
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
 
     }
 
-    private SyncService mService;
-    private boolean mBound = false;
-    private ServiceConnection mConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-            SyncService.LocalBinder binder = (SyncService.LocalBinder)iBinder;
-            mService = binder.getService();
-            mBound = true;
-        }
 
-        @Override
-        public void onServiceDisconnected(ComponentName componentName) {
-            mBound = false;
-        }
-    };
 }

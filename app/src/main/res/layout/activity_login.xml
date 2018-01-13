@@ -35,6 +35,7 @@
             android:id="@+id/customBtnFB"
             android:layout_width="40dp"
             android:layout_height="40dp"
+
             android:layout_alignTop="@+id/customBtnGG"
             android:layout_toLeftOf="@+id/txt_sign_in_label"
             android:layout_toStartOf="@+id/txt_sign_in_label"
@@ -45,14 +46,13 @@
             android:id="@+id/btnLoginFB"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:visibility="invisible" />
+            android:visibility="gone" />
 
         <ImageButton
             android:id="@+id/customBtnGG"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:layout_below="@+id/btnLoginFB"
-            android:layout_marginTop="11dp"
+            android:layout_below="@+id/txt_sign_in_label"
             android:layout_toEndOf="@+id/txt_sign_in_label"
             android:layout_toRightOf="@+id/txt_sign_in_label"
             android:background="@drawable/press_state"

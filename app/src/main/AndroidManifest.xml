@@ -115,6 +115,13 @@
         </receiver>
         <service android:name=".services.SyncService" />
 
+
+        <receiver android:name=".receiver.SignInReceiver">
+            <intent-filter>
+                <action android:name="sign_in_successful"/>
+            </intent-filter>
+        </receiver>
+        <service android:name=".services.SignInService"/>
     </application>
 
 </manifest>

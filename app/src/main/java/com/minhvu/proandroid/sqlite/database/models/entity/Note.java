@@ -16,18 +16,17 @@ import com.minhvu.proandroid.sqlite.database.models.data.NoteContract.NoteEntry;
 @IgnoreExtraProperties
 public class Note {
 
-    private String keySync;
-    private long id = -1;
-    private String title;
-    private String content;
-    private long date_created;
-    private long last_on;
+    private String keySync = null;/**/
+    private long id = -1;/**/
+    private String title;/**/
+    private String content;/**/
+    private long date_created = 0;/**/
+    private long last_on = 0;/**/
     private String password = null;
     private String pass_salt = null;
-    private int id_color = 0;
-    private int id_typeoftext;
-    private String account = null;
-    private boolean delete = false;
+    private int id_color = -1;/**/
+    private int id_typeoftext;/**/
+    private boolean delete = false;/**/
 
     public Note() {
     }
@@ -50,9 +49,11 @@ public class Note {
         this.id_typeoftext = id_typeoftext;
         this.delete = delete;
     }
+    @Exclude
     public String getKeySync() {
         return keySync;
     }
+    @Exclude
     public void setKeySync(String keySync) {
         this.keySync = keySync;
     }

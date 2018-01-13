@@ -14,13 +14,13 @@ import java.util.List;
 public interface IImageModel {
     void onDestroy(boolean isChangingConfiguration);
     void setPresenter(IImagePresenter presenter);
-    void loadImages(Context context, int noteId);
+    void loadImages(long noteId);
     List<String> getImageList();
     String getImage(int position);
 
-    void insertImage(Context context,String imagePath, int noteId);
-    void deleteImage(Context context, String imagePath, int position);
-    boolean deleteAllImages(Context context, int noteId);
+    void insertImage(String imagePath, long noteId);
+    void deleteImage(String imagePath, int position);
+    boolean deleteAllImages(long noteId);
 
     Bitmap getBitmapImage(String path);
     void updateBitmapImage(Bitmap bitmap, String path);

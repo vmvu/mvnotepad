@@ -15,7 +15,7 @@ public interface IMainModel {
     void onDestroy(boolean isChangingConfiguration);
     void setPresenter(IMainPresenter presenter);
 
-    void loadData(Context context);
+    boolean loadData(Context context);
     int getCount();
     List<Note> getNoteList();
     Note getNote(int index);

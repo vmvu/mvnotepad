@@ -1,14 +1,18 @@
 package com.minhvu.proandroid.sqlite.database.main.model;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
+import android.text.TextUtils;
 
 import com.minhvu.proandroid.sqlite.database.main.model.view.IGetShareModel;
 import com.minhvu.proandroid.sqlite.database.main.presenter.view.IGetSharePresenter;
+import com.minhvu.proandroid.sqlite.database.models.DAO.ImageDAO;
+import com.minhvu.proandroid.sqlite.database.models.DAO.NoteDAO;
 import com.minhvu.proandroid.sqlite.database.models.data.NoteContract.NoteEntry;
-import com.minhvu.proandroid.sqlite.database.models.data.NoteContract.ImageEntry;
-import com.minhvu.proandroid.sqlite.database.models.data.NoteDBHelper;
+import com.minhvu.proandroid.sqlite.database.models.data.ImageContract.ImageEntry;
 import com.minhvu.proandroid.sqlite.database.models.entity.Note;
 
 /**
@@ -17,14 +21,19 @@ import com.minhvu.proandroid.sqlite.database.models.entity.Note;
 
 public class GetShareModel implements IGetShareModel {
     private IGetSharePresenter presenter;
-    private Note note = new Note();
+    private Note mNote;
+    private NoteDAO mNoteDAO;
 
+    public GetShareModel(Context context){
+        mNote = new Note();
+
+    }
 
     @Override
     public void onDestroy(boolean isChangingConfiguration) {
         if(!isChangingConfiguration){
             presenter = null;
-            note = null;
+            mNote = null;
         }
     }
 
@@ -33,99 +42,60 @@ public class GetShareModel implements IGetShareModel {
         this.presenter = presenter;
     }
 
-    @Override
-    public Note loadNote(String noteId) {
-        Object ac = presenter.getActivityContext();
-       // Object app = presenter.getAppContext();
-        NoteDBHelper helper = NoteDBHelper.getInstance(presenter.getActivityContext());
-        SQLiteDatabase db = helper.getReadableDatabase();
-
-        String[] projection = new String[]{NoteEntry.COL_TITLE, NoteEntry.COL_CONTENT,
-                NoteEntry.COL_PASSWORD, NoteEntry.COL_PASSWORD_SALT};
-        String selection = NoteEntry._ID  + "=?";
-        String[] selectionArgs = new String[]{noteId};
-
-        Cursor c = db.query(NoteEntry.DATABASE_TABLE, projection,selection, selectionArgs, null, null, null);
-        if(c.moveToFirst()){
-            note.setTitle(c.getString(c.getColumnIndex(NoteEntry.COL_TITLE)));
-            note.setContent(c.getString(c.getColumnIndex(NoteEntry.COL_CONTENT)));
-            note.setPassword(c.getString(c.getColumnIndex(NoteEntry.COL_PASSWORD)));
-            note.setPassSalt(c.getString(c.getColumnIndex(NoteEntry.COL_PASSWORD_SALT)));
-            c.close();
-            db.close();
-            return note;
-        }
-        db.close();
-        return null;
+    private void setup(){
+        if(mNoteDAO == null)
+            mNoteDAO = new NoteDAO(presenter.getActivityContext());
     }
 
     @Override
-    public int loadImage(String noteId) {
-        NoteDBHelper helper = NoteDBHelper.getInstance(presenter.getActivityContext());
-        try (SQLiteDatabase db = helper.getReadableDatabase()) {
-            String query = "SELECT * FROM " + ImageEntry.DATABASE_TABLE + " WHERE " + ImageEntry.COL_NOTE_ID + "=" + noteId;
-            Cursor c = null;
-            try{
-                c = db.rawQuery(query, null);
-                if (c != null) {
-                    int count = c.getCount();
-                    return count;
-                }
-            }finally {
-                if(c != null){
-                    c.close();
-                }
-            }
-
+    public Note loadNote(String noteId) {
+        if(TextUtils.isEmpty(noteId)){
+            return null;
         }
-        return 0;
+        setup();
+        long noteIDLongType = Long.parseLong(noteId.trim());
+        mNote = mNoteDAO.getItemAt(noteIDLongType);
+        return mNote;
+    }
+
+
+
+    @Override
+    public long getCountImages(long noteId) {
+        ImageDAO dao =  new ImageDAO(presenter.getActivityContext());
+        return dao.getCountOfNote(noteId);
     }
 
     @Override
     public boolean insertNote(String title, String content) {
-        NoteDBHelper helper = NoteDBHelper.getInstance(presenter.getActivityContext());
-        SQLiteDatabase db = helper.getWritableDatabase();
-
-        ContentValues cv = new ContentValues();
-        cv.put(NoteEntry.COL_TITLE, title );
-        cv.put(NoteEntry.COL_CONTENT, content );
-        cv.put(NoteEntry.COL_COLOR, 0);
-        cv.put(NoteEntry.COL_TYPE_OF_TEXT, 1);
-        cv.put(NoteEntry.COL_DATE_CREATED, System.currentTimeMillis() + "");
-        cv.put(NoteEntry.COL_LAST_ON, System.currentTimeMillis() + "");
-
-        long success = db.insert(NoteEntry.DATABASE_TABLE, null, cv);
-        db.close();
-        if(success > 0){
-            return true;
-        }
-        return false;
+        Note note = new Note();
+        note.setTitle(title);
+        note.setContent(content);
+        note.setIdColor(0);
+        note.setIdTypeOfText(1);
+        note.setDateCreated(System.currentTimeMillis());
+        note.setLastOn(System.currentTimeMillis());
+        setup();
+        return mNoteDAO.insertNote(note);
     }
 
     @Override
     public boolean updateNote(String noteId,String title, String content) {
-        NoteDBHelper helper = NoteDBHelper.getInstance(presenter.getActivityContext());
-        SQLiteDatabase db = helper.getWritableDatabase();
 
-        ContentValues cv = new ContentValues();
-        cv.put(NoteEntry.COL_TITLE, title );
-        cv.put(NoteEntry.COL_CONTENT, content );
-        cv.put(NoteEntry.COL_LAST_ON, System.currentTimeMillis() + "");
+        Note note = new Note();
+        note.setTitle(title);
+        note.setContent(content);
+        note.setLastOn(System.currentTimeMillis());
+        note.setDelete(false);
+        setup();
+        return mNoteDAO.updateNote(note);
 
-        String selection = NoteEntry._ID  + "=?";
-        String[] selectionArgs = new String[]{noteId};
 
-        int success = db.update(NoteEntry.DATABASE_TABLE, cv, selection, selectionArgs);
-        db.close();
-        if(success > 0){
-            return true;
-        }
-        return false;
     }
 
     @Override
-    public Note getNote() {
-        return note;
+    public Note getmNote() {
+        return mNote;
     }
 
 }

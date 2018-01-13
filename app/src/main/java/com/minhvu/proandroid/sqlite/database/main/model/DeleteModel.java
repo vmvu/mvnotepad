@@ -1,19 +1,16 @@
 package com.minhvu.proandroid.sqlite.database.main.model;
 
-import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteStatement;
-import android.text.TextUtils;
-import android.util.Log;
 
 import com.minhvu.proandroid.sqlite.database.main.model.view.IDeleteModel;
 import com.minhvu.proandroid.sqlite.database.main.presenter.view.IDeletePresenter;
 import com.minhvu.proandroid.sqlite.database.models.data.NoteContract;
-import com.minhvu.proandroid.sqlite.database.models.data.NoteDBHelper;
+import com.minhvu.proandroid.sqlite.database.models.data.DBSchema;
+import com.minhvu.proandroid.sqlite.database.models.data.NoteReadyDeletedContract;
 import com.minhvu.proandroid.sqlite.database.models.entity.Note;
 
 import java.util.ArrayList;
@@ -22,6 +19,7 @@ import java.util.List;
 public class DeleteModel implements IDeleteModel {
     private ArrayList<Note> listNote = null;
     private IDeletePresenter presenter;
+
 
     public DeleteModel() {
         listNote = new ArrayList<>();
@@ -182,13 +180,14 @@ public class DeleteModel implements IDeleteModel {
         return false;
     }
 
-    private void noteReadyDeleted(Context context, String keySync, long noteID){
+
+    private void noteReadyDeleted(Context context, String keySync, long noteID) throws Exception{
         ContentValues cv = new ContentValues();
-        cv.put(NoteContract.NoteReadyDeletedEntry.NOTE_KEY_SYNC, keySync);
-        cv.put(NoteContract.NoteReadyDeletedEntry.NOTE_ID, noteID);
+        cv.put(NoteReadyDeletedContract.NoteReadyDeletedEntry.NOTE_KEY_SYNC, keySync);
+        cv.put(NoteReadyDeletedContract.NoteReadyDeletedEntry.NOTE_ID, noteID);
         NoteDBHelper helper = NoteDBHelper.getInstance(context);
         SQLiteDatabase db = helper.getWritableDatabase();
-        db.insert(NoteContract.NoteReadyDeletedEntry.DATABASE_TABLE, null, cv);
+        db.insert(NoteReadyDeletedContract.NoteReadyDeletedEntry.DATABASE_TABLE, null, cv);
         db.close();
     }
 

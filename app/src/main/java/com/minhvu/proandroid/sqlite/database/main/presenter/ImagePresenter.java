@@ -90,7 +90,7 @@ public class ImagePresenter extends MvpPresenter<IImageModel, IDetailFragment.Im
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 try {
-                    model.deleteImage(getView().getActivityContext(), path, position);
+                    model.deleteImage(path, position);
                 } finally {
                     dialog.dismiss();
                 }
@@ -114,7 +114,7 @@ public class ImagePresenter extends MvpPresenter<IImageModel, IDetailFragment.Im
 
     @Override
     public void deleteAllImage(Context context, int noteID) {
-        model.deleteAllImages(context, noteID);
+        model.deleteAllImages(noteID);
     }
 
     @Override
@@ -123,7 +123,7 @@ public class ImagePresenter extends MvpPresenter<IImageModel, IDetailFragment.Im
             return;
         }
         int noteId = Integer.parseInt(noteUri.getPathSegments().get(1));
-        model.loadImages(context, noteId);
+        model.loadImages(noteId);
         /*if(model.getCount() > 0){
             getView().notificationUpdate();
         }*/
@@ -135,7 +135,7 @@ public class ImagePresenter extends MvpPresenter<IImageModel, IDetailFragment.Im
             return;
         }
         int noteId = Integer.parseInt(noteUri.getPathSegments().get(1));
-        model.insertImage(getView().getActivityContext(), path, noteId);
+        model.insertImage(path, noteId);
     }
 
     @Override

@@ -9,6 +9,7 @@
 
     //action broadcast
     <string name="broadcast_receiver_pin">pinbroadcast</string>
+    <string name="broadcast_sign_in">sign_in_successful</string>
     <string name="broadcast_sync">syncei</string>
     <string name="broadcast_sign_out">update_ui_after_delete_all_data_database</string>
 
@@ -75,4 +76,10 @@
     <string name="disconnect_label">disconnect</string>
     <string name="sign_out_label">sign out</string>
 
+
+    <string name="users_list_firebase">UsersList</string>
+    <string name="note_directory">note</string>
+    <string name="document_directory">document</string>
+
+    <string name="my_storage">mvnote</string>
 </resources>

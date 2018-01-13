@@ -11,8 +11,8 @@ public interface IGetShareModel {
      void onDestroy(boolean isChangingConfiguration);
      void setPresenter(IGetSharePresenter presenter);
      Note loadNote(String noteId);
-     int loadImage(String noteId);
+     long getCountImages(long noteId);
      boolean insertNote(String title, String content);
      boolean updateNote(String noteId, String title, String content);
-     Note getNote();
+     Note getmNote();
 }

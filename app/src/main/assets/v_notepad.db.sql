@@ -24,10 +24,6 @@ CREATE TABLE IF NOT EXISTS `v_images` (
 	`sync_stage`	INTEGER,
 	PRIMARY KEY(`name_path`)
 );
-CREATE TABLE IF NOT EXISTS `v_account` (
-	`id_account`	TEXT,
-	PRIMARY KEY(`id_account`)
-);
 CREATE TABLE IF NOT EXISTS `note_ready_deleted` (
 	`key_sync`	TEXT,
 	`note_id`	INTEGER

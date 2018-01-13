@@ -1,5 +1,6 @@
 import java.util.Arrays;
 import java.util.Stack;
+import  java.lang.reflect.*;
 
 /**
  * Created by vomin on 12/4/2017.
@@ -53,17 +54,21 @@ public class Bu2 {
         return soAm ? -n : n;
     }
 
-    public static void main(String[] Args) {
-        byte[] bin = binary(128);
-        for (byte b : bin) {
-            System.out.print(b);
-        }
-        System.out.println();
-        bu2(bin);//so am
-        for (byte b : bin) {
-            System.out.print(b);
-        }
-        System.out.println( "\n"+ bu2To10(bin));
+    static class Other{
+        private String str;
 
+        public void setStr(String str){
+            this.str = str;
+        }
+    }
+
+
+
+    public static void main(String[] Args) throws NoSuchFieldException, IllegalAccessException {
+        Other t = new Other();
+        t.setStr("test private dsdsds");
+        Field field = Other.class.getDeclaredField("str");
+        field.setAccessible(true);
+        System.out.print((String)field.get(t));
     }
 }

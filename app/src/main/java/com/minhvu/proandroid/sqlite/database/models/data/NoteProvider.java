@@ -5,17 +5,12 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
-import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
-import android.util.Log;
-
-import com.minhvu.proandroid.sqlite.database.MyApplication;
-import com.minhvu.proandroid.sqlite.database.models.entity.Note;
 
 import java.util.HashMap;
 
@@ -24,15 +19,13 @@ import java.util.HashMap;
  */
 
 public class NoteProvider extends ContentProvider {
-    //tnote table
+    //note TABLE
     public static final int INCOMING_NOTE_COLLECTION_URI_INDICATOR = 1;
     public static final int INCOMING_SINGLE_NOTE_URI_INDICATOR = 100;
-    //ttypeoftext table
+    //TYPE OF TEXT TABLE
     public static final int INCOMING_TYPEOFTEXT_COLLECTION_URI_INDICATOR = 3;
     public static final int INCOMING_SINGLE_TYPEOFTEXT_URI_INDICATOR = 98;
-    //taccount table
-    public static final int INCOMING_ACCOUNT_COLLECTION_URI_INDICATOR = 4;
-    //v_images
+    //images TABLE
     public static final int INCOMING_IMAGES_COLLECTION_URI_INDICATOR = 5;
     public static final int INCOMING_SINGLE_IMAGES_URI_INDICATOR = 97;
 
@@ -42,22 +35,20 @@ public class NoteProvider extends ContentProvider {
 
     static {
         uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
+
         uriMatcher.addURI(NoteContract.AUTHORITY, NoteContract.path_tnote,
                 INCOMING_NOTE_COLLECTION_URI_INDICATOR);
         uriMatcher.addURI(NoteContract.AUTHORITY, NoteContract.path_tnote + "/#",
                 INCOMING_SINGLE_NOTE_URI_INDICATOR);
 
-        uriMatcher.addURI(NoteContract.AUTHORITY, NoteContract.path_ttypeoftext,
+        uriMatcher.addURI(TextTypeContract.AUTHORITY, TextTypeContract.path_ttypeoftext,
                 INCOMING_TYPEOFTEXT_COLLECTION_URI_INDICATOR);
-        uriMatcher.addURI(NoteContract.AUTHORITY, NoteContract.path_ttypeoftext + "/#",
+        uriMatcher.addURI(TextTypeContract.AUTHORITY, TextTypeContract.path_ttypeoftext + "/#",
                 INCOMING_SINGLE_TYPEOFTEXT_URI_INDICATOR);
 
-        uriMatcher.addURI(NoteContract.AUTHORITY, NoteContract.path_account,
-                INCOMING_ACCOUNT_COLLECTION_URI_INDICATOR);
-
-        uriMatcher.addURI(NoteContract.AUTHORITY, NoteContract.path_images,
+        uriMatcher.addURI(ImageContract.AUTHORITY, ImageContract.path_images,
                 INCOMING_IMAGES_COLLECTION_URI_INDICATOR);
-        uriMatcher.addURI(NoteContract.AUTHORITY, NoteContract.path_images + "/*",
+        uriMatcher.addURI(ImageContract.AUTHORITY, ImageContract.path_images + "/*",
                 INCOMING_SINGLE_IMAGES_URI_INDICATOR);
     }
 
@@ -80,13 +71,13 @@ public class NoteProvider extends ContentProvider {
         sNoteProjectMap.put(NoteContract.NoteEntry.COL_KEY_SYNC, NoteContract.NoteEntry.COL_KEY_SYNC);
 
         sTypeOfTextProjectMap = new HashMap<>();
-        sTypeOfTextProjectMap.put(NoteContract.TypeOfTextEntry._ID, NoteContract.TypeOfTextEntry._ID);
-        sTypeOfTextProjectMap.put(NoteContract.TypeOfTextEntry.COL_NAME, NoteContract.TypeOfTextEntry.COL_NAME);
+        sTypeOfTextProjectMap.put(TextTypeContract.TextTypeEntry._ID, TextTypeContract.TextTypeEntry._ID);
+        sTypeOfTextProjectMap.put(TextTypeContract.TextTypeEntry.COL_NAME, TextTypeContract.TextTypeEntry.COL_NAME);
 
         sImagesProjectMap = new HashMap<>();
-        sImagesProjectMap.put(NoteContract.ImageEntry.COL_NAME_PATH, NoteContract.ImageEntry.COL_NAME_PATH);
-        sImagesProjectMap.put(NoteContract.ImageEntry.COL_NOTE_ID, NoteContract.ImageEntry.COL_NOTE_ID);
-        sImagesProjectMap.put(NoteContract.ImageEntry.COL_SYNC, NoteContract.ImageEntry.COL_SYNC);
+        sImagesProjectMap.put(ImageContract.ImageEntry.COL_NAME_PATH, ImageContract.ImageEntry.COL_NAME_PATH);
+        sImagesProjectMap.put(ImageContract.ImageEntry.COL_NOTE_ID, ImageContract.ImageEntry.COL_NOTE_ID);
+        sImagesProjectMap.put(ImageContract.ImageEntry.COL_SYNC, ImageContract.ImageEntry.COL_SYNC);
 
     }
 
@@ -115,31 +106,28 @@ public class NoteProvider extends ContentProvider {
                 qb.appendWhere(NoteContract.NoteEntry._ID + "=" + uri.getPathSegments().get(1));
                 break;
             case INCOMING_TYPEOFTEXT_COLLECTION_URI_INDICATOR:
-                qb.setTables(NoteContract.TypeOfTextEntry.DATABASE_TABLE);
+                qb.setTables(TextTypeContract.TextTypeEntry.DATABASE_TABLE);
                 qb.setProjectionMap(sTypeOfTextProjectMap);
-                orderBy = NoteContract.TypeOfTextEntry.DEFAULT_SORT_ORDER;
+                orderBy = TextTypeContract.TextTypeEntry.DEFAULT_SORT_ORDER;
                 break;
             case INCOMING_SINGLE_TYPEOFTEXT_URI_INDICATOR:
-                qb.setTables(NoteContract.TypeOfTextEntry.DATABASE_TABLE);
+                qb.setTables(TextTypeContract.TextTypeEntry.DATABASE_TABLE);
                 qb.setProjectionMap(sTypeOfTextProjectMap);
-                qb.appendWhere(NoteContract.TypeOfTextEntry._ID + "=" + uri.getPathSegments().get(1));
+                qb.appendWhere(TextTypeContract.TextTypeEntry._ID + "=" + uri.getPathSegments().get(1));
                 break;
             case INCOMING_IMAGES_COLLECTION_URI_INDICATOR:
-                qb.setTables(NoteContract.ImageEntry.DATABASE_TABLE);
+                qb.setTables(ImageContract.ImageEntry.DATABASE_TABLE);
                 qb.setProjectionMap(sImagesProjectMap);
                 qb.appendWhere(selection);
                 orderBy = null;
                 break;
             case INCOMING_SINGLE_IMAGES_URI_INDICATOR:
-                qb.setTables(NoteContract.ImageEntry.DATABASE_TABLE);
+                qb.setTables(ImageContract.ImageEntry.DATABASE_TABLE);
                 qb.setProjectionMap(sImagesProjectMap);
                 qb.appendWhere(selection);
                 orderBy = null;
                 break;
-            case INCOMING_ACCOUNT_COLLECTION_URI_INDICATOR:
-                qb.setTables(NoteContract.AccountEntry.DATABASE_TABLE);
-                orderBy = null;
-                break;
+
 
         }
         if (!TextUtils.isEmpty(sortOrder)) {
@@ -174,28 +162,14 @@ public class NoteProvider extends ContentProvider {
                 return insertUri;
             case INCOMING_IMAGES_COLLECTION_URI_INDICATOR:
                 SQLiteDatabase dbImage = mOpenHelper.getWritableDatabase();
-                long s = dbImage.insert(NoteContract.ImageEntry.DATABASE_TABLE, null, cv);
+                long s = dbImage.insert(ImageContract.ImageEntry.DATABASE_TABLE, null, cv);
                 if (s < 0) {
                     return null;
                 }
-                Uri imageUri = Uri.withAppendedPath(NoteContract.ImageEntry.CONTENT_URI,
-                        cv.getAsString(NoteContract.ImageEntry.COL_NAME_PATH));
+                Uri imageUri = Uri.withAppendedPath(ImageContract.ImageEntry.CONTENT_URI,
+                        cv.getAsString(ImageContract.ImageEntry.COL_NAME_PATH));
                 getContext().getContentResolver().notifyChange(imageUri, null);
                 return imageUri;
-
-            case INCOMING_ACCOUNT_COLLECTION_URI_INDICATOR:
-                if (!cv.containsKey(NoteContract.AccountEntry.COL_ID)) {
-                    return null;
-                }
-                SQLiteDatabase database = mOpenHelper.getWritableDatabase();
-                long successful = database.insert(NoteContract.AccountEntry.DATABASE_TABLE, null, cv);
-                if (successful <= 0) {
-                    return null;
-                }
-                Uri accountUri = Uri.withAppendedPath(NoteContract.AccountEntry.CONTENT_URI,
-                        cv.getAsString(NoteContract.AccountEntry.COL_ID));
-                getContext().getContentResolver().notifyChange(accountUri, null);
-                return accountUri;
             default:
                 throw new IllegalArgumentException("Unknown URI:" + uri);
         }
@@ -218,7 +192,7 @@ public class NoteProvider extends ContentProvider {
                 break;
             case INCOMING_IMAGES_COLLECTION_URI_INDICATOR:
                 where = selection;
-                DBName = NoteContract.ImageEntry.DATABASE_TABLE;
+                DBName = ImageContract.ImageEntry.DATABASE_TABLE;
                 break;
 
             default:
@@ -246,17 +220,13 @@ public class NoteProvider extends ContentProvider {
                 selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
                 DBName = NoteContract.NoteEntry.DATABASE_TABLE;
                 break;
-            case INCOMING_ACCOUNT_COLLECTION_URI_INDICATOR:
-                where = selection;
-                DBName = NoteContract.AccountEntry.DATABASE_TABLE;
-                break;
             case INCOMING_IMAGES_COLLECTION_URI_INDICATOR:
                 where = selection;
-                DBName = NoteContract.ImageEntry.DATABASE_TABLE;
+                DBName = ImageContract.ImageEntry.DATABASE_TABLE;
                 break;
             case  INCOMING_SINGLE_IMAGES_URI_INDICATOR:
                 where = selection;
-                DBName = NoteContract.ImageEntry.DATABASE_TABLE;
+                DBName = ImageContract.ImageEntry.DATABASE_TABLE;
                 break;
             default:
                 return 0;

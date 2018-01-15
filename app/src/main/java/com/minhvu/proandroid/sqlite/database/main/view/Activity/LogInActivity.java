@@ -46,9 +46,11 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.minhvu.proandroid.sqlite.database.R;
 import com.minhvu.proandroid.sqlite.database.Utils.DateTimeUtils;
+import com.minhvu.proandroid.sqlite.database.models.DAO.ImageDAO;
+import com.minhvu.proandroid.sqlite.database.models.DAO.NoteDeletedDAO;
 import com.minhvu.proandroid.sqlite.database.models.data.ImageContract;
 import com.minhvu.proandroid.sqlite.database.models.data.NoteContract;
-import com.minhvu.proandroid.sqlite.database.models.data.NoteDBHelper;
+import com.minhvu.proandroid.sqlite.database.models.entity.Image;
 import com.minhvu.proandroid.sqlite.database.models.entity.Note;
 
 import java.util.List;
@@ -301,10 +303,8 @@ public class LogInActivity extends AppCompatActivity implements View.OnClickList
     }
 
     private void restartImageTableDB(){
-        NoteDBHelper helper = NoteDBHelper.getInstance(this);
-        SQLiteDatabase db = helper.getWritableDatabase();
-        String sql = "update " + ImageContract.ImageEntry.DATABASE_TABLE + " set " + ImageContract.ImageEntry.COL_SYNC + " = 0";
-        db.execSQL(sql);
+        ImageDAO dao = new ImageDAO(this);
+        dao.updateAllBySyncState(0);
     }
 
     private void googleSignInClick() {

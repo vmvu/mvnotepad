@@ -47,7 +47,7 @@ public class PagerDialog extends DialogFragment {
     public void onResume() {
         super.onResume();
         Window window = getDialog().getWindow();
-        window.setLayout(650, 800);
+        window.setLayout(800, 1000);
         window.setGravity(Gravity.CENTER);
     }
 

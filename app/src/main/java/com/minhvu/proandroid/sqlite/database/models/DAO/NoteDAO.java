@@ -11,6 +11,7 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.minhvu.proandroid.sqlite.database.models.data.NoteContract;
 import com.minhvu.proandroid.sqlite.database.models.entity.Note;
@@ -28,11 +29,11 @@ public class NoteDAO extends BaseDAO {
         super(context);
     }
 
-    public List<Note> loadData() {
+    public List<Note> loadDataByDELETE(int DELETE) {
         SQLiteDatabase db = getReadDB();
         List<Note> noteList = new ArrayList<>();
         String selection = NoteContract.NoteEntry.COL_DELETE + "=?";
-        String[] selectionArgs = new String[]{"0"};
+        String[] selectionArgs = new String[]{String.valueOf(DELETE)};
         @SuppressLint("Recycle") Cursor c = db.query(
                 NoteContract.NoteEntry.DATABASE_TABLE,
                 NoteContract.NoteEntry.getColumnNames(),
@@ -66,10 +67,48 @@ public class NoteDAO extends BaseDAO {
         return noteList;
     }
 
-    public boolean UpdateDeleteCol(long noteID) {
+    public List<Note> loadData(String orderBy) {
+
+        SQLiteDatabase db = getReadDB();
+        List<Note> noteList = new ArrayList<>();
+        String selection = NoteContract.NoteEntry.COL_DELETE + "=?";
+        @SuppressLint("Recycle") Cursor c = db.query(
+                NoteContract.NoteEntry.DATABASE_TABLE,
+                NoteContract.NoteEntry.getColumnNames(),
+                null,
+                null,
+                null,
+                null,
+                orderBy);
+        if (c != null && c.moveToFirst()) {
+            int idPos = c.getColumnIndex(NoteContract.NoteEntry._ID);
+            int titlePos = c.getColumnIndex(NoteContract.NoteEntry.COL_TITLE);
+            int contentPos = c.getColumnIndex(NoteContract.NoteEntry.COL_CONTENT);
+            int colorPos = c.getColumnIndex(NoteContract.NoteEntry.COL_COLOR);
+            int passwordPos = c.getColumnIndex(NoteContract.NoteEntry.COL_PASSWORD);
+            int keyPos = c.getColumnIndex(NoteContract.NoteEntry.COL_PASSWORD_SALT);
+            int dateCreatedPos = c.getColumnIndex(NoteContract.NoteEntry.COL_DATE_CREATED);
+            int lastUpdatePos = c.getColumnIndex(NoteContract.NoteEntry.COL_LAST_ON);
+            do {
+                Note note = new Note();
+                note.setId(c.getLong(idPos));
+                note.setTitle(c.getString(titlePos));
+                note.setContent(c.getString(contentPos));
+                note.setIdColor(c.getInt(colorPos));
+                note.setPassword(c.getString(passwordPos));
+                note.setPassSalt(c.getString(keyPos));
+                note.setDateCreated(Long.parseLong(c.getString(dateCreatedPos)));
+                note.setLastOn(Long.parseLong(c.getString(lastUpdatePos)));
+                noteList.add(note);
+            } while (c.moveToNext());
+        }
+        return noteList;
+    }
+
+    public boolean UpdateDeleteCol(long noteID, int DELETE) {
         SQLiteDatabase db = getWriteDB();
         ContentValues cv = new ContentValues();
-        cv.put(NoteContract.NoteEntry.COL_DELETE, 1);
+        cv.put(NoteContract.NoteEntry.COL_DELETE, DELETE);
 
         int success = db.update(
                 NoteContract.NoteEntry.DATABASE_TABLE,
@@ -119,10 +158,10 @@ public class NoteDAO extends BaseDAO {
         }
     }
 
-    public long getCount(int isDeleted) {
+    public long getCount(int DELETE) {
         SQLiteDatabase db = getReadDB();
         String selection = NoteContract.NoteEntry.COL_DELETE + "=?";
-        return DatabaseUtils.queryNumEntries(db, NoteContract.NoteEntry.DATABASE_TABLE, selection, new String[]{"" + isDeleted});
+        return DatabaseUtils.queryNumEntries(db, NoteContract.NoteEntry.DATABASE_TABLE, selection, new String[]{"" + DELETE});
     }
 
     public Note getLastNote() {
@@ -194,20 +233,20 @@ public class NoteDAO extends BaseDAO {
         }
     }
 
-    public boolean updateNote(Note note){
+    public boolean updateNote(Note note) {
         ContentValues cv = new ContentValues();
         cv.put(NoteContract.NoteEntry.COL_TITLE, note.getTitle());
         cv.put(NoteContract.NoteEntry.COL_CONTENT, note.getContent());
-        if(note.getIdColor() != -1)
+        if (note.getIdColor() != -1)
             cv.put(NoteContract.NoteEntry.COL_COLOR, note.getIdColor());
         cv.put(NoteContract.NoteEntry.COL_LAST_ON, note.getLastOn());
-        if(!TextUtils.isEmpty(getLastNote().getPassword())){
+        if (!TextUtils.isEmpty(getLastNote().getPassword())) {
             cv.put(NoteContract.NoteEntry.COL_PASSWORD, note.getPassword());
             cv.put(NoteContract.NoteEntry.COL_PASSWORD_SALT, note.getPassSalt());
         }
 
         cv.put(NoteContract.NoteEntry.COL_DELETE, note.isDelete() ? 1 : 0);
-        if(!TextUtils.isEmpty(note.getKeySync()))
+        if (!TextUtils.isEmpty(note.getKeySync()))
             cv.put(NoteContract.NoteEntry.COL_KEY_SYNC, note.getKeySync());
 
         SQLiteDatabase db = getWriteDB();
@@ -219,6 +258,31 @@ public class NoteDAO extends BaseDAO {
         return success > 0;
     }
 
+    public void updateSyncList(List<Note> noteList) {
+        SQLiteDatabase db = getWriteDB();
+        ContentValues cv = new ContentValues();
+        for (Note note : noteList) {
+            cv.put(NoteContract.NoteEntry.COL_KEY_SYNC, note.getKeySync());
+            db.update(
+                    NoteContract.NoteEntry.DATABASE_TABLE,
+                    cv,
+                    NoteContract.NoteEntry._ID + "=" + note.getId(),
+                    null);
+            cv.clear();
+        }
+    }
+
+    public boolean deleteNote(long noteID) {
+        SQLiteDatabase db = getWriteDB();
+        String whereClause = NoteContract.NoteEntry._ID + "=?";
+        int success = db.delete(NoteContract.NoteEntry.DATABASE_TABLE, whereClause, new String[]{String.valueOf(noteID)});
+        return success > 0;
+    }
+
+    public void deleteALlItems() {
+        SQLiteDatabase db = getWriteDB();
+        db.execSQL("delete from " + NoteContract.NoteEntry.DATABASE_TABLE);
+    }
 
 
 }

@@ -76,24 +76,20 @@ public class DeletePresenter extends MvpPresenter<IDeleteModel, IDeleteView> imp
     public void onDestroy(boolean isChangingConfiguration) {
         unbindView();
         model.onDestroy(isChangingConfiguration);
-        if(!isChangingConfiguration){
+        if (!isChangingConfiguration) {
             model = null;
         }
     }
 
     @Override
     public void loadData() {
-        try{
-            Thread thread = new Thread(){
-                @Override
-                public void run() {
-                    model.loadData(getView().getActivityContext());
-                }
-            };
-            thread.start();
-        }finally {
-
-        }
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                model.loadData(getView().getActivityContext());
+            }
+        };
+        thread.start();
     }
 
     @Override
@@ -130,7 +126,7 @@ public class DeletePresenter extends MvpPresenter<IDeleteModel, IDeleteView> imp
     public void AdapterOnClick(int position) {
         Note note = model.getNote(position);
         if (!TextUtils.isEmpty(note.getPassword())) {
-            LayoutInflater inflater = (LayoutInflater)  getView().getActivityContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            LayoutInflater inflater = (LayoutInflater) getView().getActivityContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             if (!unlockFingerprint(inflater, note, position)) {
                 unlockText(inflater, note, position);
             }
@@ -160,7 +156,7 @@ public class DeletePresenter extends MvpPresenter<IDeleteModel, IDeleteView> imp
         tvContent.setText(note.getContent());
         //setting imageView
         final IImagePresenter imagePresenter = new ImagePresenter();
-        final IImageModel imageModel = new ImageModel(getView().getActivityContext(), (int)note.getId());
+        final IImageModel imageModel = new ImageModel(getView().getActivityContext(), (int) note.getId());
 
         imageModel.setPresenter(imagePresenter);
         imagePresenter.setModel(imageModel);
@@ -214,10 +210,10 @@ public class DeletePresenter extends MvpPresenter<IDeleteModel, IDeleteView> imp
         builder.setPositiveButton(getView().getActivityContext().getString(R.string.popup_restore), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                try{
-                    if(model.restoreNote(getView().getActivityContext(), note.getId()))
-                        updateAdapter();
-                }finally {
+                try {
+                    if (model.restoreNote(position))
+                        DeletePresenter.this.getView().updateViewAtPosition(position);
+                } finally {
                     dialog.dismiss();
                 }
             }
@@ -225,19 +221,12 @@ public class DeletePresenter extends MvpPresenter<IDeleteModel, IDeleteView> imp
         builder.setNegativeButton(getView().getActivityContext().getString(R.string.popup_delete), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                try{
-                    if(model.deleteNote(getView().getActivityContext(), note.getId(), note.getKeySync())){
-                        updateAdapter();
-                        imagePresenter.deleteAllImage(getView().getActivityContext(),(int)note.getId());
-                        /*Thread thread = new Thread(){
-                            @Override
-                            public void run() {
-                                imagePresenter.deleteAllImage((int)note.getId());
-                            }
-                        };
-                        thread.start();*/
+                try {
+                    if (model.deleteNote(note.getId(), note.getKeySync())) {
+                        DeletePresenter.this.getView().updateViewAtPosition(position);
+                        imagePresenter.deleteAllImage(getView().getActivityContext(), (int) note.getId());
                     }
-                }finally {
+                } finally {
                     dialog.dismiss();
                 }
 
@@ -320,6 +309,7 @@ public class DeletePresenter extends MvpPresenter<IDeleteModel, IDeleteView> imp
             return false;
         }
     }
+
     private void unlockText(LayoutInflater inflater, final Note note, final int itemPosition) {
         View dialogLayout = inflater.inflate(R.layout.popup_password_set, null);
 
@@ -358,6 +348,7 @@ public class DeletePresenter extends MvpPresenter<IDeleteModel, IDeleteView> imp
         });
         dialog.show();
     }
+
     private void generateKey() throws FingerprintException {
         try {
             keyStore = KeyStore.getInstance("AndroidKeyStore");
@@ -384,6 +375,7 @@ public class DeletePresenter extends MvpPresenter<IDeleteModel, IDeleteView> imp
             throw new FingerprintException(e);
         }
     }
+
     private boolean initCipher() {
         String algorithm = KeyProperties.KEY_ALGORITHM_AES + "/" +
                 KeyProperties.BLOCK_MODE_CBC + "/" +
@@ -419,18 +411,14 @@ public class DeletePresenter extends MvpPresenter<IDeleteModel, IDeleteView> imp
     }
 
 
-
     @Override
     public void updateView(final int requestCode) {
-
-
         getView().updateAdapter();
-
     }
 
     @Override
     public void isThereANewData() {
-        if(model.getCount() != model.getCount(getView().getActivityContext())){
+        if (model.getCount() != model.getCount(getView().getActivityContext())) {
             model.loadData(getView().getActivityContext());
             getView().updateAdapter();
         }
@@ -439,16 +427,17 @@ public class DeletePresenter extends MvpPresenter<IDeleteModel, IDeleteView> imp
     private class FingerprintHandler extends FingerprintManager.AuthenticationCallback {
         private int itemPosition;
 
-        private  AlertDialog dialog;
-        FingerprintHandler(int itemPosition, AlertDialog dialog){
+        private AlertDialog dialog;
+
+        FingerprintHandler(int itemPosition, AlertDialog dialog) {
             this.itemPosition = itemPosition;
             this.dialog = dialog;
         }
 
 
-        private void startAuth(FingerprintManager manager, FingerprintManager.CryptoObject cryptoObject){
+        private void startAuth(FingerprintManager manager, FingerprintManager.CryptoObject cryptoObject) {
             CancellationSignal cancellationSignal = new CancellationSignal();
-            if(ActivityCompat.checkSelfPermission(getView().getActivityContext(), Manifest.permission.USE_FINGERPRINT) != PermissionChecker.PERMISSION_GRANTED){
+            if (ActivityCompat.checkSelfPermission(getView().getActivityContext(), Manifest.permission.USE_FINGERPRINT) != PermissionChecker.PERMISSION_GRANTED) {
                 return;
             }
             manager.authenticate(cryptoObject, cancellationSignal, 0, this, null);

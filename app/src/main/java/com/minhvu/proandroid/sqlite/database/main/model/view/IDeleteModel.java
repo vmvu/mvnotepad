@@ -21,7 +21,7 @@ public interface  IDeleteModel {
     Note getNote(int index);
     long getCount(Context context);
 
-    boolean restoreNote(Context context, long noteID);
+    boolean restoreNote(int position);
 
-    boolean deleteNote(Context context, long noteID, String noteKeySync);
+    boolean deleteNote(long noteID, String noteKeySync);
 }

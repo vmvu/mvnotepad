@@ -36,7 +36,7 @@ public class DeleteFragment extends AFragment implements IDeleteView, NoteAdapte
         super.onCreate(savedInstanceState);
         mPresenter = new DeletePresenter();
         mPresenter.bindView(this);
-        IDeleteModel model = new DeleteModel();
+        IDeleteModel model = new DeleteModel(getActivityContext());
         mPresenter.setModel(model);
         model.setPresenter(mPresenter);
         mPresenter.loadData();
@@ -96,6 +96,11 @@ public class DeleteFragment extends AFragment implements IDeleteView, NoteAdapte
     @Override
     public void updateAdapter() {
         mNoteAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void updateViewAtPosition(int position) {
+        mNoteAdapter.notifyItemChanged(position);
     }
 
     @Override

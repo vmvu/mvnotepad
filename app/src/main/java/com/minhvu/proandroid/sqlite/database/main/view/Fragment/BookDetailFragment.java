@@ -259,7 +259,7 @@ public class BookDetailFragment extends Fragment implements IDetailFragment.View
         ImageRecyclerView.setLayoutManager(staggeredGL);
 
         mImagePresenter = new ImagePresenter();
-        IImageModel model = new ImageModel();
+        IImageModel model = new ImageModel(getActivityContext());
         mImagePresenter.setModel(model);
         model.setPresenter(mImagePresenter);
         mImagePresenter.onLoadImages(getActivityContext(), mMainPresenter.getCurrentUri());

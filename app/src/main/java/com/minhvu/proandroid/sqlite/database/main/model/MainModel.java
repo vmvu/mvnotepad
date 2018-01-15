@@ -44,7 +44,7 @@ public class MainModel implements IMainModel {
         }else
             listNote.clear();
 
-        listNote = mNoteDAO.loadData();
+        listNote = mNoteDAO.loadDataByDELETE(0);
         return listNote.size() != 0;
     }
 
@@ -66,7 +66,7 @@ public class MainModel implements IMainModel {
 
     @Override
     public boolean deleteNote(Context ctx, long noteID) {
-         boolean state = mNoteDAO.UpdateDeleteCol(noteID);
+         boolean state = mNoteDAO.UpdateDeleteCol(noteID, 1);
          if(state){
              for (Note n : listNote) {
                  if (n.getId() == noteID) {

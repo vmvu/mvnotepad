@@ -95,7 +95,7 @@ public class GetShareActivity extends AppCompatActivity implements View.OnClickL
         invisibleView();
     }
     void setup(){
-        IGetShareModel model = new GetShareModel();
+        IGetShareModel model = new GetShareModel(this);
         presenter = new GetSharePresenter();
         presenter.bindView(this);
         presenter.setModel(model);

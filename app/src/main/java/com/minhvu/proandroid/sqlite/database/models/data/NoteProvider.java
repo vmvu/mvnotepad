@@ -29,7 +29,7 @@ public class NoteProvider extends ContentProvider {
     public static final int INCOMING_IMAGES_COLLECTION_URI_INDICATOR = 5;
     public static final int INCOMING_SINGLE_IMAGES_URI_INDICATOR = 97;
 
-    private NoteDBHelper mOpenHelper = null;
+    private DBSchema mOpenHelper = null;
 
     private static UriMatcher uriMatcher = null;
 
@@ -83,7 +83,7 @@ public class NoteProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
-        mOpenHelper = NoteDBHelper.getInstance(getContext());
+        mOpenHelper = DBSchema.getInstance(getContext());
         return true;
     }
 

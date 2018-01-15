@@ -8,22 +8,17 @@ import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Build;
 import android.text.TextUtils;
-import android.util.Log;
-import android.widget.Toast;
 
 import com.minhvu.proandroid.sqlite.database.R;
+import com.minhvu.proandroid.sqlite.database.models.DAO.NoteDAO;
 import com.minhvu.proandroid.sqlite.database.models.data.NoteContract;
-import com.minhvu.proandroid.sqlite.database.models.data.NoteDBHelper;
 import com.minhvu.proandroid.sqlite.database.models.entity.Note;
-import com.minhvu.proandroid.sqlite.database.receiver.PinBroadcast;
 
-import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 /**
  * Created by vomin on 9/16/2017.
@@ -39,7 +34,7 @@ public class AlarmRebootService extends ALongRunningNonStickyBroadcastService {
     @Override
     public void handIntentBroadcast(Intent intentBroadcast) {
         if (intentBroadcast.getAction().equals(Intent.ACTION_BOOT_COMPLETED)) {
-            ArrayList<Note> noteList = getNoteList();
+            List<Note> noteList = getNoteList();
 
             if (noteList.size() > 0) {
                 preferences = getSharedPreferences(getString(R.string.PREFS_ALARM_FILE), MODE_PRIVATE);
@@ -61,44 +56,12 @@ public class AlarmRebootService extends ALongRunningNonStickyBroadcastService {
     }
 
 
-    private ArrayList<Note> getNoteList() {
-        NoteDBHelper helper = NoteDBHelper.getInstance(this);
-
-        ArrayList<Note> list = new ArrayList<>();
-
-        String[] selection = new String[]{NoteContract.NoteEntry._ID, NoteContract.NoteEntry.COL_TITLE,
-                NoteContract.NoteEntry.COL_CONTENT, NoteContract.NoteEntry.COL_COLOR, NoteContract.NoteEntry.COL_PASSWORD};
-        try (SQLiteDatabase db = helper.getReadableDatabase()) {
-            Cursor c = null;
-            try {
-                c = db.query(NoteContract.NoteEntry.DATABASE_TABLE, selection, null, null, null, null, null);
-                if (c != null && c.moveToFirst()) {
-                    int idIndex = c.getColumnIndex(NoteContract.NoteEntry._ID);
-                    int titleIndex = c.getColumnIndex(NoteContract.NoteEntry.COL_TITLE);
-                    int contentIndex = c.getColumnIndex(NoteContract.NoteEntry.COL_CONTENT);
-                    int colorIndex = c.getColumnIndex(NoteContract.NoteEntry.COL_COLOR);
-                    int passwordIndex = c.getColumnIndex(NoteContract.NoteEntry.COL_PASSWORD);
-                    Note note ;
-                    do {
-                        note = new Note();
-                        note.setId(c.getLong(idIndex));
-                        note.setTitle(c.getString(titleIndex));
-                        note.setContent(c.getString(contentIndex));
-                        note.setIdColor(c.getInt(colorIndex));
-                        note.setPassword(c.getString(passwordIndex));
-                        list.add(note);
-                    } while (c.moveToNext());
-                }
-            } finally {
-                if (c != null)
-                    c.close();
-                db.close();
-            }
-        }
-        return list;
+    private List<Note> getNoteList() {
+        NoteDAO dao = new NoteDAO(this);
+        return dao.loadDataByDELETE(0);
     }
 
-    private void checkedAlarmNote(ArrayList<Note> list) {
+    private void checkedAlarmNote(List<Note> list) {
         for (Note note : list) {
             String noteAlarm = preferences.getString(getString(R.string.PREFS_ALARM_SWITCH_KEY) + note.getId(), "");
             if (TextUtils.isEmpty(noteAlarm) || noteAlarm.equals(getString(R.string.type_of_switch_reset))) {

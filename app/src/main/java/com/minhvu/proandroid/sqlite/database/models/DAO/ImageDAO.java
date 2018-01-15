@@ -12,6 +12,7 @@ import android.util.Log;
 
 import com.minhvu.proandroid.sqlite.database.models.data.ImageContract;
 import com.minhvu.proandroid.sqlite.database.models.data.NoteContract;
+import com.minhvu.proandroid.sqlite.database.models.data.NoteDeletedContract;
 import com.minhvu.proandroid.sqlite.database.models.entity.Image;
 
 import java.util.ArrayList;
@@ -27,6 +28,23 @@ public class ImageDAO extends BaseDAO {
         super(context);
     }
 
+    public List<Image> loadData(){
+        SQLiteDatabase db = getReadDB();
+        Cursor c = db.query(NoteDeletedContract.NoteDeletedEntry.DATABASE_TABLE,
+                null, null, null, null, null, null);
+        if(c != null && c.moveToFirst()){
+            List<Image> imageList = new ArrayList<>();
+            do{
+                String path = c.getString(c.getColumnIndex(ImageContract.ImageEntry.COL_NAME_PATH));
+                long noteID = c.getLong(c.getColumnIndex(ImageContract.ImageEntry.COL_NOTE_ID));
+                int state = c.getInt(c.getColumnIndex(ImageContract.ImageEntry.COL_SYNC));
+                imageList.add(new Image(path, state, noteID));
+            }while (c.moveToNext());
+            c.close();
+            return imageList;
+        }
+        return  null;
+    }
     public List<String> loadImagePathListOfNote(long noteID) {
         SQLiteDatabase db = getReadDB();
 
@@ -86,6 +104,24 @@ public class ImageDAO extends BaseDAO {
                 new String[]{image.getPath()});
         return success > 0;
     }
+    public void updatesByPath(List<Image> imageList) {
+        SQLiteDatabase db = getWriteDB();
+
+        String selection = ImageContract.ImageEntry.COL_NAME_PATH + "=?";
+        ContentValues cv = new ContentValues();
+        for(Image image: imageList){
+            if (!TextUtils.isEmpty(image.getPath()))
+                cv.put(ImageContract.ImageEntry.COL_NAME_PATH, image.getPath());
+            if (image.getNoteID() != -1)
+                cv.put(ImageContract.ImageEntry.COL_NOTE_ID, image.getNoteID());
+            cv.put(ImageContract.ImageEntry.COL_SYNC, image.getSync());
+            int success = db.update(
+                    ImageContract.ImageEntry.DATABASE_TABLE,
+                    cv,
+                    selection,
+                    new String[]{image.getPath()});
+        }
+    }
 
     public boolean updateByNoteID(Image image) {
         SQLiteDatabase db = getWriteDB();
@@ -105,6 +141,20 @@ public class ImageDAO extends BaseDAO {
         return success > 0;
     }
 
+    public void deleteAllItems(){
+        SQLiteDatabase db = getWriteDB();
+        db.execSQL("delete from " + ImageContract.ImageEntry.DATABASE_TABLE);
+    }
+
+
+    public void deleteAllItemsBySyncState(int SYNC_STATE){
+        SQLiteDatabase db = getWriteDB();
+        db.delete(
+                ImageContract.ImageEntry.DATABASE_TABLE,
+                ImageContract.ImageEntry.COL_SYNC + "=?",
+                new String[]{SYNC_STATE + ""});
+    }
+
     public long getCountOfNote(long noteID){
         SQLiteDatabase db = getReadDB();
         String sql = "SELECT * FROM " +
@@ -115,5 +165,13 @@ public class ImageDAO extends BaseDAO {
             return cursor.getCount();
         }
         return 0;
+    }
+
+    public boolean updateAllBySyncState(int STATE){
+        ContentValues cv = new ContentValues();
+        cv.put(ImageContract.ImageEntry.COL_SYNC, STATE);
+        SQLiteDatabase db = getWriteDB();
+        long success = db.update(ImageContract.ImageEntry.DATABASE_TABLE, cv, null, null);
+        return success > 0;
     }
 }

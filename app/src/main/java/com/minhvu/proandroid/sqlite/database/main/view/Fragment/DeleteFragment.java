@@ -18,17 +18,17 @@ import com.minhvu.proandroid.sqlite.database.main.model.DeleteModel;
 import com.minhvu.proandroid.sqlite.database.main.model.view.IDeleteModel;
 import com.minhvu.proandroid.sqlite.database.main.presenter.DeletePresenter;
 import com.minhvu.proandroid.sqlite.database.main.presenter.view.IDeletePresenter;
-import com.minhvu.proandroid.sqlite.database.main.view.Adapter.NoteAdapter2;
+import com.minhvu.proandroid.sqlite.database.main.view.Adapter.NoteAdapter;
 import com.minhvu.proandroid.sqlite.database.main.view.Fragment.view.IDeleteView;
 
 /**
  * Created by vomin on 10/16/2017.
  */
 
-public class DeleteFragment extends AFragment implements IDeleteView, NoteAdapter2.INoteAdapter {
+public class DeleteFragment extends AFragment implements IDeleteView, NoteAdapter.INoteAdapter {
 
     RecyclerView mRecyclerView;
-    NoteAdapter2 mNoteAdapter;
+    NoteAdapter mNoteAdapter;
     IDeletePresenter mPresenter;
 
     @Override
@@ -51,7 +51,7 @@ public class DeleteFragment extends AFragment implements IDeleteView, NoteAdapte
         GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), 1);
         mRecyclerView.setLayoutManager(gridLayoutManager);
         mRecyclerView.setHasFixedSize(true);
-        mNoteAdapter = new NoteAdapter2(this);
+        mNoteAdapter = new NoteAdapter(this);
         mNoteAdapter.onAttachedToRecyclerView(mRecyclerView);
         mRecyclerView.setAdapter(mNoteAdapter);
         return layout;
@@ -103,10 +103,7 @@ public class DeleteFragment extends AFragment implements IDeleteView, NoteAdapte
         mNoteAdapter.notifyItemChanged(position);
     }
 
-    @Override
-    public DisplayMetrics getDimensionOnScreen() {
-        return null;
-    }
+
 
     @Override
     public void onClick(View view, int position) {
@@ -119,7 +116,7 @@ public class DeleteFragment extends AFragment implements IDeleteView, NoteAdapte
     }
 
     @Override
-    public void onBindViewHolder(NoteAdapter2.NoteViewHolder holder, int position) {
+    public void onBindViewHolder(NoteAdapter.NoteViewHolder holder, int position) {
         mPresenter.onBindViewHolder(holder, position);
     }
 

@@ -12,13 +12,19 @@ import android.widget.Toast;
 
 public interface IDeleteView {
     Context getActivityContext();
+
     Context getBaseContext();
+
     Context getAppContext();
+
     void startActivityResult(Intent intent, int requestCode);
+
     void showToast(Toast toast);
+
     void showDialog(AlertDialog dialog);
+
     void updateAdapter();
+
     void updateViewAtPosition(int position);
 
-    DisplayMetrics getDimensionOnScreen();
 }

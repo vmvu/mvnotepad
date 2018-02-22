@@ -2,12 +2,9 @@ package com.minhvu.proandroid.sqlite.database.main.presenter;
 
 import android.Manifest;
 import android.app.KeyguardManager;
-import android.content.ContentUris;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.hardware.fingerprint.FingerprintManager;
-import android.net.Uri;
 import android.os.Build;
 import android.os.CancellationSignal;
 import android.security.keystore.KeyGenParameterSpec;
@@ -37,10 +34,9 @@ import com.minhvu.proandroid.sqlite.database.main.model.view.IImageModel;
 import com.minhvu.proandroid.sqlite.database.main.presenter.view.IDeletePresenter;
 import com.minhvu.proandroid.sqlite.database.main.presenter.view.IImagePresenter;
 import com.minhvu.proandroid.sqlite.database.main.view.Adapter.ImageAdapter;
-import com.minhvu.proandroid.sqlite.database.main.view.Adapter.NoteAdapter2;
+import com.minhvu.proandroid.sqlite.database.main.view.Adapter.NoteAdapter;
 import com.minhvu.proandroid.sqlite.database.main.view.Fragment.view.IDeleteView;
 import com.minhvu.proandroid.sqlite.database.main.view.Fragment.view.IDetailFragment;
-import com.minhvu.proandroid.sqlite.database.models.data.NoteContract;
 import com.minhvu.proandroid.sqlite.database.models.entity.Color;
 import com.minhvu.proandroid.sqlite.database.models.entity.Note;
 
@@ -67,9 +63,6 @@ public class DeletePresenter extends MvpPresenter<IDeleteModel, IDeleteView> imp
 
     private Cipher cipher;
     private KeyStore keyStore;
-    private KeyGenerator keyGenerator;
-    private KeyguardManager keyguardManager;
-    private FingerprintManager fingerprintManager;
     private final String FINGERPRINT_KEY = "fingerprint_k";
 
     @Override
@@ -93,7 +86,7 @@ public class DeletePresenter extends MvpPresenter<IDeleteModel, IDeleteView> imp
     }
 
     @Override
-    public void onBindViewHolder(NoteAdapter2.NoteViewHolder viewHolder, int position) {
+    public void onBindViewHolder(NoteAdapter.NoteViewHolder viewHolder, int position) {
         Note note = model.getNote(position);
         if (note.isDelete()) {
             viewHolder.itemView.setVisibility(View.GONE);
@@ -118,7 +111,6 @@ public class DeletePresenter extends MvpPresenter<IDeleteModel, IDeleteView> imp
 
 
         viewHolder.ivPinIcon.setVisibility(View.GONE);
-
     }
 
 
@@ -147,10 +139,10 @@ public class DeletePresenter extends MvpPresenter<IDeleteModel, IDeleteView> imp
         LayoutInflater inflater = LayoutInflater.from(getView().getActivityContext());
         View layout = inflater.inflate(R.layout.popup_delete_restore, null);
 
-        TextView tvTitle = (TextView) layout.findViewById(R.id.tvTitle);
-        TextView tvContent = (TextView) layout.findViewById(R.id.tvContent);
+        TextView tvTitle = layout.findViewById(R.id.tvTitle);
+        TextView tvContent = layout.findViewById(R.id.tvContent);
         GridLayoutManager gridLayoutManager = new GridLayoutManager(getView().getActivityContext(), 3);
-        RecyclerView imageRecycler = (RecyclerView) layout.findViewById(R.id.image_recyclerView);
+        RecyclerView imageRecycler = layout.findViewById(R.id.image_recyclerView);
         imageRecycler.setLayoutManager(gridLayoutManager);
         tvTitle.setText(note.getTitle());
         tvContent.setText(note.getContent());
@@ -207,38 +199,29 @@ public class DeletePresenter extends MvpPresenter<IDeleteModel, IDeleteView> imp
         //setup Dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(getView().getActivityContext());
         builder.setView(layout);
-        builder.setPositiveButton(getView().getActivityContext().getString(R.string.popup_restore), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                try {
-                    if (model.restoreNote(position))
-                        DeletePresenter.this.getView().updateViewAtPosition(position);
-                } finally {
-                    dialog.dismiss();
-                }
-            }
-        });
-        builder.setNegativeButton(getView().getActivityContext().getString(R.string.popup_delete), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                try {
-                    if (model.deleteNote(note.getId(), note.getKeySync())) {
-                        DeletePresenter.this.getView().updateViewAtPosition(position);
-                        imagePresenter.deleteAllImage(getView().getActivityContext(), (int) note.getId());
-                    }
-                } finally {
-                    dialog.dismiss();
-                }
-
-            }
-        });
-
-        builder.setNeutralButton(getView().getActivityContext().getString(R.string.cancel_label), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                imagePresenter.onDestroy(false);
+        builder.setPositiveButton(getView().getActivityContext().getString(R.string.popup_restore), (dialog, which) -> {
+            try {
+                if (model.restoreNote(position))
+                    DeletePresenter.this.getView().updateViewAtPosition(position);
+            } finally {
                 dialog.dismiss();
             }
+        });
+        builder.setNegativeButton(getView().getActivityContext().getString(R.string.popup_delete), (dialog, which) -> {
+            try {
+                if (model.deleteNote(note.getId(), note.getKeySync())) {
+                    DeletePresenter.this.getView().updateViewAtPosition(position);
+                    imagePresenter.deleteAllImage(getView().getActivityContext(), (int) note.getId());
+                }
+            } finally {
+                dialog.dismiss();
+            }
+
+        });
+
+        builder.setNeutralButton(getView().getActivityContext().getString(R.string.cancel_label), (dialog, which) -> {
+            imagePresenter.onDestroy(false);
+            dialog.dismiss();
         });
         AlertDialog dialog = builder.create();
         getView().showDialog(dialog);
@@ -255,25 +238,19 @@ public class DeletePresenter extends MvpPresenter<IDeleteModel, IDeleteView> imp
             AlertDialog.Builder builder = new AlertDialog.Builder(getView().getActivityContext());
             builder.setView(layout);
             final AlertDialog dialog = builder.create();
-            Button btnCancel = (Button) layout.findViewById(R.id.btnCancel);
-            Button btnUsePassword = (Button) layout.findViewById(R.id.btnUsePassword);
-            btnCancel.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    dialog.dismiss();
-                }
+            Button btnCancel = layout.findViewById(R.id.btnCancel);
+            Button btnUsePassword = layout.findViewById(R.id.btnUsePassword);
+            btnCancel.setOnClickListener(v -> {
+                dialog.dismiss();
             });
 
-            btnUsePassword.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    dialog.dismiss();
-                    unlockText(inflater, note, itemPosition);
-                }
+            btnUsePassword.setOnClickListener(v -> {
+                dialog.dismiss();
+                unlockText(inflater, note, itemPosition);
             });
 
-            keyguardManager = (KeyguardManager) getView().getActivityContext().getSystemService(Context.KEYGUARD_SERVICE);
-            fingerprintManager = (FingerprintManager) getView().getActivityContext().getSystemService(Context.FINGERPRINT_SERVICE);
+            KeyguardManager keyguardManager = (KeyguardManager) getView().getActivityContext().getSystemService(Context.KEYGUARD_SERVICE);
+            FingerprintManager fingerprintManager = (FingerprintManager) getView().getActivityContext().getSystemService(Context.FINGERPRINT_SERVICE);
             //check whether the device has a fingerprint sensor
             if (!fingerprintManager.isHardwareDetected()) {
                 // device don't support fingerprint
@@ -298,7 +275,6 @@ public class DeletePresenter extends MvpPresenter<IDeleteModel, IDeleteView> imp
                 }
                 if (initCipher()) {
                     FingerprintManager.CryptoObject cryptoObject = new FingerprintManager.CryptoObject(cipher);
-                    Uri uri = ContentUris.withAppendedId(NoteContract.NoteEntry.CONTENT_URI, note.getId());
                     FingerprintHandler handler = new FingerprintHandler(itemPosition, dialog);
                     handler.startAuth(fingerprintManager, cryptoObject);
                 }
@@ -316,14 +292,12 @@ public class DeletePresenter extends MvpPresenter<IDeleteModel, IDeleteView> imp
         AlertDialog.Builder builder = new AlertDialog.Builder(getView().getActivityContext());
         builder.setView(dialogLayout);
         final AlertDialog dialog = builder.create();
-        final EditText editText = (EditText) dialogLayout.findViewById(R.id.etPassWord);
+        final EditText editText =  dialogLayout.findViewById(R.id.etPassWord);
         editText.setFocusable(true);
-        ImageButton imgBtnNo = (ImageButton) dialogLayout.findViewById(R.id.btnNo);
-        ImageButton imgBtnYes = (ImageButton) dialogLayout.findViewById(R.id.btnYes);
+        ImageButton imgBtnNo = dialogLayout.findViewById(R.id.btnNo);
+        ImageButton imgBtnYes =  dialogLayout.findViewById(R.id.btnYes);
 
-        imgBtnYes.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        imgBtnYes.setOnClickListener(v-> {
                 String password = editText.getText().toString();
                 if (TextUtils.isEmpty(password)) {
                     return;
@@ -332,20 +306,13 @@ public class DeletePresenter extends MvpPresenter<IDeleteModel, IDeleteView> imp
                 String pas = DeEncrypter.decryptString(note.getPassword(), note.getPassSalt());
                 if (pas.equals(password)) {
                     dialog.dismiss();
-                    Uri uri = ContentUris.withAppendedId(NoteContract.NoteEntry.CONTENT_URI, note.getId());
                     openDetail(itemPosition);
                 } else {
                     editText.setText("");
                 }
 
-            }
         });
-        imgBtnNo.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialog.dismiss();
-            }
-        });
+        imgBtnNo.setOnClickListener(v -> dialog.dismiss());
         dialog.show();
     }
 
@@ -353,7 +320,7 @@ public class DeletePresenter extends MvpPresenter<IDeleteModel, IDeleteView> imp
         try {
             keyStore = KeyStore.getInstance("AndroidKeyStore");
 
-            keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore");
+            KeyGenerator keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore");
             keyStore.load(null);
             KeyGenParameterSpec keyGenParameterSpec =
                     new KeyGenParameterSpec.Builder(FINGERPRINT_KEY, KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
@@ -460,7 +427,7 @@ public class DeletePresenter extends MvpPresenter<IDeleteModel, IDeleteView> imp
     }
 
     private class FingerprintException extends Exception {
-        public FingerprintException(Exception e) {
+        FingerprintException(Exception e) {
             super(e);
         }
     }

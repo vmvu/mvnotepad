@@ -5,10 +5,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -20,30 +22,34 @@ import com.minhvu.proandroid.sqlite.database.R;
 import com.minhvu.proandroid.sqlite.database.main.model.MainModel;
 import com.minhvu.proandroid.sqlite.database.main.presenter.view.IMainPresenter;
 import com.minhvu.proandroid.sqlite.database.main.presenter.MainPresenter;
-import com.minhvu.proandroid.sqlite.database.main.view.Adapter.NoteAdapter2;
+import com.minhvu.proandroid.sqlite.database.main.view.Adapter.NoteAdapter;
 import com.minhvu.proandroid.sqlite.database.main.view.Fragment.view.IMainView;
 
 /**
  * Created by vomin on 10/7/2017.
  */
 
-public class MainFragment extends AFragment implements IMainView.View, NoteAdapter2.INoteAdapter {
+public class MainFragment extends AFragment implements IMainView.View, NoteAdapter.INoteAdapter {
 
     RecyclerView mRecyclerView;
-    NoteAdapter2 mNoteAdapter;
+    NoteAdapter mNoteAdapter;
     IMainPresenter mPresenter;
 
-    BroadcastReceiver mSignOutReceiver = new BroadcastReceiver() {
+    BroadcastReceiver mSignInOutReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            mPresenter.userSignOutUpdate();
+            if (!TextUtils.isEmpty(intent.getStringExtra(getString(R.string.sign_out_flag))))
+                mPresenter.userSignOutUpdate();
+            else {
+                mPresenter.userSignInUpdate();
+            }
         }
     };
 
 
     @Override
     public void onDestroy() {
-        LocalBroadcastManager.getInstance(getActivityContext()).unregisterReceiver(mSignOutReceiver);
+        LocalBroadcastManager.getInstance(getActivityContext()).unregisterReceiver(mSignInOutReceiver);
         mPresenter.onDestroy(getActivity().isChangingConfigurations());
         mPresenter = null;
         super.onDestroy();
@@ -62,25 +68,24 @@ public class MainFragment extends AFragment implements IMainView.View, NoteAdapt
         registerReceiverForSignOutFromUser();
     }
 
-    private void registerReceiverForSignOutFromUser(){
+    private void registerReceiverForSignOutFromUser() {
         LocalBroadcastManager.getInstance(getActivityContext()).
-                registerReceiver(mSignOutReceiver, new IntentFilter(getString(R.string.broadcast_sign_out)));
+                registerReceiver(mSignInOutReceiver, new IntentFilter(getString(R.string.broadcast_sign_out)));
     }
 
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         Log.d("Life", "onCreateView");
         View layout = inflater.inflate(R.layout.fragment_main, container, false);
 
-        mRecyclerView = (RecyclerView) layout.findViewById(R.id.recyclerView);
+        mRecyclerView = layout.findViewById(R.id.recyclerView);
         GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), 1);
         mRecyclerView.setLayoutManager(gridLayoutManager);
         mRecyclerView.setHasFixedSize(true);
-        mNoteAdapter = new NoteAdapter2(this);
+        mNoteAdapter = new NoteAdapter(this);
         mNoteAdapter.onAttachedToRecyclerView(mRecyclerView);
-        int count = mPresenter.getDataCount();
         mRecyclerView.setAdapter(mNoteAdapter);
         return layout;
     }
@@ -111,7 +116,7 @@ public class MainFragment extends AFragment implements IMainView.View, NoteAdapt
     }
 
     @Override
-    public void onBindViewHolder(NoteAdapter2.NoteViewHolder holder, int position) {
+    public void onBindViewHolder(NoteAdapter.NoteViewHolder holder, int position) {
         mPresenter.onBindViewHolder(holder, position);
     }
 

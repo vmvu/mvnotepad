@@ -52,7 +52,9 @@ public class ImageModel implements IImageModel {
     public void onDestroy(boolean isChangingConfiguration) {
         if (!isChangingConfiguration) {
             presenter = null;
-            mImageList.clear();
+            if(mImageList != null){
+                mImageList = null;
+            }
         }
     }
 
@@ -182,7 +184,7 @@ public class ImageModel implements IImageModel {
     }
 
     @Override
-    public Bitmap getSmallBitmapImage(String path) {
+    public Bitmap getSmallBitmap(String path) {
         if (mSmallBitmap == null) {
             mSmallBitmap = new HashMap<>();
         }

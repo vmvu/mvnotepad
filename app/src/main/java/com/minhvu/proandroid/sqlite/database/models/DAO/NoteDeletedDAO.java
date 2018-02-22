@@ -29,10 +29,10 @@ public class NoteDeletedDAO extends BaseDAO {
         if(c != null && c.moveToFirst()){
 
             List<NoteDeleted> noteDeletedList = new ArrayList<>();
-            int keySyncIndex = c.getColumnIndex(NoteDeletedContract.NoteDeletedEntry.NOTE_KEY_SYNC);
+            int synchroKeyIndex = c.getColumnIndex(NoteDeletedContract.NoteDeletedEntry.NOTE_KEY_SYNC);
             int noteIDIndex = c.getColumnIndex(NoteDeletedContract.NoteDeletedEntry.NOTE_ID);
             do {
-                String keySync = c.getString(keySyncIndex);
+                String keySync = c.getString(synchroKeyIndex);
                 long noteID = c.getLong(noteIDIndex);
                 noteDeletedList.add(new NoteDeleted(noteID, keySync));
             } while (c.moveToNext());

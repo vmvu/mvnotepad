@@ -1,41 +1,34 @@
 package com.minhvu.proandroid.sqlite.database.services;
 
-        import android.content.ContentValues;
-        import android.content.Intent;
-        import android.database.Cursor;
-        import android.database.sqlite.SQLiteDatabase;
-        import android.net.ConnectivityManager;
-        import android.net.NetworkInfo;
-        import android.net.Uri;
-        import android.os.Binder;
-        import android.os.IBinder;
-        import android.support.annotation.Nullable;
-        import android.text.TextUtils;
-        import android.util.Log;
+import android.content.ContentValues;
+import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.Uri;
+import android.os.Binder;
+import android.os.IBinder;
+import android.support.annotation.Nullable;
+import android.text.TextUtils;
 
-        import com.google.firebase.database.DataSnapshot;
-        import com.google.firebase.database.DatabaseError;
-        import com.google.firebase.database.DatabaseReference;
-        import com.google.firebase.database.FirebaseDatabase;
-        import com.google.firebase.database.ValueEventListener;
-        import com.google.firebase.storage.FirebaseStorage;
-        import com.google.firebase.storage.StorageReference;
-        import com.minhvu.proandroid.sqlite.database.R;
-        import com.minhvu.proandroid.sqlite.database.models.DAO.ImageDAO;
-        import com.minhvu.proandroid.sqlite.database.models.DAO.NoteDAO;
-        import com.minhvu.proandroid.sqlite.database.models.DAO.NoteDeletedDAO;
-        import com.minhvu.proandroid.sqlite.database.models.data.ImageContract;
-        import com.minhvu.proandroid.sqlite.database.models.data.NoteContract;
-        import com.minhvu.proandroid.sqlite.database.models.data.DBSchema;
-        import com.minhvu.proandroid.sqlite.database.models.data.NoteDeletedContract;
-        import com.minhvu.proandroid.sqlite.database.models.entity.Image;
-        import com.minhvu.proandroid.sqlite.database.models.entity.Note;
-        import com.minhvu.proandroid.sqlite.database.models.entity.NoteDeleted;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.minhvu.proandroid.sqlite.database.R;
+import com.minhvu.proandroid.sqlite.database.models.DAO.ImageDAO;
+import com.minhvu.proandroid.sqlite.database.models.DAO.LastSyncDAO;
+import com.minhvu.proandroid.sqlite.database.models.DAO.NoteDAO;
+import com.minhvu.proandroid.sqlite.database.models.DAO.NoteDeletedDAO;
+import com.minhvu.proandroid.sqlite.database.models.data.ImageContract;
+import com.minhvu.proandroid.sqlite.database.models.data.NoteContract;
+import com.minhvu.proandroid.sqlite.database.models.entity.Image;
+import com.minhvu.proandroid.sqlite.database.models.entity.Note;
+import com.minhvu.proandroid.sqlite.database.models.entity.NoteDeleted;
 
-        import java.io.File;
-        import java.util.ArrayList;
-        import java.util.HashMap;
-        import java.util.List;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created by vomin on 11/28/2017.
@@ -47,6 +40,7 @@ public class SyncService extends ALongRunningNonStickyBroadcastService {
 
 
     private String user;
+    private NoteDAO dao;
 
 
     public class LocalBinder extends Binder {
@@ -79,6 +73,7 @@ public class SyncService extends ALongRunningNonStickyBroadcastService {
         if (mode == 1) {
             deleteAllDataInDatabase();
         } else {
+            dao = new NoteDAO(this);//can delete dao object
             syncFirebase();
         }
 
@@ -98,34 +93,28 @@ public class SyncService extends ALongRunningNonStickyBroadcastService {
 
 
     private void syncFirebase() {
-        Thread thread = new Thread() {
-            @Override
-            public void run() {
-                super.run();
-                Sync();
-            }
-        };
-        thread.start();
+        Sync();
     }
 
     private void Sync() {
-        List<NoteDeleted> noteList = NoteSync();
+        List<NoteDeleted> noteList = SynchronousNote();
         if (noteList == null) {
             noteList = new ArrayList<>();
         }
-        List<NoteDeleted> notes = removeNote();
+        List<NoteDeleted> notes = DeleteOldNotes();
         if (notes != null) {
             noteList.addAll(notes);
         }
-        DocumentSync(noteList);
+        SynchronousDocument(noteList);
+        LastSync();
     }
 
     @Nullable
-    private List<NoteDeleted> NoteSync() {
+    private List<NoteDeleted> SynchronousNote() {
         if (TextUtils.isEmpty(user)) {
             return null;
         }
-        final List<Note> noteList = getListNote();
+        final List<Note> noteList = GetListNote();
         if (noteList == null || noteList.size() == 0) {
             return null;
         }
@@ -139,40 +128,33 @@ public class SyncService extends ALongRunningNonStickyBroadcastService {
                 DatabaseReference mRef = db.push();
                 note.setKeySync(mRef.getKey());
                 mRef.child(getString(R.string.note_directory)).setValue(note);
+                UpdateNoteWithSynchroKey(note.getId(), note.getKeySync());
             } else {
                 db.child(note.getKeySync())
                         .child(getString(R.string.note_directory)).setValue(note);
             }
             noteDeletedList.add(new NoteDeleted(note.getId(), note.getKeySync()));
         }
-        Thread threadUpdateKeySync = new Thread() {
-            @Override
-            public void run() {
-                super.run();
-                updateNoteWithKeySync(noteList);
-            }
-        };
-        threadUpdateKeySync.start();
         return noteDeletedList;
     }
 
-    private List<NoteDeleted> removeNote() {
+    private List<NoteDeleted> DeleteOldNotes() {
 
         NoteDeletedDAO noteDeletedDAO = new NoteDeletedDAO(this);
         List<NoteDeleted> noteDeletedList = noteDeletedDAO.loadData();
-        if(noteDeletedList == null || noteDeletedList.size() == 0)
+        if (noteDeletedList == null || noteDeletedList.size() == 0)
             return null;
         noteDeletedDAO.deleteAllItems();
-        final DatabaseReference dbFirebase = FirebaseDatabase.getInstance()
+        final DatabaseReference mDBFireBase = FirebaseDatabase.getInstance()
                 .getReference(getString(R.string.users_list_firebase)).child(user);
-        for (NoteDeleted keySync : noteDeletedList) {
-            if (!TextUtils.isEmpty(keySync.getKeySync()))
-                dbFirebase.child(keySync.getKeySync()).setValue(null);
+        for (NoteDeleted note : noteDeletedList) {
+            if (!TextUtils.isEmpty(note.getKeySync()))
+                mDBFireBase.child(note.getKeySync()).setValue(null);
         }
         return noteDeletedList;
     }
 
-    private void DocumentSync(List<NoteDeleted> noteList) {
+    private void SynchronousDocument(List<NoteDeleted> noteList) {
         //getUser();
         if (TextUtils.isEmpty(user)) {
             return;
@@ -180,8 +162,8 @@ public class SyncService extends ALongRunningNonStickyBroadcastService {
         if (noteList == null || noteList.size() == 0) {
             return;
         }
-        HashMap<String, ArrayList<Image>> idImageList = getImageList();
-        if (idImageList == null || idImageList.size() == 0) {
+        HashMap<String, ArrayList<Image>> ImageListWithID = GetImageList();
+        if (ImageListWithID == null || ImageListWithID.size() == 0) {
             return;
         }
         //  [begin: connect Firebase]
@@ -193,38 +175,55 @@ public class SyncService extends ALongRunningNonStickyBroadcastService {
         //  [end: connect Firebase]
         ArrayList<Image> tempList = new ArrayList<>();
         for (NoteDeleted note : noteList) {
-            ArrayList<Image> imagePathList = idImageList.get(note.getNoteID() + "");
-            if (imagePathList == null) {
+            ArrayList<Image> pathOfImageList = ImageListWithID.get(note.getNoteID() + "");
+            if (pathOfImageList == null ||pathOfImageList.size() == 0) {
                 continue;
             }
-            if (imagePathList.size() == 0) {
-                continue;
-            }
-            if (TextUtils.isEmpty(note.getKeySync())) {
-                tempList.addAll(imagePathList);
-                continue;
-            }
-            StorageReference mRef = storageRef.child(user);
-            DatabaseReference dbRef = db.child(note.getKeySync()).child(getString(R.string.document_directory));
 
-            for (Image image : imagePathList) {
+            if (TextUtils.isEmpty(note.getKeySync())) {
+                tempList.addAll(pathOfImageList);
+                continue;
+            }
+            StorageReference mSRef = storageRef.child(user);
+            DatabaseReference mDBRef = db.child(note.getKeySync()).child(getString(R.string.document_directory));
+
+            for (Image image : pathOfImageList) {
                 int stage = image.getSync();
                 Uri uri = Uri.parse(image.getPath());
                 if (stage == 0) {
                     Uri file = Uri.fromFile(new File(uri.getPath()));
-                    mRef.child(uri.getLastPathSegment()).putFile(file);
-                    dbRef.child(getNameFileRemoveDot(file.getLastPathSegment())).setValue(file.getLastPathSegment());
+                    mSRef.child(uri.getLastPathSegment())
+                            .putFile(file)
+                            .addOnSuccessListener(
+                                    taskSnapshot ->
+                                            mDBRef.child(getNameFileRemoveDot(file.getLastPathSegment()))
+                                                    .setValue(file.getLastPathSegment())
+                            );
                     image.setSync(1);
                     tempList.add(image);
                 }
                 if (stage == -1) {
-                    mRef.child(uri.getLastPathSegment()).delete();
-                    dbRef.child(getNameFileRemoveDot(uri.getLastPathSegment())).removeValue();
+                    mSRef.child(uri.getLastPathSegment()).delete();
+                    mDBRef.child(getNameFileRemoveDot(uri.getLastPathSegment())).removeValue();
                     tempList.add(image);
                 }
             }
         }
-        updateImageToSync(tempList);
+        AddSynchronousKeyForImage(tempList);
+    }
+
+    private void LastSync(){
+        if(TextUtils.isEmpty(user)){
+            return;
+        }
+        final DatabaseReference db = FirebaseDatabase.getInstance()
+                .getReference(getString(R.string.users_list_firebase))
+                .child(user);
+
+        long currentTime = System.currentTimeMillis();
+        db.child(getString(R.string.last_update_ones_account)).setValue(currentTime);
+        LastSyncDAO dao = new LastSyncDAO(this);
+        dao.InsertLastSyncTime(currentTime);
     }
 
     private String getNameFileRemoveDot(String path) {
@@ -239,14 +238,14 @@ public class SyncService extends ALongRunningNonStickyBroadcastService {
         return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 
-    private List<Note> getListNote() {
+    private List<Note> GetListNote() {
         NoteDAO dao = new NoteDAO(this);
         String orderBy = NoteContract.NoteEntry._ID + " ASC";
 
         return dao.loadData(orderBy);
     }
 
-    private HashMap<String, ArrayList<Image>> getImageList() {
+    private HashMap<String, ArrayList<Image>> GetImageList() {
         HashMap<String, ArrayList<Image>> idImageList = new HashMap<>();
         ImageDAO dao = new ImageDAO(this);
         List<Image> imageList = dao.loadData();
@@ -263,12 +262,18 @@ public class SyncService extends ALongRunningNonStickyBroadcastService {
         return idImageList;
     }
 
-    private void updateNoteWithKeySync(List<Note> noteList) {
-        NoteDAO dao = new NoteDAO(this);
-        dao.updateSyncList(noteList);
+    private void UpdateNoteWithSynchroKey(long noteID, String SynchroKey) {
+        Thread threadUpdateKeySync = new Thread() {
+            @Override
+            public void run() {
+                super.run();
+                dao.UpdateSynchronousList(noteID, SynchroKey);
+            }
+        };
+        threadUpdateKeySync.start();
     }
 
-    private void updateImageToSync(List<Image> imageList) {
+    private void AddSynchronousKeyForImage(List<Image> imageList) {
         if (imageList == null || imageList.size() == 0) {
             return;
         }

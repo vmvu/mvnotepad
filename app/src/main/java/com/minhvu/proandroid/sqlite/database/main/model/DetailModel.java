@@ -57,10 +57,7 @@ public class DetailModel implements IDetailModel {
     public boolean update(Uri uri, ContentValues cv, String where, String[] selectionArgs) {
         ContentResolver contentResolver = mMainPresenter.getActivityContext().getContentResolver();
         int success = contentResolver.update(uri, cv, where, selectionArgs);
-        if(success > 0){
-            return true;
-        }
-        return false;
+        return success > 0;
     }
 
     @Override

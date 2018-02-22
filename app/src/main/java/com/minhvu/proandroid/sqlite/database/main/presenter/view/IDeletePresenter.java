@@ -3,7 +3,7 @@ package com.minhvu.proandroid.sqlite.database.main.presenter.view;
 import android.view.View;
 
 import com.minhvu.proandroid.sqlite.database.main.model.view.IDeleteModel;
-import com.minhvu.proandroid.sqlite.database.main.view.Adapter.NoteAdapter2;
+import com.minhvu.proandroid.sqlite.database.main.view.Adapter.NoteAdapter;
 import com.minhvu.proandroid.sqlite.database.main.view.Fragment.view.IDeleteView;
 
 /**
@@ -13,7 +13,7 @@ import com.minhvu.proandroid.sqlite.database.main.view.Fragment.view.IDeleteView
 public interface IDeletePresenter {
     void onDestroy(boolean isChangingConfiguration);
     void loadData();
-    void onBindViewHolder(NoteAdapter2.NoteViewHolder viewHolder, int position);
+    void onBindViewHolder(NoteAdapter.NoteViewHolder viewHolder, int position);
     void setModel(IDeleteModel model);
     void bindView(IDeleteView view);
 

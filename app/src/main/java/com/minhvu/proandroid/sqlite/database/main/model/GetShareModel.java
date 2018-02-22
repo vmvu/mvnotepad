@@ -76,7 +76,7 @@ public class GetShareModel implements IGetShareModel {
         note.setDateCreated(System.currentTimeMillis());
         note.setLastOn(System.currentTimeMillis());
         setup();
-        return mNoteDAO.insertNote(note);
+        return mNoteDAO.insertNote(note) > 0;
     }
 
     @Override

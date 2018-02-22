@@ -68,6 +68,9 @@
     <string name="user_token">user_token</string>
     //When a user sign out, delete all data
     <string name="user_sign_out_delete_data">delete_all_data</string>
+    <string name="sign_in_flag">sign_in</string>
+    <string name="sign_out_flag">sign_out</string>
+
 
     //non-textual description
     <string name="fb_login_description">facebook login</string>
@@ -82,4 +85,6 @@
     <string name="document_directory">document</string>
 
     <string name="my_storage">mvnote</string>
+    <string name="last_update_ones_account">LastSync</string>
+    <string name="close_sign_in_when_complete_task">close_sign_in_window</string>
 </resources>

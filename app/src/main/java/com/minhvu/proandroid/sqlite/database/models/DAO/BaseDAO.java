@@ -9,7 +9,7 @@ import com.minhvu.proandroid.sqlite.database.models.data.DBSchema;
  * Created by vomin on 1/12/2018.
  */
 
-public class BaseDAO {
+public abstract class BaseDAO {
     private DBSchema helper;
     protected Context context;
 

@@ -38,8 +38,8 @@ import com.minhvu.proandroid.sqlite.database.Utils.DeEncrypter;
 import com.minhvu.proandroid.sqlite.database.Utils.Sort;
 import com.minhvu.proandroid.sqlite.database.main.model.view.IMainModel;
 import com.minhvu.proandroid.sqlite.database.main.presenter.view.IMainPresenter;
-import com.minhvu.proandroid.sqlite.database.main.view.Activity.BookDetailActivity;
-import com.minhvu.proandroid.sqlite.database.main.view.Adapter.NoteAdapter2;
+import com.minhvu.proandroid.sqlite.database.main.view.Activity.DetailNoteActivity;
+import com.minhvu.proandroid.sqlite.database.main.view.Adapter.NoteAdapter;
 import com.minhvu.proandroid.sqlite.database.main.view.Fragment.view.IMainView;
 import com.minhvu.proandroid.sqlite.database.models.data.NoteContract;
 import com.minhvu.proandroid.sqlite.database.models.entity.Color;
@@ -68,9 +68,6 @@ public class MainPresenter extends MvpPresenter<IMainModel, IMainView.View> impl
 
     private Cipher mCipher;
     private KeyStore mKeyStore;
-    private KeyGenerator mKeyGenerator;
-    private KeyguardManager mKeyguardManager;
-    private FingerprintManager mFingerprintManager;
     private final String FINGERPRINT_KEY = "fingerprint_k";
 
     @Override
@@ -84,21 +81,17 @@ public class MainPresenter extends MvpPresenter<IMainModel, IMainView.View> impl
 
     @Override
     public void loadData() {
-        try{
-            Thread thread = new Thread(){
-                @Override
-                public void run() {
-                    model.loadData(getView().getActivityContext());
-                }
-            };
-            thread.start();
-        }finally {
-
-        }
+        Thread thread = new Thread(){
+            @Override
+            public void run() {
+                model.loadData(getView().getActivityContext());
+            }
+        };
+        thread.start();
     }
 
     @Override
-    public void onBindViewHolder(NoteAdapter2.NoteViewHolder viewHolder, int position) {
+    public void onBindViewHolder(NoteAdapter.NoteViewHolder viewHolder, int position) {
         Note note = model.getNote(position);
         if (note.isDelete()) {
             viewHolder.itemView.setVisibility(View.GONE);
@@ -120,8 +113,10 @@ public class MainPresenter extends MvpPresenter<IMainModel, IMainView.View> impl
         }
 
         Color color = Color.getColor(getView().getActivityContext(), note.getIdColor());
-        viewHolder.background.setBackgroundColor(color.getBackgroundColor());
-        viewHolder.lineHeader.setBackgroundColor(color.getHeaderColor());
+        viewHolder.background.setBackgroundColor(getView().getActivityContext().getColor(android.R.color.white));
+        //viewHolder.lineHeader.setBackgroundColor(color.getHeaderColor());
+        viewHolder.tvTitle.setTextColor(color.getHeaderColor());
+        viewHolder.lineHeader.setVisibility(View.GONE);
 
         if (isImportantNote((int) note.getId())) {
             viewHolder.ivPinIcon.setColorFilter(color.getHeaderColor());
@@ -136,10 +131,7 @@ public class MainPresenter extends MvpPresenter<IMainModel, IMainView.View> impl
 
         String key = getView().getActivityContext().getString(R.string.PREFS_ALARM_SWITCH_KEY) + noteID;
         String switchType = preferences.getString(key, "");
-        if (switchType.trim().equals("scPin")) {
-            return true;
-        }
-        return false;
+        return switchType.trim().equals("scPin");
     }
 
     @Override
@@ -164,7 +156,7 @@ public class MainPresenter extends MvpPresenter<IMainModel, IMainView.View> impl
     private void popupChooseTable(View view, int position){
 
         final Note note = model.getNote(position);
-        final Uri uri = ContentUris.withAppendedId(NoteContract.NoteEntry.CONTENT_URI, note.getId());
+        //final Uri uri = ContentUris.withAppendedId(NoteContract.NoteEntry.CONTENT_URI, note.getId());
 
         LayoutInflater inflater = LayoutInflater.from(getView().getActivityContext());
         View layout = inflater.inflate(R.layout.popup_activity_main, null);
@@ -183,16 +175,13 @@ public class MainPresenter extends MvpPresenter<IMainModel, IMainView.View> impl
         popupWindow.setBackgroundDrawable(new BitmapDrawable());
         getPositionPopupDisplay(popupWidth, popupHeight, local);
         popupWindow.showAtLocation(layout, Gravity.NO_GRAVITY, local[0], local[1]);
-        TextView tvTitlePopup = (TextView) layout.findViewById(R.id.tvTitle_Popup);
+        TextView tvTitlePopup = layout.findViewById(R.id.tvTitle_Popup);
         tvTitlePopup.setText(note.getTitle());
-        TextView tvDeletePopup = (TextView) layout.findViewById(R.id.tvDelete_popup);
-        tvDeletePopup.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                deleteBook(note.getId());
-                cancelNotification((int) note.getId());
-                popupWindow.dismiss();
-            }
+        TextView tvDeletePopup = layout.findViewById(R.id.tvDelete_popup);
+        tvDeletePopup.setOnClickListener(v -> {
+            deleteBook(note.getId());
+            cancelNotification((int) note.getId());
+            popupWindow.dismiss();
         });
     }
     private void getPositionPopupDisplay(int widthPopup, int heightPopup, int[] local) {
@@ -233,7 +222,7 @@ public class MainPresenter extends MvpPresenter<IMainModel, IMainView.View> impl
 
 
     private void openDetailActivity(Uri uri, int position) {
-        Intent intent = new Intent(getView().getActivityContext(), BookDetailActivity.class);
+        Intent intent = new Intent(getView().getActivityContext(), DetailNoteActivity.class);
         intent.setData(uri);
         getView().startActivityResult(intent,position );
     }
@@ -244,25 +233,17 @@ public class MainPresenter extends MvpPresenter<IMainModel, IMainView.View> impl
             AlertDialog.Builder builder = new AlertDialog.Builder(getView().getActivityContext());
             builder.setView(layout);
             final AlertDialog dialog = builder.create();
-            Button btnCancel = (Button) layout.findViewById(R.id.btnCancel);
-            Button btnUsePassword = (Button) layout.findViewById(R.id.btnUsePassword);
-            btnCancel.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    dialog.dismiss();
-                }
+            Button btnCancel = layout.findViewById(R.id.btnCancel);
+            Button btnUsePassword = layout.findViewById(R.id.btnUsePassword);
+            btnCancel.setOnClickListener(v -> dialog.dismiss());
+
+            btnUsePassword.setOnClickListener(v -> {
+                dialog.dismiss();
+                unlockText(inflater, note, itemPosition);
             });
 
-            btnUsePassword.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    dialog.dismiss();
-                    unlockText(inflater, note, itemPosition);
-                }
-            });
-
-            mKeyguardManager = (KeyguardManager) getView().getActivityContext().getSystemService(Context.KEYGUARD_SERVICE);
-            mFingerprintManager = (FingerprintManager) getView().getActivityContext().getSystemService(Context.FINGERPRINT_SERVICE);
+            KeyguardManager mKeyguardManager = (KeyguardManager) getView().getActivityContext().getSystemService(Context.KEYGUARD_SERVICE);
+            FingerprintManager mFingerprintManager = (FingerprintManager) getView().getActivityContext().getSystemService(Context.FINGERPRINT_SERVICE);
             //check whether the device has a fingerprint sensor
             if (!mFingerprintManager.isHardwareDetected()) {
                 // device don't support fingerprint
@@ -304,42 +285,34 @@ public class MainPresenter extends MvpPresenter<IMainModel, IMainView.View> impl
         AlertDialog.Builder builder = new AlertDialog.Builder(getView().getActivityContext());
         builder.setView(dialogLayout);
         final AlertDialog dialog = builder.create();
-        final EditText editText = (EditText) dialogLayout.findViewById(R.id.etPassWord);
+        final EditText editText =  dialogLayout.findViewById(R.id.etPassWord);
         editText.setFocusable(true);
-        ImageButton imgBtnNo = (ImageButton) dialogLayout.findViewById(R.id.btnNo);
-        ImageButton imgBtnYes = (ImageButton) dialogLayout.findViewById(R.id.btnYes);
+        ImageButton imgBtnNo =  dialogLayout.findViewById(R.id.btnNo);
+        ImageButton imgBtnYes =  dialogLayout.findViewById(R.id.btnYes);
 
-        imgBtnYes.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String password = editText.getText().toString();
-                if (TextUtils.isEmpty(password)) {
-                    return;
-                }
-                String pas = DeEncrypter.decryptString(note.getPassword(), note.getPassSalt());
-                if (pas.equals(password)) {
-                    dialog.dismiss();
-                    Uri uri = ContentUris.withAppendedId(NoteContract.NoteEntry.CONTENT_URI, note.getId());
-                    openDetailActivity(uri, itemPosition);
-                } else {
-                    editText.setText("");
-                }
-
+        imgBtnYes.setOnClickListener(v -> {
+            String password = editText.getText().toString();
+            if (TextUtils.isEmpty(password)) {
+                return;
             }
-        });
-        imgBtnNo.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+            String pas = DeEncrypter.decryptString(note.getPassword(), note.getPassSalt());
+            if (pas.equals(password)) {
                 dialog.dismiss();
+                Uri uri = ContentUris.withAppendedId(NoteContract.NoteEntry.CONTENT_URI, note.getId());
+                openDetailActivity(uri, itemPosition);
+            } else {
+                editText.setText("");
             }
+
         });
+        imgBtnNo.setOnClickListener(v -> dialog.dismiss());
         dialog.show();
     }
     private void generateKey() throws FingerprintException {
         try {
             mKeyStore = KeyStore.getInstance("AndroidKeyStore");
 
-            mKeyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore");
+            KeyGenerator mKeyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore");
             mKeyStore.load(null);
             KeyGenParameterSpec keyGenParameterSpec =
                     new KeyGenParameterSpec.Builder(FINGERPRINT_KEY, KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
@@ -429,6 +402,12 @@ public class MainPresenter extends MvpPresenter<IMainModel, IMainView.View> impl
     @Override
     public void userSignOutUpdate() {
         model.getNoteList().clear();
+        getView().updateAdapter();
+    }
+
+    @Override
+    public void userSignInUpdate() {
+        model.loadData(getView().getActivityContext());
         getView().updateAdapter();
     }
 

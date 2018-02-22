@@ -30,7 +30,7 @@ public class ImageDAO extends BaseDAO {
 
     public List<Image> loadData(){
         SQLiteDatabase db = getReadDB();
-        Cursor c = db.query(NoteDeletedContract.NoteDeletedEntry.DATABASE_TABLE,
+        Cursor c = db.query(ImageContract.ImageEntry.DATABASE_TABLE,
                 null, null, null, null, null, null);
         if(c != null && c.moveToFirst()){
             List<Image> imageList = new ArrayList<>();

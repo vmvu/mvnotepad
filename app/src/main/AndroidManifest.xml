@@ -56,7 +56,7 @@
         </activity>
 
         <activity
-            android:name=".main.view.Activity.MainActivity2"
+            android:name=".main.view.Activity.MainActivity"
             android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -65,9 +65,9 @@
         </activity>
 
         <activity
-            android:name=".main.view.Activity.BookDetailActivity"
+            android:name=".main.view.Activity.DetailNoteActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:parentActivityName=".main.view.Activity.MainActivity2"
+            android:parentActivityName=".main.view.Activity.MainActivity"
             android:screenOrientation="portrait">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

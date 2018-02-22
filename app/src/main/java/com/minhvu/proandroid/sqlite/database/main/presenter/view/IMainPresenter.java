@@ -1,10 +1,9 @@
 package com.minhvu.proandroid.sqlite.database.main.presenter.view;
 
 import android.view.View;
-import android.widget.ImageButton;
 
 import com.minhvu.proandroid.sqlite.database.main.model.view.IMainModel;
-import com.minhvu.proandroid.sqlite.database.main.view.Adapter.NoteAdapter2;
+import com.minhvu.proandroid.sqlite.database.main.view.Adapter.NoteAdapter;
 import com.minhvu.proandroid.sqlite.database.main.view.Fragment.view.IMainView;
 
 /**
@@ -14,7 +13,7 @@ import com.minhvu.proandroid.sqlite.database.main.view.Fragment.view.IMainView;
 public interface IMainPresenter {
     void onDestroy(boolean isChangingConfiguration);
     void loadData();
-    void onBindViewHolder(NoteAdapter2.NoteViewHolder viewHolder, int position);
+    void onBindViewHolder(NoteAdapter.NoteViewHolder viewHolder, int position);
     void setModel(IMainModel model);
     void bindView(IMainView.View view);
 
@@ -34,5 +33,5 @@ public interface IMainPresenter {
     void sortByImportant();
 
     void userSignOutUpdate();
-
+    void userSignInUpdate();
 }

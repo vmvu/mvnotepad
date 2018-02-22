@@ -15,7 +15,7 @@ import com.minhvu.proandroid.sqlite.database.R;
 import com.minhvu.proandroid.sqlite.database.Utils.DeEncrypter;
 import com.minhvu.proandroid.sqlite.database.main.model.view.IGetShareModel;
 import com.minhvu.proandroid.sqlite.database.main.presenter.view.IGetSharePresenter;
-import com.minhvu.proandroid.sqlite.database.main.view.Activity.BookDetailActivity;
+import com.minhvu.proandroid.sqlite.database.main.view.Activity.DetailNoteActivity;
 import com.minhvu.proandroid.sqlite.database.main.view.Activity.view.IGetShareActivity;
 import com.minhvu.proandroid.sqlite.database.models.entity.Note;
 
@@ -129,7 +129,7 @@ public class GetSharePresenter extends MvpPresenter<IGetShareModel, IGetShareAct
     }
 
     private void startActivity() {
-        Intent intent = new Intent(getActivityContext(), BookDetailActivity.class);
+        Intent intent = new Intent(getActivityContext(), DetailNoteActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.setData(currentUri);
         getView().getActivityContext().startActivity(intent);

@@ -35,6 +35,7 @@
                     android:gravity="center_vertical"
                     app:elevation="0dp" />
 
+
                 <ImageButton
                     android:id="@+id/btnSync_cloud"
                     android:layout_width="40dp"
@@ -42,20 +43,23 @@
                     android:layout_gravity="center"
                     android:layout_marginRight="5dp"
                     android:background="@drawable/press_state"
-                    android:src="@drawable/ic_synchronize" />
+                    app:srcCompat="@drawable/ic_cloud_sync" />
 
                 <ImageButton
                     android:id="@+id/btnSort"
                     android:layout_width="40dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
+                    android:layout_marginRight="5dp"
                     android:background="@drawable/press_state"
-                    android:src="@drawable/ic_sort_ascending" />
+                    app:srcCompat="@drawable/ic_sort_ascending" />
 
                 <ImageButton
                     android:id="@+id/btnDeletePage"
                     android:layout_width="40dp"
                     android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginRight="5dp"
                     android:background="@drawable/press_state" />
             </LinearLayout>
 
@@ -71,13 +75,17 @@
 
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/fabInsert"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
             android:layout_centerVertical="true"
             android:layout_gravity="bottom|right"
+            android:foregroundGravity="center"
             android:layout_marginBottom="20dp"
             android:layout_marginRight="20dp"
-            android:src="@drawable/ic_plus_one_black_24dp"
+            android:src="@drawable/ic_quill_drawing_a_line"
+            app:backgroundTint="#fff"
+            app:borderWidth="0dp"
+            app:elevation="10dp"
             app:fabSize="normal" />
 
 

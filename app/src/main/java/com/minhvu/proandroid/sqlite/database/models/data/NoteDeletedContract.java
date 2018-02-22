@@ -8,7 +8,7 @@ public class NoteDeletedContract implements Contract {
 
     public static final class NoteDeletedEntry {
         public static final String DATABASE_TABLE = "note_ready_deleted";
-        public static final String NOTE_KEY_SYNC = "key_sync";
-        public static final String NOTE_ID = "note_id";
+        public static final String NOTE_KEY_SYNC = "synch_keys";
+        public static final String NOTE_ID = "id_note";
     }
 }

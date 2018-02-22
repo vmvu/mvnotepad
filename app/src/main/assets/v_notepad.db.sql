@@ -1,31 +1,34 @@
 BEGIN TRANSACTION;
-CREATE TABLE IF NOT EXISTS `v_typeoftext` (
+CREATE TABLE IF NOT EXISTS `text_style` (
 	`_id`	INTEGER PRIMARY KEY AUTOINCREMENT,
 	`name`	TEXT
 );
-INSERT INTO `v_typeoftext` (_id,name) VALUES (1,'text');
-INSERT INTO `v_typeoftext` (_id,name) VALUES (2,'checklist');
-CREATE TABLE IF NOT EXISTS `v_note` (
+INSERT INTO `text_style` (_id,name) VALUES (1,'text');
+INSERT INTO `text_style` (_id,name) VALUES (2,'checklist');
+CREATE TABLE IF NOT EXISTS `note` (
 	`_id`	INTEGER PRIMARY KEY AUTOINCREMENT,
 	`title`	TEXT,
 	`content`	TEXT,
-	`date_created`	TEXT,
-	`last_on`	TEXT,
+	`creation_time`	TEXT,
+	`last_edit_time`	TEXT,
 	`pass`	TEXT,
-	`pass_key`	TEXT,
+	`pass_salt`	TEXT,
 	`id_color`	INTEGER,
-	`id_typeoftext`	INTEGER,
-	`isdelete`	INTEGER DEFAULT 0,
-	`key_sync`	TEXT
+	`id_text_style`	INTEGER,
+	`is_delete`	INTEGER DEFAULT 0,
+	`synch_keys`	TEXT
 );
-CREATE TABLE IF NOT EXISTS `v_images` (
-	`name_path`	TEXT,
-	`note_id`	INTEGER,
-	`sync_stage`	INTEGER,
-	PRIMARY KEY(`name_path`)
+CREATE TABLE IF NOT EXISTS `images` (
+	`path`	TEXT primary KEY,
+	`id_note`	INTEGER,
+	`sync_state`	INTEGER
 );
 CREATE TABLE IF NOT EXISTS `note_ready_deleted` (
-	`key_sync`	TEXT,
-	`note_id`	INTEGER
+	`synch_keys`	TEXT,
+	`id_note`	INTEGER
+);
+
+CREATE TABLE IF NOT EXISTS `last_sync`(
+    `long_time`  INTEGER
 );
 COMMIT;

@@ -24,7 +24,7 @@ public interface IImageModel {
 
     Bitmap getBitmapImage(String path);
     void updateBitmapImage(Bitmap bitmap, String path);
-    Bitmap getSmallBitmapImage(String path);
+    Bitmap getSmallBitmap(String path);
     void updateSmallBitmap(String path);
     int getCount();
 }

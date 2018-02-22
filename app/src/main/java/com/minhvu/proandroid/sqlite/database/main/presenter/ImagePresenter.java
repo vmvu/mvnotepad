@@ -45,7 +45,7 @@ public class ImagePresenter extends MvpPresenter<IImageModel, IDetailFragment.Im
         new AsyncTask<String, Bitmap, Void>() {
             @Override
             protected Void doInBackground(String... params) {
-                Bitmap bitmap = model.getSmallBitmapImage(params[0]);
+                Bitmap bitmap = model.getSmallBitmap(params[0]);
                 publishProgress(bitmap);
                 return null;
             }

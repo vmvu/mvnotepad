@@ -34,8 +34,7 @@
                     android:layout_marginLeft="5dp"
                     android:background="@drawable/press_state"
                     android:gravity="center"
-                    android:src="@drawable/ic_clear_black_24dp"
-                    android:textColor="#000" />
+                    android:src="@drawable/ic_clear_black_24dp" />
 
                 <EditText
                     android:id="@+id/etTitle"

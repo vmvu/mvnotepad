@@ -9,6 +9,7 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteStatement;
 import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
@@ -74,31 +75,33 @@ public class NoteDAO extends BaseDAO {
         String selection = NoteContract.NoteEntry.COL_DELETE + "=?";
         @SuppressLint("Recycle") Cursor c = db.query(
                 NoteContract.NoteEntry.DATABASE_TABLE,
-                NoteContract.NoteEntry.getColumnNames(),
+                null,
                 null,
                 null,
                 null,
                 null,
                 orderBy);
         if (c != null && c.moveToFirst()) {
-            int idPos = c.getColumnIndex(NoteContract.NoteEntry._ID);
-            int titlePos = c.getColumnIndex(NoteContract.NoteEntry.COL_TITLE);
-            int contentPos = c.getColumnIndex(NoteContract.NoteEntry.COL_CONTENT);
-            int colorPos = c.getColumnIndex(NoteContract.NoteEntry.COL_COLOR);
-            int passwordPos = c.getColumnIndex(NoteContract.NoteEntry.COL_PASSWORD);
-            int keyPos = c.getColumnIndex(NoteContract.NoteEntry.COL_PASSWORD_SALT);
-            int dateCreatedPos = c.getColumnIndex(NoteContract.NoteEntry.COL_DATE_CREATED);
-            int lastUpdatePos = c.getColumnIndex(NoteContract.NoteEntry.COL_LAST_ON);
+            int idIndex = c.getColumnIndex(NoteContract.NoteEntry._ID);
+            int titleIndex = c.getColumnIndex(NoteContract.NoteEntry.COL_TITLE);
+            int contentIndex = c.getColumnIndex(NoteContract.NoteEntry.COL_CONTENT);
+            int colorIndex = c.getColumnIndex(NoteContract.NoteEntry.COL_COLOR);
+            int passwordIndex = c.getColumnIndex(NoteContract.NoteEntry.COL_PASSWORD);
+            int keyIndex = c.getColumnIndex(NoteContract.NoteEntry.COL_PASSWORD_SALT);
+            int dateCreatedIndex = c.getColumnIndex(NoteContract.NoteEntry.COL_DATE_CREATED);
+            int lastUpdateIndex = c.getColumnIndex(NoteContract.NoteEntry.COL_LAST_ON);
+            int keySyncIndex = c.getColumnIndex(NoteContract.NoteEntry.COL_KEY_SYNC);
             do {
                 Note note = new Note();
-                note.setId(c.getLong(idPos));
-                note.setTitle(c.getString(titlePos));
-                note.setContent(c.getString(contentPos));
-                note.setIdColor(c.getInt(colorPos));
-                note.setPassword(c.getString(passwordPos));
-                note.setPassSalt(c.getString(keyPos));
-                note.setDateCreated(Long.parseLong(c.getString(dateCreatedPos)));
-                note.setLastOn(Long.parseLong(c.getString(lastUpdatePos)));
+                note.setId(c.getLong(idIndex));
+                note.setTitle(c.getString(titleIndex));
+                note.setContent(c.getString(contentIndex));
+                note.setIdColor(c.getInt(colorIndex));
+                note.setPassword(c.getString(passwordIndex));
+                note.setPassSalt(c.getString(keyIndex));
+                note.setDateCreated(Long.parseLong(c.getString(dateCreatedIndex)));
+                note.setLastOn(Long.parseLong(c.getString(lastUpdateIndex)));
+                note.setKeySync(c.getString(keySyncIndex));
                 noteList.add(note);
             } while (c.moveToNext());
         }
@@ -209,7 +212,7 @@ public class NoteDAO extends BaseDAO {
         }
     }
 
-    public boolean insertNote(Note note) {
+    public long insertNote(Note note) {
 
         ContentValues cv = new ContentValues();
         cv.put(NoteContract.NoteEntry.COL_TITLE, note.getTitle());
@@ -225,11 +228,9 @@ public class NoteDAO extends BaseDAO {
 
         SQLiteDatabase db = getWriteDB();
         try {
-            long success = db.insertOrThrow(NoteContract.NoteEntry.DATABASE_TABLE, null, cv);
-
-            return success > 0;
+            return db.insertOrThrow(NoteContract.NoteEntry.DATABASE_TABLE, null, cv);
         } catch (SQLException e) {
-            return false;
+            return -1;
         }
     }
 
@@ -258,18 +259,16 @@ public class NoteDAO extends BaseDAO {
         return success > 0;
     }
 
-    public void updateSyncList(List<Note> noteList) {
+    public void UpdateSynchronousList(long noteID, String SynchroKey) {
         SQLiteDatabase db = getWriteDB();
         ContentValues cv = new ContentValues();
-        for (Note note : noteList) {
-            cv.put(NoteContract.NoteEntry.COL_KEY_SYNC, note.getKeySync());
-            db.update(
-                    NoteContract.NoteEntry.DATABASE_TABLE,
-                    cv,
-                    NoteContract.NoteEntry._ID + "=" + note.getId(),
-                    null);
-            cv.clear();
-        }
+        cv.put(NoteContract.NoteEntry.COL_KEY_SYNC, SynchroKey);
+        db.update(
+                NoteContract.NoteEntry.DATABASE_TABLE,
+                cv,
+                NoteContract.NoteEntry._ID + "=" + noteID,
+                null);
+
     }
 
     public boolean deleteNote(long noteID) {
@@ -284,5 +283,12 @@ public class NoteDAO extends BaseDAO {
         db.execSQL("delete from " + NoteContract.NoteEntry.DATABASE_TABLE);
     }
 
+    public boolean isSyncChecksExist(String keySync) {
+        SQLiteDatabase db = getReadDB();
+        String selection = NoteContract.NoteEntry.COL_KEY_SYNC + "=?";
+        Cursor c = db.query(NoteContract.NoteEntry.DATABASE_TABLE, null, selection,
+                new String[]{keySync}, null, null, null);
+        return c != null && c.getCount() > 0;
+    }
 
 }

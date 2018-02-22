@@ -41,9 +41,9 @@ public class NoteProvider extends ContentProvider {
         uriMatcher.addURI(NoteContract.AUTHORITY, NoteContract.path_tnote + "/#",
                 INCOMING_SINGLE_NOTE_URI_INDICATOR);
 
-        uriMatcher.addURI(TextTypeContract.AUTHORITY, TextTypeContract.path_ttypeoftext,
+        uriMatcher.addURI(TextStyleContract.AUTHORITY, TextStyleContract.path_ttypeoftext,
                 INCOMING_TYPEOFTEXT_COLLECTION_URI_INDICATOR);
-        uriMatcher.addURI(TextTypeContract.AUTHORITY, TextTypeContract.path_ttypeoftext + "/#",
+        uriMatcher.addURI(TextStyleContract.AUTHORITY, TextStyleContract.path_ttypeoftext + "/#",
                 INCOMING_SINGLE_TYPEOFTEXT_URI_INDICATOR);
 
         uriMatcher.addURI(ImageContract.AUTHORITY, ImageContract.path_images,
@@ -71,8 +71,8 @@ public class NoteProvider extends ContentProvider {
         sNoteProjectMap.put(NoteContract.NoteEntry.COL_KEY_SYNC, NoteContract.NoteEntry.COL_KEY_SYNC);
 
         sTypeOfTextProjectMap = new HashMap<>();
-        sTypeOfTextProjectMap.put(TextTypeContract.TextTypeEntry._ID, TextTypeContract.TextTypeEntry._ID);
-        sTypeOfTextProjectMap.put(TextTypeContract.TextTypeEntry.COL_NAME, TextTypeContract.TextTypeEntry.COL_NAME);
+        sTypeOfTextProjectMap.put(TextStyleContract.TextStyleEntry._ID, TextStyleContract.TextStyleEntry._ID);
+        sTypeOfTextProjectMap.put(TextStyleContract.TextStyleEntry.COL_NAME, TextStyleContract.TextStyleEntry.COL_NAME);
 
         sImagesProjectMap = new HashMap<>();
         sImagesProjectMap.put(ImageContract.ImageEntry.COL_NAME_PATH, ImageContract.ImageEntry.COL_NAME_PATH);
@@ -106,14 +106,14 @@ public class NoteProvider extends ContentProvider {
                 qb.appendWhere(NoteContract.NoteEntry._ID + "=" + uri.getPathSegments().get(1));
                 break;
             case INCOMING_TYPEOFTEXT_COLLECTION_URI_INDICATOR:
-                qb.setTables(TextTypeContract.TextTypeEntry.DATABASE_TABLE);
+                qb.setTables(TextStyleContract.TextStyleEntry.DATABASE_TABLE);
                 qb.setProjectionMap(sTypeOfTextProjectMap);
-                orderBy = TextTypeContract.TextTypeEntry.DEFAULT_SORT_ORDER;
+                orderBy = TextStyleContract.TextStyleEntry.DEFAULT_SORT_ORDER;
                 break;
             case INCOMING_SINGLE_TYPEOFTEXT_URI_INDICATOR:
-                qb.setTables(TextTypeContract.TextTypeEntry.DATABASE_TABLE);
+                qb.setTables(TextStyleContract.TextStyleEntry.DATABASE_TABLE);
                 qb.setProjectionMap(sTypeOfTextProjectMap);
-                qb.appendWhere(TextTypeContract.TextTypeEntry._ID + "=" + uri.getPathSegments().get(1));
+                qb.appendWhere(TextStyleContract.TextStyleEntry._ID + "=" + uri.getPathSegments().get(1));
                 break;
             case INCOMING_IMAGES_COLLECTION_URI_INDICATOR:
                 qb.setTables(ImageContract.ImageEntry.DATABASE_TABLE);
